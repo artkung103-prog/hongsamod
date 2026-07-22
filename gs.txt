@@ -1,0 +1,458 @@
+ // =========================================================================
+// 🚀 ระบบหลังบ้าน (Backend) - โครงสร้างตรงกับ Sheet ที่ออกแบบใหม่ทั้งหมด
+// =========================================================================
+
+// เชื่อมต่อกับ Sheet ID ของคุณครูโดยตรง
+const SPREADSHEET_ID = "14L_gXjHCl9PDZ_ap95A8uYu3mfbm-0LvzBxSKXMqFyI"; 
+const FOLDER_ID = '1MzU1ZQsHfKHAtoLSeWl_I7WyP--Wufcd';
+
+const FOLDER_NAME = "LibrarySystem_Files";
+
+function getSpreadsheet() {
+  if (SPREADSHEET_ID !== "") {
+    return SpreadsheetApp.openById(SPREADSHEET_ID);
+  }
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function getOrCreateSheet(sheetName, headers) {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+
+    if (headers && headers.length > 0) {
+      sheet.appendRow(headers);
+      sheet.getRange(1, 1, 1, headers.length)
+        .setFontWeight("bold")
+        .setBackground("#e0f2fe");
+
+      sheet.setFrozenRows(1);
+    }
+  }
+
+  return sheet;
+}
+
+// 🛠️ 1. กดปุ่ม "เรียกใช้" ที่ฟังก์ชันนี้ เพื่อสร้างฐานข้อมูล
+function setupSystem() {
+  // โครงสร้างชีตใหม่ทั้งหมด (ไม่มี Config, Borrows, ReadingLogs, Homeworks)
+  getOrCreateSheet('students', ['ชั้น', 'ชื่อนักเรียน']);
+  getOrCreateSheet('data', ['วันที่บันทึก', 'ชั้น', 'ชื่อ-สกุล', 'เพศ', 'วันเกิด', 'ชื่อเล่น', 'เบอร์โทร', 'ลิงก์รูปถ่าย']);
+  getOrCreateSheet('Users', ['วันที่ลงทะเบียน', 'ชั้น', 'ชื่อ-สกุล', 'FaceData']);
+  getOrCreateSheet('Attendance', ['ชื่อ-สกุล', 'ชั้น', 'วันที่', 'เวลา']);
+  getOrCreateSheet('borrow', ['วันที่บันทึก', 'ชั้น', 'ชื่อ-สกุล', 'ชื่อหนังสือ', 'วันที่ยืม', 'กำหนดคืน', 'สถานะ']);
+  getOrCreateSheet('reading', ['วันที่ส่ง', 'ชั้น', 'ชื่อ-สกุล', 'ชื่อเรื่อง', 'เรื่องย่อ', 'คะแนน(ดาว)', 'สถานะ']);
+  getOrCreateSheet('homework', ['วันที่ส่ง', 'ชั้น', 'ชื่อคนที่1', 'ชื่อคนที่2', 'ชื่องาน', 'ลิงก์ไฟล์1', 'ลิงก์ไฟล์2', 'สถานะ']);
+  getOrCreateSheet('link', ['วันที่เวลา', 'ชื่อลิ้ง', 'url']);
+  
+  // ชีตสำหรับให้คุณครูนำไปดึงสูตรสถิติต่อ
+  getOrCreateSheet('sum', ['สถิติ (รอตั้งค่าสูตร)']);
+  getOrCreateSheet('number 5', ['5 อันดับรักการอ่าน (รอตั้งค่าสูตร)']);
+  getOrCreateSheet('Stats_Counter', ['Counters (รอตั้งค่าสูตร)']);
+  
+  var folders = DriveApp.getFoldersByName(FOLDER_NAME);
+  if (!folders.hasNext()) DriveApp.createFolder(FOLDER_NAME);
+}
+
+// =========================================================================
+// 📡 2. ส่วนรับการดึงข้อมูล (GET Requests) 
+// =========================================================================
+function doGet(e) {
+  try {
+    var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : null;
+
+    if (!action) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        status: "success", 
+        message: "✅ เชื่อมต่อ Google Apps Script สำเร็จ 100%!" 
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var data = null;
+    
+    if (action === 'getDashboardSummary') data = getDashboardSummary();
+    else if (action === 'getConfig') data = getConfig();
+    else if (action === 'getStudents') data = getStudents(e.parameter.class);
+    else if (action === 'getKnownFaces') data = getKnownFaces();
+    else if (action === 'getStats') data = getStats();
+    else if (action === 'getStudentData') data = getStudentData();
+    else if (action === 'getBorrows') data = getBorrows();
+    else if (action === 'getReadingLogs') data = getReadingLogs();
+    else if (action === 'getReadingStats') data = getReadingStats();
+    else if (action === 'getHomeworks') data = getHomeworks();
+    else if (action === 'getLinks') data = getLinks();
+    else data = { status: "success", message: "API เชื่อมต่อสมบูรณ์พร้อมใช้งาน!" };
+
+    return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// =========================================================================
+// 📨 3. ส่วนรับการบันทึกข้อมูล (POST Requests)
+// =========================================================================
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "No data received" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var payload = JSON.parse(e.postData.contents);
+    var action = payload.action;
+    var data = { status: "success", message: "รับข้อมูลสำเร็จ" };
+
+    if (action === 'logAttendance') logAttendance(payload);
+    else if (action === 'saveConfig') saveConfig(payload);
+    else if (action === 'registerUser') registerUser(payload);
+    else if (action === 'addStudentData') addStudentData(payload);
+    else if (action === 'editStudentData') editStudentData(payload);
+    else if (action === 'deleteStudentData') deleteStudentData(payload);
+    else if (action === 'addBorrow') addBorrow(payload);
+    else if (action === 'updateBorrowStatus') updateBorrowStatus(payload);
+    else if (action === 'addReadingLog') addReadingLog(payload);
+    else if (action === 'editReadingLog') editReadingLog(payload);
+    else if (action === 'updateReadingStatus') updateReadingStatus(payload);
+    else if (action === 'addHomework') addHomework(payload);
+    else if (action === 'updateHomeworkStatus') updateHomeworkStatus(payload);
+    else if (action === 'addLink') addLink(payload);
+    else if (action === 'deleteLink') deleteLink(payload);
+    else if (action === 'addStudent') {
+      var sheet = getOrCreateSheet('students');
+      // เพิ่มลง students คอลัมน์ A=ชั้น, B=ชื่อ
+      sheet.appendRow([payload.className, payload.name]);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// =========================================================================
+// 🗂️ 4. ฟังก์ชันจัดการข้อมูล (Data Handlers)
+// =========================================================================
+
+function uploadFileToDrive(base64Data, mimeType, fileName) {
+
+  try {
+
+    if (!base64Data) {
+      return '-';
+    }
+
+    var folder = DriveApp.getFolderById(FOLDER_ID);
+
+    var cleanData = base64Data;
+
+    if (base64Data.indexOf(',') !== -1) {
+      cleanData = base64Data.split(',')[1];
+    }
+
+    var bytes = Utilities.base64Decode(cleanData);
+
+    var blob = Utilities.newBlob(
+      bytes,
+      mimeType || 'image/jpeg',
+      fileName || ('photo_' + Date.now() + '.jpg')
+    );
+
+    var file = folder.createFile(blob);
+
+    // ไม่ต้อง setSharing
+
+    return file.getId();
+
+  } catch(err) {
+
+    Logger.log(err);
+
+    return 'ERROR: ' + err;
+  }
+}
+
+function saveConfig(p) {
+  var sheet = getOrCreateSheet('Config');
+  if (sheet.getLastRow() <= 1) {
+    sheet.appendRow(['Target Latitude', p.lat]);
+    sheet.appendRow(['Target Longitude', p.lng]);
+    sheet.appendRow(['Allowed Radius (KM)', p.radius]);
+  } else {
+    sheet.getRange('B2').setValue(p.lat);
+    sheet.getRange('B3').setValue(p.lng);
+    sheet.getRange('B4').setValue(p.radius);
+  }
+}
+function testDrive() {
+  DriveApp.getRootFolder();
+}
+function getConfig() {
+  var sheet = getOrCreateSheet('Config');
+  var config = { lat: 0, lng: 0, radius: 0.5 };
+  if (sheet.getLastRow() >= 4) {
+    config.lat = parseFloat(sheet.getRange('B2').getValue()) || 0;
+    config.lng = parseFloat(sheet.getRange('B3').getValue()) || 0;
+    config.radius = parseFloat(sheet.getRange('B4').getValue()) || 0;
+  }
+  return config;
+}
+
+function getDashboardSummary() {
+  return {
+    attendance: Math.max(0, getOrCreateSheet('Attendance').getLastRow() - 1),
+    borrows: Math.max(0, getOrCreateSheet('borrow').getLastRow() - 1),
+    reading: Math.max(0, getOrCreateSheet('reading').getLastRow() - 1),
+    homework: Math.max(0, getOrCreateSheet('homework').getLastRow() - 1)
+  };
+}
+
+// --- Attendance & Stats ---
+function logAttendance(p) {
+  var sheet = getOrCreateSheet('Attendance');
+  var d = new Date();
+  var dateStr = Utilities.formatDate(d, "Asia/Bangkok", "dd/MM/yyyy");
+  var timeStr = Utilities.formatDate(d, "Asia/Bangkok", "HH:mm:ss");
+  // Attendance: A=ชื่อ, B=ชั้น, C=วันที่, D=เวลา
+  sheet.appendRow([p.name, p.className, dateStr, timeStr]);
+}
+
+function getStats() {
+  var data = getOrCreateSheet('Attendance').getDataRange().getValues();
+  if (data.length <= 1) return { overall: [], byClass: {} };
+  var counts = {};
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) {
+      var key = data[i][1] + "|" + data[i][0]; // ชั้น|ชื่อ-สกุล
+      counts[key] = (counts[key] || 0) + 1;
+    }
+  }
+  var resultList = [];
+  for (var k in counts) {
+    var parts = k.split("|");
+    resultList.push({ cls: parts[0], name: parts[1], count: counts[k] });
+  }
+  resultList.sort(function(a, b) { return b.count - a.count; });
+  var byClass = { "ป.1": [], "ป.2": [], "ป.3": [], "ป.4": [], "ป.5": [], "ป.6": [] };
+  resultList.forEach(function(item) { if (byClass[item.cls]) byClass[item.cls].push(item); });
+  return { overall: resultList.slice(0, 10), byClass: byClass };
+}
+
+// --- Users (ลงทะเบียน FaceData) ---
+function getKnownFaces() {
+  var data = getOrCreateSheet('Users').getDataRange().getValues();
+  var faces = [];
+  for (var i = 1; i < data.length; i++) {
+    // Users: B=ชั้น(1), C=ชื่อ(2), D=FaceData(3)
+    var faceStr = data[i][3];
+    if (faceStr && faceStr !== '-') {
+      try { faces.push({ label: data[i][2], class: data[i][1], descriptor: JSON.parse(faceStr) }); } catch(e) {}
+    }
+  }
+  return faces;
+}
+
+function registerUser(p) {
+  var sheet = getOrCreateSheet('Users');
+  var data = sheet.getDataRange().getValues();
+  var faceStr = JSON.stringify(p.faceDescriptor);
+  var dtStr = new Date().toISOString();
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === p.className && data[i][2] === p.name) {
+      sheet.getRange(i + 1, 4).setValue(faceStr); return; // Update D
+    }
+  }
+  // A=วันที่, B=ชั้น, C=ชื่อ, D=Face
+  sheet.appendRow([dtStr, p.className, p.name, faceStr]);
+}
+
+// --- Students (รายชื่อแสดงใน Dropdown) ---
+function getStudents(className) {
+  var data = getOrCreateSheet('students').getDataRange().getValues();
+  var names = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === className && data[i][1]) {
+      names.push(data[i][1]); // A=ชั้น(0), B=ชื่อ(1)
+    }
+  }
+  return names;
+}
+
+// --- Data (ทำเนียบนักเรียน) ---
+function getStudentData() {
+  var data = getOrCreateSheet('data').getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    list.push({ 
+      rowIdx: i + 1, 
+      className: data[i][1], // B
+      name: data[i][2],      // C
+      gender: data[i][3],    // D
+      dob: data[i][4],       // E
+      nickname: data[i][5],  // F
+      phone: data[i][6],     // G
+      photoId: data[i][7]    // H
+    });
+  }
+  return list;
+}
+
+function addStudentData(p) {
+  var photoId = p.photoBase64 ? uploadFileToDrive(p.photoBase64, p.photoType, p.photoName) : '-';
+  var dtStr = new Date().toISOString();
+  getOrCreateSheet('data').appendRow([dtStr, p.className, p.name, p.gender, p.dob, p.nickname, "'" + p.phone, photoId]);
+}
+
+function editStudentData(p) {
+  var sheet = getOrCreateSheet('data'), row = parseInt(p.rowIdx), photoId = p.photoBase64 ? uploadFileToDrive(p.photoBase64, p.photoType, p.photoName) : p.oldPhotoId;
+  // อัปเดตคอลัมน์ B ถึง H (เริ่มคอลัมน์ 2, จำนวน 7 คอลัมน์)
+  sheet.getRange(row, 2, 1, 7).setValues([[p.className, p.name, p.gender, p.dob, p.nickname, "'" + p.phone, photoId]]);
+}
+
+function deleteStudentData(p) {
+  var sheet = getOrCreateSheet('data');
+  sheet.deleteRow(parseInt(p.rowIdx));
+}
+
+// --- Borrow (ยืม-คืน) ---
+function getBorrows() {
+  var data = getOrCreateSheet('borrow').getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2]) list.push({ 
+      rowIdx: i + 1, 
+      className: data[i][1], 
+      name: data[i][2], 
+      bookName: data[i][3], 
+      borrowDate: data[i][4], 
+      returnDate: data[i][5], 
+      status: data[i][6] 
+    });
+  }
+  return list.reverse();
+}
+
+function addBorrow(p) {
+  var dtStr = new Date().toISOString();
+  getOrCreateSheet('borrow').appendRow([dtStr, p.className, p.name, p.bookName, p.borrowDate, p.returnDate, 'กำลังยืม']);
+}
+
+function updateBorrowStatus(p) {
+  getOrCreateSheet('borrow').getRange(parseInt(p.rowIdx), 7).setValue(p.status);
+}
+
+// --- Reading Logs (รักการอ่าน) ---
+function getReadingLogs() {
+  var data = getOrCreateSheet('reading').getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2]) list.push({ 
+      rowIdx: i + 1, 
+      className: data[i][1], 
+      name: data[i][2], 
+      bookTitle: data[i][3], 
+      synopsis: data[i][4], 
+      rating: data[i][5], 
+      status: data[i][6], 
+      date: data[i][0] 
+    });
+  }
+  return list.reverse();
+}
+
+function addReadingLog(p) {
+  var dtStr = new Date().toISOString();
+  getOrCreateSheet('reading').appendRow([dtStr, p.className, p.name, p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']);
+}
+
+function editReadingLog(p) {
+  // อัปเดตคอลัมน์ D ถึง G (เริ่ม 4, จำนวน 4 คอลัมน์)
+  getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 4, 1, 4).setValues([[p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']]);
+}
+
+function updateReadingStatus(p) {
+  getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 7).setValue(p.status);
+}
+
+function getReadingStats() {
+  var data = getOrCreateSheet('reading').getDataRange().getValues();
+  var counts = {};
+  for (var i = 1; i < data.length; i++) { if (data[i][2]) counts[data[i][2]] = (counts[data[i][2]] || 0) + 1; }
+  var list = []; for (var k in counts) list.push({ name: k, count: counts[k] });
+  list.sort(function(a, b) { return b.count - a.count; });
+  return list.slice(0, 5);
+}
+
+// --- Homework (ส่งงาน) ---
+function getHomeworks() {
+  var data = getOrCreateSheet('homework').getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][4]) list.push({ 
+      rowIdx: i + 1, 
+      className: data[i][1], 
+      name1: data[i][2], 
+      name2: data[i][3], 
+      taskName: data[i][4], 
+      file1: data[i][5], 
+      file2: data[i][6], 
+      status: data[i][7], 
+      date: data[i][0] 
+    });
+  }
+  return list.reverse();
+}
+
+function addHomework(p) {
+  var f1 = p.file1 ? uploadFileToDrive(p.file1.data, p.file1.type, p.file1.name) : '-';
+  var f2 = p.file2 ? uploadFileToDrive(p.file2.data, p.file2.type, p.file2.name) : '-';
+  var dtStr = new Date().toISOString();
+  getOrCreateSheet('homework').appendRow([dtStr, p.className, p.name1, p.name2 || '-', p.taskName, f1, f2, 'รอตรวจ']);
+}
+
+function updateHomeworkStatus(p) {
+  var sheet = getOrCreateSheet('homework');
+  sheet.getRange(parseInt(p.rowIdx), 8).setValue(p.status);
+  
+  if (p.score !== undefined) {
+    var currentVal = sheet.getRange(parseInt(p.rowIdx), 7).getValue();
+    
+    // ถ้ามีการกรอกคะแนนเข้ามา ให้เซฟทับเลย
+    if (p.score !== '') {
+      sheet.getRange(parseInt(p.rowIdx), 7).setValue(p.score);
+    } 
+    // แต่ถ้าครูไม่ได้กรอกคะแนน (เว้นว่าง) และค่าเดิม "ไม่ใช่ลิงก์" ให้รีเซ็ตกลับเป็น '-'
+    // (เพื่อป้องกันการไปลบลิงก์ไฟล์ที่ 2 ของนักเรียนโดยไม่ได้ตั้งใจ)
+    else if (!String(currentVal).startsWith('http')) {
+      sheet.getRange(parseInt(p.rowIdx), 7).setValue('-');
+    }
+  }
+}
+
+// --- Links (ฝากลิงก์) ---
+function getLinks() {
+  var data = getOrCreateSheet('link').getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) { 
+    if (data[i][1]) list.push({ rowIdx: i + 1, title: data[i][1], url: data[i][2] }); 
+  }
+  return list.reverse();
+}
+
+function addLink(p) { 
+  var dtStr = new Date().toISOString();
+  getOrCreateSheet('link').appendRow([dtStr, p.title, p.url]); 
+}
+
+function deleteLink(p) { 
+  getOrCreateSheet('link').getRange(parseInt(p.rowIdx), 1, 1, 3).clearContent(); 
+}

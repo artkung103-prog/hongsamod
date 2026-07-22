@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ระบบห้องสมุด โรงเรียนวัดหนองคันทรง</title>
+  
+  <!-- ตั้งค่าไอคอนสำหรับหน้าจอมือถือ (Home Screen) -->
+  <link rel="icon" type="image/png" href="https://ui-avatars.com/api/?name=NK&background=ea580c&color=fff&size=128&bold=true">
+  <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=NK&background=ea580c&color=fff&size=256&bold=true">
+  <meta name="apple-mobile-web-app-title" content="ระบบห้องสมุด">
+
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+  
+  <style>
+    /* บังคับสีตัวอักษรในช่องกรอกข้อมูลเมื่อเป็นโหมดสว่าง */
+body:not(.dark-mode) input,
+body:not(.dark-mode) textarea,
+.light-mode input,
+.light-mode textarea {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* กรณีต้องการให้ Placehoder (คำใบ้) เป็นสีเทาเข้ม */
+.light-mode input::placeholder,
+.light-mode textarea::placeholder {
+    color: #64748b !important;
+}
+    /* เพิ่มการเลื่อนสมูทเหมือนแอปในมือถือ */
+    html, body {
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sarabun', sans-serif; min-height: 100vh; background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1b2a 100%); color: #e2e8f0; position: relative; overflow-x: hidden; }
+    body::before, body::after { content: ''; position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; z-index: 0; }
+    body::before { width: 400px; height: 400px; background: #6366f1; top: -100px; left: -100px; }
+    body::after { width: 350px; height: 350px; background: #10b981; bottom: -80px; right: -80px; }
+
+    .page-container { width: 100%; max-width: 560px; margin: 0 auto; padding: 40px 20px 60px; position: relative; z-index: 1; display: none; animation: fadeIn 0.4s ease; flex-direction: column; align-items: center; }
+    .page-container.active { display: flex; }
+    .page-container.wide { max-width: 1000px; } 
+
+    .header { text-align: center; margin-bottom: 10px; width: 100%; }
+    .logo-icon { font-size: 52px; display: block; margin-bottom: 12px; filter: drop-shadow(0 0 20px rgba(99,102,241,0.6)); }
+
+    h1 { font-size: 1.6em; font-weight: 700; background: linear-gradient(135deg, #a5b4fc, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9em; color: #64748b; }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 20px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: #e2e8f0; text-decoration: none; font-size: 20px !important; padding: 10px 20px; border-radius: 50px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.25s ease; font-weight: 700;}
+    .back-btn:hover { background: rgba(255,255,255,0.15); transform: translateX(-4px); }
+    .page-title { font-size: 1.2em; font-weight: 600; color: #c7d2fe; }
+    .spacer { width: 80px; }
+
+    .api-warning { display: none; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; border-radius: 12px; padding: 12px 18px; width: 100%; margin-bottom: 20px; font-size: 0.88em; text-align: center; }
+
+    .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
+    .menu-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; margin-bottom: 16px; }
+    @media (max-width: 480px) { .dashboard-grid, .menu-grid-4, .menu-row { gap: 6px; } .dash-card, .btn-quarter { height: 95px !important; padding: 8px 4px; } .dash-label { font-size: 0.65em; } .dash-value { font-size: 1.2em; margin-bottom: 2px; } .btn-quarter .card-title { font-size: 0.7em; } .btn-quarter .card-icon { width: 38px !important; height: 38px !important; font-size: 20px !important; margin-bottom: 6px !important;} .dash-icon { font-size: 28px !important; margin-bottom: 4px !important; display: block; line-height: 1;} }
+    
+    .dash-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 10px 4px; text-align: center; backdrop-filter: blur(10px); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; height: 114px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .dash-card:hover { transform: translateY(-4px) scale(1.05); }
+    .dash-card.att:hover { box-shadow: 0 8px 20px rgba(56,189,248,0.25); border-color: rgba(56,189,248,0.5); }
+    .dash-card.bor:hover { box-shadow: 0 8px 20px rgba(236,72,153,0.25); border-color: rgba(236,72,153,0.5); }
+    .dash-card.read:hover { box-shadow: 0 8px 20px rgba(250,204,21,0.25); border-color: rgba(250,204,21,0.5); }
+    .dash-card.hw:hover { box-shadow: 0 8px 20px rgba(99,102,241,0.25); border-color: rgba(99,102,241,0.5); }
+    
+    .dash-icon { font-size: 34px; margin-bottom: 8px; line-height: 1; }
+    .dash-value { font-size: 1.5em; font-weight: 700; color: #fff; line-height: 1; margin-bottom: 4px; }
+    .dash-value.att { color: #38bdf8; } .dash-value.bor { color: #f472b6; } .dash-value.read { color: #facc15; } .dash-value.hw { color: #818cf8; }
+    .dash-label { font-size: 0.75em; color: #94a3b8; font-weight: 600; line-height: 1.1; }
+
+    @keyframes iconWiggle { 0% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-12deg) scale(1.15); } 50% { transform: rotate(12deg) scale(1.15); } 75% { transform: rotate(-12deg) scale(1.15); } 100% { transform: rotate(0deg) scale(1.1); } }
+
+    .menu-row { display: flex; gap: 10px; width: 100%; margin-bottom: 16px; }
+    .btn-half { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px 10px; border-radius: 18px; cursor: pointer; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(16px); color: #e2e8f0; transition: all 0.3s ease; text-align: center; }
+    .btn-half:hover { transform: scale(1.03) translateY(-3px); }
+    .btn-half:hover .card-icon { animation: iconWiggle 0.5s ease-in-out forwards; }
+    .btn-half .card-icon { margin-bottom: 12px; transition: transform 0.3s ease; }
+    .btn-half .card-title { font-size: 1.05em; font-weight: 600; color: #f1f5f9; }
+
+    .btn-quarter { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 114px; padding: 10px 4px; border-radius: 14px; cursor: pointer; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(16px); color: #e2e8f0; transition: all 0.3s ease; text-align: center; }
+    .btn-quarter:hover { transform: scale(1.05) translateY(-3px); }
+    .btn-quarter:hover .card-icon { animation: iconWiggle 0.5s ease-in-out forwards; }
+    .btn-quarter .card-icon { width: 48px !important; height: 48px !important; font-size: 24px !important; margin-bottom: 8px !important; border-radius: 14px !important; }
+    .btn-quarter .card-title { font-size: 0.8em; font-weight: 600; line-height: 1.2; }
+
+    .menu-cards { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+    .btn-menu { display: flex; align-items: center; gap: 16px; padding: 20px 22px; cursor: pointer; border-radius: 18px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(16px); color: #e2e8f0; transition: all 0.3s ease; text-align: left; width: 100%; }
+    .btn-menu:hover { transform: scale(1.02) translateY(-3px); }
+    .btn-menu:hover .card-icon { animation: iconWiggle 0.5s forwards; }
+    
+    .btn-manual:hover   { box-shadow: 0 0 25px rgba(245,158,11,0.6); border-color: #f59e0b; background: rgba(245,158,11,0.15); }
+    .btn-scan:hover     { box-shadow: 0 0 25px rgba(16,185,129,0.6); border-color: #10b981; background: rgba(16,185,129,0.15); }
+    .btn-stats:hover    { box-shadow: 0 0 25px rgba(56,189,248,0.6); border-color: #38bdf8; background: rgba(56,189,248,0.15); }
+    .btn-register:hover { box-shadow: 0 0 25px rgba(168,85,247,0.6); border-color: #a855f7; background: rgba(168,85,247,0.15); }
+    .btn-config:hover   { box-shadow: 0 0 25px rgba(100,116,139,0.6); border-color: #94a3b8; background: rgba(100,116,139,0.15); }
+    .btn-borrow:hover   { box-shadow: 0 0 25px rgba(236,72,153,0.6); border-color: #ec4899; background: rgba(236,72,153,0.15); }
+    .btn-reading:hover  { box-shadow: 0 0 25px rgba(250,204,21,0.6); border-color: #facc15; background: rgba(250,204,21,0.15); }
+    .btn-homework:hover { box-shadow: 0 0 25px rgba(99,102,241,0.6); border-color: #6366f1; background: rgba(99,102,241,0.15); }
+    .btn-link:hover     { box-shadow: 0 0 25px rgba(16,185,129,0.6); border-color: #10b981; background: rgba(16,185,129,0.15); }
+    .btn-profile:hover  { box-shadow: 0 0 25px rgba(244,114,182,0.6); border-color: #f472b6; background: rgba(244,114,182,0.15); }
+    .btn-online:hover   { box-shadow: 0 0 25px rgba(59,130,246,0.6); border-color: #3b82f6; background: rgba(59,130,246,0.15); }
+
+    .card-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; transition: transform 0.3s ease; }
+    .btn-manual .card-icon   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .btn-scan .card-icon     { background: linear-gradient(135deg, #10b981, #059669); }
+    .btn-stats .card-icon    { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+    .btn-register .card-icon { background: linear-gradient(135deg, #a855f7, #7e22ce); }
+    .btn-config .card-icon   { background: linear-gradient(135deg, #475569, #334155); }
+    .btn-borrow .card-icon   { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .btn-reading .card-icon  { background: linear-gradient(135deg, #facc15, #ca8a04); }
+    .btn-homework .card-icon { background: linear-gradient(135deg, #6366f1, #4338ca); }
+    .btn-link .card-icon     { background: linear-gradient(135deg, #10b981, #047857); }
+    .btn-profile .card-icon  { background: linear-gradient(135deg, #f472b6, #db2777); }
+    .btn-online .card-icon   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+
+    .card-text { flex: 1; }
+    .card-title { font-size: 1.05em; font-weight: 600; color: #f1f5f9; margin-bottom: 2px; }
+    .card-desc  { font-size: 0.8em; color: #64748b; }
+    .card-arrow { font-size: 18px; color: #475569; transition: transform 0.3s; }
+    .btn-menu:hover .card-arrow { transform: translateX(4px); color: #fff; }
+
+    .video-wrapper { position: relative; border-radius: 20px; overflow: hidden; border: 2px solid rgba(99,102,241,0.4); box-shadow: 0 0 30px rgba(99,102,241,0.2); background: #0a0a1a; width: 100%; margin-bottom: 20px; max-width: 500px; }
+    video { width: 100%; display: block; transform: scaleX(-1); border-radius: 18px; }
+    .scan-line { display: none; position: absolute; left: 8%; right: 8%; height: 2px; background: linear-gradient(90deg, transparent, #10b981, transparent); box-shadow: 0 0 8px rgba(16,185,129,0.8); z-index: 6; animation: scanMove 2s ease-in-out infinite; }
+    .scan-line.active { display: block; }
+
+    /* ปรับให้กรอบวิดีโอหน้าลงทะเบียนสั้นลง */
+    #video-reg {
+      max-height: 320px;
+      object-fit: cover;
+    }
+    
+    /* ปรับให้กรอบวิดีโอหน้าสแกนยาวขึ้น 10% */
+    #video-scan {
+      max-height: 355px;
+      object-fit: cover;
+    }
+
+    .form-section { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 22px 20px; backdrop-filter: blur(12px); position: relative; max-width: 520px; margin: 0 auto; }
+    .form-section.full-width { max-width: 100%; } 
+    label { display: block; font-size: 0.82em; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+    select, input[type="text"], input[type="url"], input[type="password"], input[type="tel"], textarea { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: #e2e8f0; font-size: 15px; font-family: 'Sarabun', sans-serif; outline: none; margin-bottom: 16px; }
+    select:focus, input:focus, textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background: rgba(99,102,241,0.06);}
+    select option { background: #1a1a3e; color: #fff; }
+    textarea { resize: vertical; min-height: 100px; }
+
+    .file-upload-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.06); border: 1px dashed rgba(255,255,255,0.3); border-radius: 12px; color: #cbd5e1; font-size: 15px; font-family: 'Sarabun', sans-serif; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; text-align: center; }
+    .file-upload-btn:hover { background: rgba(255,255,255,0.1); border-color: #94a3b8; color: #fff; }
+    .file-upload-btn.has-file { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
+
+    .font-18-input select, .font-18-input input[type="text"], .font-18-input input[type="tel"], .font-18-input textarea { font-size: 18px !important; padding: 16px !important; }
+    .font-18-input label { font-size: 16px !important; color: #cbd5e1; }
+
+    .textarea-container { position: relative; width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; margin-bottom: 5px; transition: all 0.3s; }
+    .textarea-container:focus-within { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background: rgba(99,102,241,0.06); }
+    .highlight-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px !important; font-size: 18px !important; font-family: 'Sarabun', sans-serif; color: transparent; pointer-events: none; z-index: 1; white-space: pre-wrap; word-wrap: break-word; overflow: hidden; line-height: 1.6 !important; }
+    .highlight-overlay span.error { text-decoration: underline wavy #ef4444; text-decoration-thickness: 2px; text-underline-offset: 4px; background: rgba(239,68,68,0.15); border-radius: 4px; }
+    .font-18-input textarea#read-synopsis { position: relative; z-index: 2; background: transparent !important; border: none !important; box-shadow: none !important; margin-bottom: 0 !important; width: 100%; height: 280px; resize: none; padding: 16px !important; font-size: 18px !important; color: #e2e8f0; line-height: 1.6 !important; }
+
+    .date-picker-input { background: rgba(236, 72, 153, 0.1) !important; border: 1px solid rgba(236, 72, 153, 0.4) !important; color: #fbcfe8 !important; cursor: pointer !important; padding-right: 40px !important; margin-bottom: 0 !important; }
+    .date-picker-input:focus { border-color: #ec4899 !important; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2) !important; }
+
+    .btn-action { width: 100%; padding: 15px; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; font-family: 'Sarabun', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; margin-bottom: 10px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .btn-primary { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16,185,129,0.5); }
+    .btn-secondary { background: linear-gradient(135deg, #a855f7, #7e22ce); color: white; box-shadow: 0 4px 20px rgba(168,85,247,0.3); }
+    .btn-secondary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(168,85,247,0.5); }
+    .btn-warning { background: linear-gradient(135deg, #facc15, #ca8a04); color: white; box-shadow: 0 4px 20px rgba(250,204,21,0.3); }
+    .btn-warning:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(250,204,21,0.5); }
+    .btn-info { background: linear-gradient(135deg, #38bdf8, #0284c7); color: white; box-shadow: 0 4px 20px rgba(56,189,248,0.3); }
+    .btn-info:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(56,189,248,0.5); }
+    .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-action:disabled { background: rgba(255,255,255,0.1); color: #64748b; cursor: not-allowed; box-shadow: none; transform: none;}
+
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
+    .toast { padding: 12px 20px; border-radius: 12px; color: white; font-size: 0.9em; font-weight: 600; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toastSlide 0.3s ease forwards; backdrop-filter: blur(10px); }
+    .toast.success { background: rgba(16,185,129,0.9); border: 1px solid #34d399; }
+    .toast.warning { background: rgba(245,158,11,0.9); border: 1px solid #fbbf24; }
+    .toast.info { background: rgba(99,102,241,0.9); border: 1px solid #818cf8; }
+    .toast.error { background: rgba(239,68,68,0.9); border: 1px solid #f87171; }
+
+    .stats-grid-container { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
+    @media (min-width: 768px) { .stats-grid-container { grid-template-columns: repeat(2, 1fr); } }
+    .profile-grid-container { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
+    @media (min-width: 600px) { .profile-grid-container { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .profile-grid-container { grid-template-columns: repeat(3, 1fr); } }
+
+    .stats-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; width: 100%; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; }
+    .stats-card.full-width { max-width: 100%; } 
+    .stats-card:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 25px rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.3); z-index: 2; }
+    .stats-card h3 { color: #38bdf8; font-size: 1.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9em; color: #e2e8f0;}
+    .stat-row:last-child { border-bottom: none; }
+    .rank-badge { background: rgba(56,189,248,0.2); color: #bae6fd; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8em; margin-right: 10px; font-weight: bold;}
+    .stat-count { background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 10px; font-size: 0.85em; color: #cbd5e1; }
+
+    .status-text { text-align: center; font-size: 0.9em; margin-bottom: 15px; color: #94a3b8; min-height: 20px; }
+    .highlight { color: #34d399; }
+    .error-text { color: #f87171; }
+    .loading-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 10; align-items: center; justify-content: center; border-radius: 18px; flex-direction: column; color: white;}
+    .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+
+    .swal2-input, .swal2-select { background: rgba(255,255,255,0.06) !important; color: #e2e8f0 !important; border: 1px solid rgba(255,255,255,0.15) !important; font-family: 'Sarabun', sans-serif; width: 85% !important; max-width: 300px !important; margin: 15px auto !important; }
+    .swal2-input:focus, .swal2-select:focus { border-color: #6366f1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important; }
+    .swal2-popup { font-family: 'Sarabun', sans-serif !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 20px !important; }
+
+    .tab-group { display: flex; width: 100%; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 4px; margin-bottom: 20px; overflow-x: auto; }
+    .tab-btn { flex: 1; min-width: 110px; padding: 10px 5px; text-align: center; border-radius: 10px; cursor: pointer; color: #94a3b8; font-weight: 600; font-size: 0.9em; transition: all 0.3s; white-space: nowrap;}
+    .tab-btn.active { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+    .tab-hw .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+    .tab-borrow .tab-btn.active { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+    .tab-data .tab-btn.active { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
+    .tab-content { width: 100%; display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+
+    .star-rating { display: flex; flex-direction: row-reverse; justify-content: center; gap: 8px; font-size: 40px; cursor: pointer; margin-bottom: 20px; }
+    .star-rating span { color: #475569; transition: color 0.2s; }
+    .star-rating span:hover, .star-rating span:hover ~ span, .star-rating span.active { color: #facc15; }
+    .display-stars { color: #facc15; font-size: 1.2em; letter-spacing: 2px;}
+    .display-stars.empty { color: #475569; }
+
+    .profile-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.3s ease; overflow: hidden; }
+    .profile-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(244, 114, 182, 0.15); border-color: rgba(244, 114, 182, 0.3); }
+    .profile-img { width: 100%; height: 400px; object-fit: cover; border: none; margin-bottom: 0; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 50px; color: #94a3b8; }
+    .profile-content { padding: 0 20px 25px 20px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+    .profile-name { font-size: 1.2em; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+    .profile-info { font-size: 0.9em; color: #94a3b8; margin-bottom: 6px; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 5px;}
+    .profile-badge { background: linear-gradient(135deg, #f472b6, #db2777); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.85em; font-weight: 700; margin-top: -15px; margin-bottom: 15px; position: relative; z-index: 2; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .profile-actions { display: flex; gap: 10px; width: 100%; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; margin-top: 10px; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scanMove { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }
+    @keyframes toastSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========================================================
+       🎨 CARD & LIST COMPONENTS (คลาสปรับสีเฉพาะจุดในกล่องข้อมูล)
+       ======================================================== */
+    .c-empty { text-align: center; color: #94a3b8; grid-column: 1 / -1; padding: 20px; }
+    .c-title { font-size: 1.2em; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+    .c-sub { font-size: 1.05em; color: #bae6fd; margin-bottom: 8px; }
+    .c-sub-hw { font-size: 1.05em; color: #c7d2fe; margin-bottom: 8px; }
+    .c-desc { font-size: 0.9em; color: #94a3b8; margin-bottom: 8px; }
+    .c-box { font-size: 0.85em; display: flex; justify-content: space-between; margin-bottom: 8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; }
+    .c-box-hw { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.9em; }
+    .c-label { color: #64748b; }
+    .c-val { color: #e2e8f0; }
+    .c-val-b1 { color: #bae6fd; }
+    .c-val-b2 { color: #fbcfe8; }
+    .c-nick { font-size: 0.9em; color: #bae6fd; margin-bottom: 15px; font-weight: 600; }
+    .c-link { color: #34d399; text-decoration: none; font-weight: 600; }
+    .c-link-title { font-size: 1.2em; font-weight: 700; color: #34d399; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; transition: 0.2s; }
+    .c-divider { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-content-box { text-align: left; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px; font-size: 1em; line-height: 1.6; color: #f1f5f9; }
+
+    .btn-c-edit { background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: #bae6fd; padding: 8px; border-radius: 12px; font-family: 'Sarabun'; cursor: pointer; flex: 1; transition: 0.2s; }
+    .btn-c-del { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 12px; font-family: 'Sarabun'; cursor: pointer; flex: 1; transition: 0.2s; }
+    .btn-c-status { background: rgba(99,102,241,0.15); border: 1px solid #6366f1; color: #c7d2fe; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85em; transition: 0.2s; }
+    .btn-c-read { background: rgba(250,204,21,0.15); border: 1px solid #facc15; color: #fef08a; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: 'Sarabun'; font-size: 0.9em; transition: 0.2s; }
+    .btn-c-action { background: rgba(255,255,255,0.05); border: none; color: #94a3b8; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-family: 'Sarabun'; font-size: 0.85em; text-decoration: underline; transition: 0.2s; }
+    .btn-c-edit-hw { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-family: 'Sarabun'; font-size: 0.85em; transition: 0.2s; }
+
+    .c-rank-row { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; }
+    .c-rank-name { font-size: 1.3em; font-weight: 600; color: #f1f5f9; display: flex; align-items: center; }
+    .c-rank-num { background: rgba(250,204,21,0.2); color: #fef08a; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1em; margin-right: 15px; font-weight: bold; }
+    .c-rank-score { background: rgba(250,204,21,0.15); color: #facc15; font-size: 1.2em; padding: 6px 14px; border-radius: 12px; font-weight: 600; }
+    .c-rank-text { color: #f1f5f9; }
+    .c-rank-sub { color: #94a3b8; font-size: 0.9em; margin-left: 5px;}
+
+    /* ========================================================
+       🌞 LIGHT MODE STYLES (ปรับความชัดทั้งหมดเมื่อเปิดพื้นหลังขาว)
+       ======================================================== */
+    body.light-mode { background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 50%, #e0e7ff 100%); color: #334155; }
+    body.light-mode::before { background: #93c5fd; }
+    body.light-mode::after { background: #6ee7b7; }
+    body.light-mode h1 { background: linear-gradient(135deg, #3b82f6, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    body.light-mode .page-title, body.light-mode .card-title, body.light-mode .profile-name { color: #1e293b; }
+    body.light-mode .subtitle, body.light-mode .card-desc, body.light-mode .dash-label { color: #64748b; }
+    body.light-mode .btn-half, body.light-mode .btn-quarter, body.light-mode .btn-menu, body.light-mode .dash-card, body.light-mode .stats-card, body.light-mode .profile-card, body.light-mode .form-section { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+    body.light-mode .dash-value { color: #0f172a; } body.light-mode .dash-value.att { color: #0284c7; } body.light-mode .dash-value.bor { color: #db2777; } body.light-mode .dash-value.read { color: #ca8a04; } body.light-mode .dash-value.hw { color: #4338ca; }
+    body.light-mode select, body.light-mode input[type="text"], body.light-mode input[type="url"], body.light-mode input[type="password"], body.light-mode input[type="tel"], body.light-mode textarea, body.light-mode .file-upload-btn, body.light-mode .textarea-container { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.15); color: #1e293b; }
+    body.light-mode select option { background: #ffffff; color: #1e293b; }
+    body.light-mode label { color: #475569; }
+    body.light-mode .date-picker-input { background: rgba(236, 72, 153, 0.05) !important; border-color: rgba(236, 72, 153, 0.3) !important; color: #db2777 !important; }
+    body.light-mode .back-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #475569; } body.light-mode .back-btn:hover { background: rgba(0,0,0,0.1); color: #0f172a; }
+    body.light-mode .tab-group { background: rgba(0,0,0,0.05); } body.light-mode .tab-btn { color: #64748b; }
+    body.light-mode .video-wrapper { background: #fff; border-color: rgba(99,102,241,0.3); } body.light-mode .status-text { color: #475569; } body.light-mode .stat-count { background: rgba(0,0,0,0.05); color: #475569; }
+    body.light-mode .profile-img { background: rgba(0,0,0,0.05); color: #94a3b8; } body.light-mode .profile-info { color: #64748b; }
+    body.light-mode .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-color: rgba(0,0,0,0.1) !important; box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important; }
+    body.light-mode .swal2-title, body.light-mode .swal2-html-container { color: #1e293b !important; } body.light-mode .swal2-input, body.light-mode .swal2-select { background: #f8fafc !important; color: #1e293b !important; border-color: #cbd5e1 !important; } body.light-mode .swal2-input:focus, body.light-mode .swal2-select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important; }
+    body.light-mode .display-stars.empty { color: #cbd5e1; }
+    body:not(.light-mode) #read-synopsis,
+body:not(.light-mode) .highlight-overlay {
+    color: #ffffff !important;
+}
+
+/* LIGHT MODE */
+body.light-mode #read-synopsis,
+body.light-mode .highlight-overlay {
+    color: #000000 !important;
+}
+    /* แก้ไขสีในกล่องข้อมูล (Light Mode Overrides) */
+    body.light-mode .c-empty { color: #64748b; }
+    body.light-mode .c-title { color: #1e293b; }
+    body.light-mode .c-sub, body.light-mode .c-nick { color: #0369a1; }
+    body.light-mode .c-sub-hw { color: #4338ca; }
+    body.light-mode .c-desc { color: #475569; font-weight: 500; }
+    body.light-mode .c-box, body.light-mode .c-box-hw { background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); }
+    body.light-mode .c-label { color: #64748b; }
+    body.light-mode .c-val { color: #0f172a; font-weight: 600; }
+    body.light-mode .c-val-b1 { color: #0369a1; font-weight: 600; }
+    body.light-mode .c-val-b2 { color: #be185d; font-weight: 600; }
+    body.light-mode .c-link { color: #059669; font-weight: 700; }
+    body.light-mode .c-link-title { color: #059669; }
+    body.light-mode .c-divider { border-top: 1px solid rgba(0,0,0,0.08); }
+    body.light-mode .modal-content-box { background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.1); color: #1e293b; }
+
+    body.light-mode .btn-c-edit { background: #e0f2fe; border-color: #7dd3fc; color: #0284c7; }
+    body.light-mode .btn-c-del { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+    body.light-mode .btn-c-status { background: #e0e7ff; border-color: #a5b4fc; color: #4f46e5; }
+    body.light-mode .btn-c-read { background: #fef9c3; border-color: #fde047; color: #ca8a04; }
+    body.light-mode .btn-c-action { background: rgba(0,0,0,0.05); color: #475569; }
+    body.light-mode .btn-c-edit-hw { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+
+    body.light-mode .c-rank-row { border-bottom: 1px solid rgba(0,0,0,0.08); }
+    body.light-mode .c-rank-name { color: #1e293b; }
+    body.light-mode .c-rank-num { background: #fef9c3; color: #ca8a04; border: 1px solid #fde047; }
+    body.light-mode .c-rank-score { background: #fef9c3; color: #ca8a04; border: 1px solid #fde047; }
+    body.light-mode .c-rank-text { color: #1e293b; font-weight: 600; }
+    body.light-mode .c-rank-sub { color: #64748b; }
+    body.light-mode .stat-row { color: #1e293b; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+    /* แก้ไขสีป้ายสถานะ (Pills) ยืม-คืน รักการอ่าน ส่งงาน ในโหมดสว่างให้เข้มอ่านง่ายขึ้น */
+    body.light-mode .stats-card [style*="color: #818cf8"] { color: #4338ca !important; background: #e0e7ff !important; border: 1px solid #c7d2fe; } 
+    body.light-mode .stats-card [style*="color: #34d399"] { color: #059669 !important; background: #d1fae5 !important; border: 1px solid #a7f3d0; } 
+    body.light-mode .stats-card [style*="color: #facc15"] { color: #b45309 !important; background: #fef3c7 !important; border: 1px solid #fde68a; } 
+    body.light-mode .stats-card [style*="color: #ef4444"] { color: #b91c1c !important; background: #fee2e2 !important; border: 1px solid #fecaca; } 
+    body.light-mode .stats-card [style*="color: #f59e0b"] { color: #b45309 !important; background: #fef3c7 !important; border: 1px solid #fde68a; } 
+
+    /* ========================================================
+       🌙 TOGGLE SWITCH CSS (มุมขวาล่าง)
+       ======================================================== */
+    .theme-switch-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; align-items: center; transition: transform 0.3s ease; }
+    .theme-switch-wrapper:hover { transform: scale(1.08); }
+    .theme-switch { display: inline-block; width: 74px; height: 40px; position: relative; } .theme-switch input { display: none; }
+    .theme-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #1a1a3e; border: 2px solid rgba(255,255,255,0.2); border-radius: 40px; cursor: pointer; transition: 0.4s; display: flex; align-items: center; justify-content: space-between; padding: 0 7px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .theme-slider .icon { font-size: 18px; z-index: 1; transition: opacity 0.3s; }
+    .theme-slider::before { position: absolute; content: ""; height: 30px; width: 30px; left: 3px; bottom: 3px; background-color: #ffffff; border-radius: 50%; z-index: 2; transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: inset -3px -2px 5px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.3); }
+    .theme-switch input:checked + .theme-slider { background-color: #38bdf8; border-color: #bae6fd; }
+    .theme-switch input:checked + .theme-slider::before { transform: translateX(34px); background-color: #fffbeb; box-shadow: inset -3px -2px 5px rgba(251,191,36,0.3), 0 2px 10px rgba(251,191,36,0.5); }
+
+    /* ========================================================
+       👤 USER LOGIN BADGE (ป้ายแสดงสถานะการล็อกอิน)
+       ======================================================== */
+    .user-badge-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 12px; margin-bottom: 8px; animation: fadeIn 0.4s ease; }
+    .user-badge { background: rgba(59, 130, 246, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s; cursor: pointer; }
+    .user-badge:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    .user-badge.logged-in { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.15); cursor: default; }
+    .user-badge.logged-in:hover { transform: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+    .user-badge .icon { font-size: 1.3em; margin-right: 2px; }
+    .user-badge .name-text { color: #f1f5f9; font-weight: 600; font-size: 0.88em; }
+    .login-text { color: #93c5fd; font-weight: 600; font-size: 0.88em; display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px; }
+    
+    .logout-btn, .login-btn { border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: 'Sarabun'; font-weight: 600; transition: 0.2s;}
+    .logout-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .logout-btn:hover { background: rgba(239, 68, 68, 0.4); color: #fff; }
+    .login-btn { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+    .login-btn:hover { background: rgba(59, 130, 246, 0.4); color: #fff; }
+
+    body.light-mode .user-badge { background: rgba(239, 246, 255, 0.9); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    body.light-mode .user-badge.logged-in { background: rgba(209, 250, 229, 0.9); border-color: rgba(16, 185, 129, 0.4); }
+    body.light-mode .user-badge .name-text { color: #059669; }
+    body.light-mode .login-text { color: #2563eb; }
+
+    /* คลาสสำหรับตัดชื่อในมือถือ */
+    .desktop-name { display: inline; }
+    .mobile-name { display: none; }
+
+    /* ========================================================
+       📱 ปรับแต่งการแสดงผลบนมือถือ
+       ======================================================== */
+    @media (max-width: 480px) {
+      .back-btn { font-size: 16px !important; padding: 6px 14px; }
+      
+      /* ให้แสดงเฉพาะชื่อ (ซ่อนนามสกุล) บนมือถือ */
+      .desktop-name { display: none !important; }
+      .mobile-name { display: inline !important; }
+      
+      .dashboard-grid, .menu-grid-4, .menu-row { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- สวิตช์เปิด-ปิด โหมดสว่าง/มืด มุมขวาล่าง -->
+  <div class="theme-switch-wrapper">
+    <label class="theme-switch" title="สลับโหมดสว่าง/มืด">
+      <input type="checkbox" id="theme-toggle">
+      <div class="theme-slider">
+        <span class="icon">☀️</span>
+        <span class="icon">🌙</span>
+      </div>
+    </label>
+  </div>
+
+  <!-- ==================== MENU PAGE ==================== -->
+  <div id="page-menu" class="page-container active">
+    <div class="header">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
+        <span class="logo-icon" style="margin-bottom: 0; line-height: 1;">📚</span>
+        <div style="text-align: left;">
+          <h1 style="margin-bottom: 0; line-height: 1.1;">ระบบห้องสมุด</h1>
+          <p class="subtitle" style="margin-bottom: 0;">โรงเรียนวัดหนองคันทรง</p>
+        </div>
+      </div>
+      
+      <!-- ย้ายป้ายสถานะล็อกอินมาไว้ตรงนี้ (ใต้ชื่อโรงเรียน) -->
+      <div id="user-login-badge" class="user-badge-wrapper">
+        <div class="user-badge" id="badge-ui">
+          <!-- เนื้อหาจะถูกสร้างผ่าน JavaScript -->
+        </div>
+      </div>
+
+      <div id="apiWarning" class="api-warning" style="margin-bottom: 0;">⚠️ ระบบยังไม่ได้เชื่อมต่อ API — กรุณาไปที่ปุ่ม "ตั้งค่าระบบ"</div>
+    </div>
+
+    <!-- สถิติบนสุด -->
+    <div class="dashboard-grid" id="main-dashboard">
+      <div class="dash-card att" onclick="nav('stats')"><div class="dash-icon">👨‍🎓👩‍🎓</div><div class="dash-value att" id="dash-att">-</div><div class="dash-label">เข้าใช้ (ครั้ง)</div></div>
+      <div class="dash-card bor" onclick="nav('borrow')"><div class="dash-icon">📖</div><div class="dash-value bor" id="dash-bor">-</div><div class="dash-label">ยืมหนังสือ</div></div>
+      <div class="dash-card read" onclick="nav('reading')"><div class="dash-icon">⭐</div><div class="dash-value read" id="dash-read">-</div><div class="dash-label">รักการอ่าน</div></div>
+      <div class="dash-card hw" onclick="nav('homework')"><div class="dash-icon">📁</div><div class="dash-value hw" id="dash-hw">-</div><div class="dash-label">ส่งงาน</div></div>
+    </div>
+
+    <!-- ปุ่มเข้าใช้งานและสแกน -->
+    <div class="menu-row">
+      <div class="btn-half btn-manual" onclick="nav('manual')"><div class="card-icon">📝</div><div class="card-title">ลงชื่อเข้าใช้</div></div>
+      <div class="btn-half btn-scan" onclick="nav('scan')"><div class="card-icon">📷</div><div class="card-title">สแกนใบหน้า</div></div>
+    </div>
+
+    <!-- เมนูอื่นๆ ของระบบ -->
+    <div class="menu-grid-4">
+      <div class="btn-quarter btn-link" onclick="nav('links')"><div class="card-icon">🔗</div><div class="card-title">ฝากลิงก์</div></div>
+      <div class="btn-quarter btn-profile" onclick="nav('studentdata')"><div class="card-icon">📇</div><div class="card-title">ทำเนียบ</div></div>
+      <div class="btn-quarter btn-register" onclick="nav('register')"><div class="card-icon">👤</div><div class="card-title">ลงทะเบียน</div></div>
+      <div class="btn-quarter btn-config" onclick="nav('config')"><div class="card-icon">⚙️</div><div class="card-title">ตั้งค่าระบบ</div></div>
+    </div>
+
+    <div class="menu-cards">
+      <div class="btn-menu btn-online" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
+        <div class="card-icon">💻</div>
+        <div class="card-text">
+          <div class="card-title">ห้องเรียนออนไลน์</div>
+          <div class="card-desc">เข้าสู่บทเรียนและสื่อการสอน ป.2</div>
+        </div>
+        <span class="card-arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LINKS PAGE ==================== -->
+  <div id="page-links" class="page-container wide">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">🔗 ระบบฝากลิงก์</div><div class="spacer"></div></div>
+    <div class="form-section full-width font-18-input">
+      <label>ชื่อเว็บ / รายละเอียด</label><input type="text" id="link-title" placeholder="เช่น เว็บรวมใบงานคณิตศาสตร์">
+      <label>URL (ลิงก์)</label><input type="url" id="link-url" placeholder="https://...">
+      <button class="btn-action btn-primary" onclick="submitLink()" style="background: linear-gradient(135deg, #10b981, #047857); margin-bottom: 0;">➕ เพิ่มลิงก์</button>
+    </div>
+    <div class="status-text" id="links-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #10b981; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #a7f3d0;">กำลังดึงข้อมูล...</div></div>
+    <div id="links-list" class="stats-grid-container" style="margin-top: 20px;"></div>
+  </div>
+
+  <!-- ==================== STUDENT DATA PAGE ==================== -->
+  <div id="page-studentdata" class="page-container wide">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📇 ข้อมูลนักเรียน</div><div class="spacer"></div></div>
+    <div class="tab-group tab-data"><div class="tab-btn active" id="tab-btn-data-1" onclick="switchDataTab(1)">📝 เพิ่มข้อมูล</div><div class="tab-btn" id="tab-btn-data-2" onclick="switchDataTab(2)">📇 ทำเนียบนักเรียน</div></div>
+    
+    <div id="data-tab-1" class="tab-content active">
+      <div class="form-section full-width font-18-input">
+        <div class="loading-overlay" id="data-loading" style="border-radius: 18px;"><div class="spinner"></div></div>
+        <input type="hidden" id="data-row-idx" value=""><input type="hidden" id="data-old-photo" value="">
+        <label>เลือกระดับชั้น</label>
+        <select id="data-class" onchange="fetchStudentsForData()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
+        <label>เลือกชื่อนักเรียน</label>
+        <select id="data-name" disabled><option value="">-- กรุณาเลือกชั้นก่อน --</option></select>
+        
+        <div style="display: flex; gap: 15px; margin-bottom: 16px;">
+          <div style="flex: 1;"><label>เพศ</label><select id="data-gender" style="margin-bottom: 0;"><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option></select></div>
+          <div style="flex: 3;"><label>วันเกิด (พ.ศ.)</label><div style="display: flex; gap: 8px;"><select id="data-dob-day" style="flex: 1; margin-bottom: 0; background: rgba(244, 114, 182, 0.1); border-color: rgba(244, 114, 182, 0.4); color: #fbcfe8;"><option value="">วัน</option></select><select id="data-dob-month" style="flex: 1.5; margin-bottom: 0; background: rgba(244, 114, 182, 0.1); border-color: rgba(244, 114, 182, 0.4); color: #fbcfe8;"><option value="">เดือน</option></select><select id="data-dob-year" style="flex: 1.5; margin-bottom: 0; background: rgba(244, 114, 182, 0.1); border-color: rgba(244, 114, 182, 0.4); color: #fbcfe8;"><option value="">ปี พ.ศ.</option></select></div></div>
+        </div>
+        
+        <div style="display: flex; gap: 15px;">
+          <div style="flex: 1;"><label>ชื่อเล่น</label><input type="text" id="data-nickname" placeholder="เช่น น้องภู"></div>
+          <div style="flex: 1;"><label>เบอร์โทรติดต่อ</label><input type="tel" id="data-phone" placeholder="08X-XXX-XXXX"></div>
+        </div>
+        
+        <label>แนบรูปถ่าย (หน้าตรง)</label><input type="file" id="data-photo" accept="image/*" style="display:none" onchange="updateDataFileLabel()">
+        <label for="data-photo" id="label-data-photo" class="file-upload-btn" style="margin-top: 5px;">📸 เลือกรูปถ่าย / เปิดกล้อง</label>
+        <div id="data-photo-preview" style="text-align: center; margin-bottom: 15px; display: none;"><span style="font-size: 0.8em; color: #f472b6;">* หากแก้ไขข้อมูล ไม่ต้องเลือกรูปใหม่ถ้ารูปเดิมยังใช้ได้</span></div>
+        <button id="btn-data-submit" class="btn-action" style="background: linear-gradient(135deg, #f472b6, #db2777); color: white;" onclick="submitStudentData()">💾 บันทึกข้อมูล</button>
+      </div>
+    </div>
+    
+    <div id="data-tab-2" class="tab-content">
+      <div style="margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;"><select id="filter-data-class" onchange="renderFilteredStudentData()" style="padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📚 แสดงทุกชั้นเรียน</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select></div>
+      <div class="status-text" id="data-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #f472b6; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #fbcfe8;">กำลังดึงทำเนียบนักเรียน...</div></div>
+      <div id="data-list" class="profile-grid-container"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MANUAL LOGIN PAGE ==================== -->
+  <div id="page-manual" class="page-container">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📝 ลงชื่อเข้าใช้</div><div class="spacer"></div></div>
+    <div class="form-section" style="margin-top: 10px;">
+      <div class="loading-overlay" id="manual-loading" style="border-radius: 18px;"><div class="spinner"></div><span id="manual-load-text">กำลังโหลด...</span></div>
+      <label>เลือกระดับชั้น</label><select id="manual-class" onchange="fetchStudentsForManual()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
+      <label>เลือกชื่อนักเรียน</label><select id="manual-name" disabled><option value="">-- กรุณาเลือกชั้นก่อน --</option></select>
+      <button id="btn-manual-submit" class="btn-action btn-primary" onclick="submitManualLogin()" disabled style="margin-top: 20px;">✅ เข้าใช้ห้องสมุด</button>
+    </div>
+  </div>
+
+  <!-- ==================== SCAN PAGE ==================== -->
+  <div id="page-scan" class="page-container">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📷 สแกนใบหน้า</div><div class="spacer"></div></div>
+    <div class="status-text" id="scan-status">⏳ รอเริ่มต้นสแกน...</div>
+    
+    <div class="video-wrapper">
+      <div class="scan-line" id="scan-line"></div>
+      <video id="video-scan" autoplay muted playsinline></video>
+      <!-- ย้ายปุ่มหยุดสแกนมาไว้ในกรอบวิดีโอด้านล่าง -->
+      <button id="btn-stop-scan" class="btn-action btn-danger" onclick="stopScanning()" style="display: none; position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 300px; z-index: 10; background: rgba(239, 68, 68, 0.9); color: white; border: 1px solid #f87171; backdrop-filter: blur(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); margin: 0;">⏹ หยุดสแกน</button>
+    </div>
+    
+    <p style="text-align: center; color: #94a3b8; font-size: 0.85em; margin-bottom: 15px;">💡 เลือกรูปแบบการสแกน</p>
+    
+    <div id="scan-btn-group" style="display: flex; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto;">
+      <button id="btn-scan-login" class="btn-action btn-primary" onclick="startScanning('login')" style="flex: 1; margin-bottom: 0;">👤 สแกนเข้าระบบ</button>
+      <button id="btn-scan-cont" class="btn-action btn-secondary" onclick="startScanning('continuous')" style="flex: 1; margin-bottom: 0;">👥 สแกนต่อเนื่อง</button>
+    </div>
+  </div>
+
+  <!-- ==================== BORROW PAGE ==================== -->
+  <div id="page-borrow" class="page-container wide">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📖 ยืม-คืนหนังสือ</div><div class="spacer"></div></div>
+    <div class="tab-group tab-borrow"><div class="tab-btn active" id="tab-btn-borrow-1" onclick="switchBorrowTab(1)">📝 ยืมหนังสือ</div><div class="tab-btn" id="tab-btn-borrow-2" onclick="switchBorrowTab(2)">📚 รายการยืม-คืน</div></div>
+    
+    <div id="borrow-tab-1" class="tab-content active">
+      <div class="form-section font-18-input">
+        <label>เลือกระดับชั้น</label><select id="borrow-class" onchange="fetchStudentsForBorrow()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
+        <label>เลือกชื่อนักเรียน</label><select id="borrow-name" disabled><option value="">-- กรุณาเลือกชั้นก่อน --</option></select>
+        <label>ชื่อหนังสือ</label><input type="text" id="borrow-book-name" placeholder="ระบุชื่อหนังสือ">
+        <label>วันที่ยืม</label><input type="text" id="borrow-date-display" readonly style="background: rgba(0,0,0,0.2); color: #94a3b8; cursor: not-allowed; border-color: rgba(255,255,255,0.05);">
+        <label>วันที่คืน (กำหนดส่ง)</label><div style="position: relative; margin-bottom: 16px;"><input type="text" id="borrow-return-date" class="date-picker-input" placeholder="คลิกเพื่อเลือกวันที่"><span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 1.2em; pointer-events: none; z-index: 5;">📅</span></div>
+        <button class="btn-action btn-primary" onclick="submitBorrow()" style="margin-top: 15px;">💾 บันทึกการยืม</button>
+      </div>
+    </div>
+
+    <div id="borrow-tab-2" class="tab-content">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;"><select id="filter-borrow-class" onchange="renderFilteredBorrows()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📚 ทุกชั้นเรียน</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select><select id="filter-borrow-status" onchange="renderFilteredBorrows()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📌 ทุกสถานะ</option><option value="กำลังยืม">⏳ กำลังยืม</option><option value="คืนเรียบร้อย">✅ คืนเรียบร้อย</option><option value="เกินกำหนด">❌ เกินกำหนด</option></select></div>
+      <div class="status-text" id="borrow-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #ec4899; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #fbcfe8;">กำลังดึงข้อมูล...</div></div>
+      <div id="borrow-list" class="stats-grid-container"></div>
+    </div>
+  </div>
+
+  <!-- ==================== READING LOG PAGE ==================== -->
+  <div id="page-reading" class="page-container wide">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">⭐ บันทึกรักการอ่าน</div><div class="spacer"></div></div>
+    <div class="tab-group"><div class="tab-btn active" id="tab-btn-1" onclick="switchReadingTab(1)">📝 ส่งบันทึก</div><div class="tab-btn" id="tab-btn-2" onclick="switchReadingTab(2)">📚 รักการอ่าน</div><div class="tab-btn" id="tab-btn-3" onclick="switchReadingTab(3)">🏆 อันดับสูงสุด</div></div>
+    
+    <div id="reading-tab-1" class="tab-content active">
+      <div class="form-section full-width font-18-input">
+        <div class="loading-overlay" id="reading-loading" style="border-radius: 18px;"><div class="spinner"></div></div>
+        <input type="hidden" id="read-row-idx" value="">
+        <label>เลือกระดับชั้น</label><select id="read-class" onchange="fetchStudentsForReading()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
+        <label>เลือกชื่อนักเรียน</label><select id="read-name" disabled><option value="">-- กรุณาเลือกชื่อ --</option></select>
+        <label>ชื่อเรื่องที่อ่าน</label><input type="text" id="read-title" placeholder="เช่น หนูน้อยหมวกแดง" spellcheck="true" lang="th">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;"><label style="margin-bottom: 0;">เรื่องย่อ / ข้อคิดที่ได้</label><button type="button" onclick="checkThaiSpelling()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; padding: 4px 12px; border-radius: 12px; cursor: pointer; font-family: 'Sarabun'; font-size: 0.85em; transition: 0.2s;">✨ แก้คำผิดอัตโนมัติ</button></div>
+        <div class="textarea-container"><div id="highlight-overlay" class="highlight-overlay"></div><textarea id="read-synopsis" placeholder="พิมพ์เรื่องย่อที่อ่าน หรือข้อคิดที่ได้รับ..." spellcheck="false" oninput="updateWordCount()" onscroll="syncScroll(this)"></textarea></div>
+        <div style="text-align: right; color: #bae6fd; font-size: 0.95em; font-weight: 600; margin-bottom: 16px; margin-top: 5px;">พิมพ์ไปแล้ว: <span id="word-count-display">0</span> คำ</div>
+        <label style="text-align: center; margin-top: 10px;">คะแนนความสนุก</label>
+        <div class="star-rating" id="read-stars"><span data-val="5" onclick="setReadingStar(5)">★</span><span data-val="4" onclick="setReadingStar(4)">★</span><span data-val="3" onclick="setReadingStar(3)">★</span><span data-val="2" onclick="setReadingStar(2)">★</span><span data-val="1" onclick="setReadingStar(1)">★</span></div>
+        <button id="btn-read-submit" class="btn-action btn-warning" onclick="submitReadingLog()" style="margin-top: 10px; color: #1e293b;">✅ ส่งงาน</button>
+      </div>
+    </div>
+    
+    <div id="reading-tab-2" class="tab-content">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;"><select id="filter-read-class" onchange="renderFilteredReadingLogs()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📚 ทุกชั้นเรียน</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select><select id="filter-read-status" onchange="renderFilteredReadingLogs()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📌 ทุกสถานะ</option><option value="รอตรวจ">⏳ รอตรวจ</option><option value="ตรวจแล้ว">✅ ตรวจแล้ว</option><option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option></select></div>
+      <div class="status-text" id="reading-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #facc15; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #fef08a;">กำลังดึงข้อมูล...</div></div>
+      <div id="reading-list" class="stats-grid-container"></div>
+    </div>
+
+    <div id="reading-tab-3" class="tab-content">
+      <div class="status-text" id="reading-stats-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #facc15; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #fef08a;">กำลังประมวลผลอันดับ...</div></div>
+      <div class="stats-card full-width" style="margin: 0 auto;"><h3 style="color: #facc15; justify-content: center; font-size: 1.5em; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">🏆 อันดับสูงสุด นักอ่านยอดเยี่ยม</h3><div id="reading-top5-list"></div></div>
+    </div>
+  </div>
+
+  <!-- ==================== HOMEWORK PAGE ==================== -->
+  <div id="page-homework" class="page-container wide">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📁 ระบบส่งงาน</div><div class="spacer"></div></div>
+    <div class="tab-group tab-hw"><div class="tab-btn active" id="tab-btn-hw-1" onclick="switchHomeworkTab(1)">📝 ฟอร์มส่งงาน</div><div class="tab-btn" id="tab-btn-hw-2" onclick="switchHomeworkTab(2)">📚 รายการส่งงาน</div></div>
+    
+    <div id="homework-tab-1" class="tab-content active">
+      <div class="form-section full-width font-18-input">
+        <div class="loading-overlay" id="hw-loading" style="border-radius: 18px;"><div class="spinner"></div></div>
+        <label>เลือกระดับชั้น</label><select id="hw-class" onchange="fetchStudentsForHomework()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
+        <label>ผู้ส่งงาน คนที่ 1 (บังคับ)</label><select id="hw-name-1" onchange="handleHomeworkNameChange()" disabled><option value="">-- กรุณาเลือกชื่อ --</option></select>
+        <label>ผู้ส่งงาน คนที่ 2 (ถ้าทำคู่)</label><select id="hw-name-2" onchange="handleHomeworkNameChange()" disabled><option value="">-- ทำคนเดียวไม่ต้องเลือก --</option></select>
+        <label>ชื่องาน / บทเรียน</label><input type="text" id="hw-title" placeholder="เช่น แบบฝึกหัดคณิตหน้า 15">
+        <label style="margin-top: 10px;">แนบไฟล์งาน (รองรับรูปภาพ, PDF, Word ฯลฯ)</label>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <input type="file" id="hw-file-1" style="display:none" onchange="updateHwFileLabel('hw-file-1')"><label for="hw-file-1" id="label-hw-file-1" class="file-upload-btn" style="flex: 1; margin: 0;">📁 ไฟล์งาน 1 (บังคับ)</label>
+          <input type="file" id="hw-file-2" style="display:none" onchange="updateHwFileLabel('hw-file-2')"><label for="hw-file-2" id="label-hw-file-2" class="file-upload-btn" style="flex: 1; margin: 0;">📁 ไฟล์งาน 2 (ตัวเลือก)</label>
+        </div>
+        <button id="btn-hw-submit" class="btn-action" style="background: linear-gradient(135deg, #6366f1, #4338ca); color: white;" onclick="submitHomework()">📤 ส่งงาน</button>
+        <div style="text-align: center; font-size: 0.8em; color: #ef4444; margin-top: 5px;">*จำกัดขนาดไฟล์รวมไม่เกิน 5MB เพื่อป้องกันระบบขัดข้อง</div>
+      </div>
+    </div>
+
+    <div id="homework-tab-2" class="tab-content">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;"><select id="filter-hw-class" onchange="renderFilteredHomeworks()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📚 ทุกชั้นเรียน</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select><select id="filter-hw-status" onchange="renderFilteredHomeworks()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📌 ทุกสถานะ</option><option value="รอตรวจ">⏳ รอตรวจ</option><option value="ตรวจแล้ว">✅ ตรวจแล้ว</option></select></div>
+      <div class="status-text" id="hw-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #818cf8; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #c7d2fe;">กำลังดึงข้อมูล...</div></div>
+      <div id="hw-list" class="stats-grid-container"></div>
+    </div>
+  </div>
+
+  <!-- ==================== STATS PAGE ==================== -->
+  <div id="page-stats" class="page-container wide">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📊 สถิติการใช้งาน</div><div class="spacer"></div></div>
+    <div class="status-text" id="stats-status" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0;"><div class="spinner" style="border-top-color: #38bdf8; width: 45px; height: 45px; border-width: 4px;"></div><div style="margin-top: 15px; color: #bae6fd; font-size: 1.1em; font-weight: 600;">กำลังดาวน์โหลดข้อมูล...</div></div>
+    <div id="stats-content" style="width: 100%; display: none;">
+      <div class="stats-card" style="max-width: 1000px; margin: 0 auto 20px auto;"><h3>🏆 เข้าใช้ห้องสมุดมากที่สุด (รวมทั้งหมด)</h3><div id="stats-overall"></div></div>
+      <div id="stats-by-class" class="stats-grid-container"></div>
+    </div>
+  </div>
+
+  <!-- ==================== REGISTER PAGE ==================== -->
+  <div id="page-register" class="page-container">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">👤 ลงทะเบียนนักเรียน</div><div class="spacer"></div></div>
+    <div class="status-text" id="reg-status">บันทึก 3 มุม: หน้าตรง/ซ้าย/ขวา เพื่อความแม่นยำ</div>
+    
+    <!-- ส่วนเลือกชื่อ (ย้ายมาไว้ด้านบน) -->
+    <div class="form-section" id="reg-selection-area" style="margin-bottom: 15px; padding: 15px 20px;">
+      <label>เลือกระดับชั้น</label>
+      <select id="reg-class" onchange="fetchStudentsForClass()">
+        <option value="">-- เลือกชั้นเรียน --</option>
+        <option value="ป.1">ชั้น ป.1</option>
+        <option value="ป.2">ชั้น ป.2</option>
+        <option value="ป.3">ชั้น ป.3</option>
+        <option value="ป.4">ชั้น ป.4</option>
+        <option value="ป.5">ชั้น ป.5</option>
+        <option value="ป.6">ชั้น ป.6</option>
+      </select>
+      <label>เลือกชื่อนักเรียน</label>
+      <select id="reg-name" disabled onchange="handleRegNameSelection()">
+        <option value="">-- กรุณาเลือกชื่อ --</option>
+      </select>
+    </div>
+
+    <!-- กล่องแสดงชื่อนักเรียนที่ถูกเลือกแล้ว (โผล่มาตอนซ่อนกล่องเลือก) -->
+    <div id="reg-selected-student" style="display: none; width: 100%; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); border-radius: 12px; padding: 12px 16px; margin-bottom: 15px; text-align: center; color: #e2e8f0;">
+      กำลังลงทะเบียน: <strong id="reg-selected-student-name" style="color: #d8b4fe; font-size: 1.1em;"></strong>
+      <br>
+      <span onclick="resetRegSelection()" style="font-size: 0.85em; color: #fca5a5; text-decoration: underline; cursor: pointer; display: inline-block; margin-top: 5px;">เปลี่ยนนักเรียน</span>
+    </div>
+
+    <!-- กรอบวิดีโอ (ปรับให้สั้นลง) -->
+    <div class="video-wrapper">
+      <div class="loading-overlay" id="reg-loading"><div class="spinner"></div><span id="reg-load-text">กำลังโหลด...</span></div>
+      <video id="video-reg" autoplay muted playsinline></video>
+    </div>
+    
+    <!-- ปุ่มบันทึก (ย้ายมาไว้ด้านล่าง) -->
+    <div style="width: 100%;">
+      <button id="btn-save-face" class="btn-action btn-secondary" onclick="saveFace()" disabled>📸 บันทึกใบหน้า <span id="save-count" style="background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; margin-left: 8px;">0/3</span></button>
+    </div>
+  </div>
+
+  <!-- ==================== CONFIG PAGE ==================== -->
+  <div id="page-config" class="page-container">
+    <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">⚙️ ตั้งค่าระบบ</div><div class="spacer"></div></div>
+    <div class="form-section">
+      <label>Google Apps Script URL (Web App)</label><input type="url" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+      <button class="btn-action btn-primary" onclick="saveConfig()">💾 บันทึกและทดสอบ</button>
+      <button class="btn-action btn-danger" onclick="resetConfig()" style="margin-top: 10px;">🔄 คืนค่า URL เริ่มต้น</button>
+      <p style="font-size: 0.8em; color: #94a3b8; margin-top: 15px; line-height: 1.5;">*ในหน้า GAS ต้อง Deploy เป็น <b>Anyone</b> (ไม่ใช่ Anyone with Google Account)</p>
+    </div>
+    
+    <div class="form-section" style="margin-top: 20px;">
+      <h3 style="color: #a855f7; margin-bottom: 5px; font-size: 1.1em;">👤 เพิ่มรายชื่อนักเรียนลงฐานข้อมูล</h3>
+      <p style="font-size: 0.8em; color: #94a3b8; margin-bottom: 15px;">*(บันทึกลงชีตเฉพาะ ชั้น และ ชื่อ-สกุล เท่านั้น)*</p>
+      <label>เลือกระดับชั้น</label><select id="new-student-class"><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
+      <label>ชื่อ-นามสกุล นักเรียน</label><input type="text" id="new-student-name" placeholder="เช่น ด.ช.สมชาย ใจดี">
+      <button id="btn-add-student" class="btn-action btn-secondary" onclick="addStudent()">➕ บันทึกรายชื่อใหม่</button>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น (Default)
+    const MY_GAS_URL = 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec';
+    
+    // 2. ให้ระบบเช็คว่ามีการตั้งค่า URL ใหม่ในหน้า "ตั้งค่าระบบ" หรือไม่ 
+    let API_URL = localStorage.getItem('gasApiUrl') || MY_GAS_URL;
+
+    const MATCH_THRESHOLD = 0.45;
+    let knownFaces = [], modelsLoaded = false, streamActive = null, scanInterval = null;
+    let recentScans = JSON.parse(localStorage.getItem('recentScans') || '{}');
+    let saveFaceCount = 0, fpReturnDate, currentReadingStar = 0; 
+    let allReadingLogs = [], allHomeworks = [], allBorrows = [], allLinks = [], allStudentData = [];
+    let currentLoggedInUser = null;
+    let currentScanMode = 'login'; // 'login' หรือ 'continuous'
+
+    // --- CORE FETCH WRAPPERS (ป้องกัน CORS โดยเฉพาะ) ---
+    async function gasGet(action, params = {}) {
+      if (!API_URL) throw new Error('No API URL');
+      let url = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+      url += '?action=' + action;
+      for (let k in params) url += `&${k}=${encodeURIComponent(params[k])}`;
+      url += '&t=' + Date.now(); // ป้องกัน Cache
+      
+      const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+      if (!res.ok) throw new Error('Network Issue');
+      return await res.json();
+    }
+
+    async function gasPost(payload) {
+      if (!API_URL) throw new Error('No API URL');
+      const url = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+      const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow' });
+      if (!res.ok) throw new Error('Network Issue');
+      return await res.json();
+    }
+
+    // --- UI LOGIN STATE ---
+    function updateLoginUI() {
+      const badge = document.getElementById('badge-ui');
+      if (currentLoggedInUser) {
+        badge.classList.add('logged-in'); 
+        badge.onclick = null;
+        badge.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="icon">👤</span>
+            <span class="name-text">${currentLoggedInUser.name}</span>
+          </div>
+          <button onclick="logoutStudent(event)" class="logout-btn">ออกจากระบบ</button>
+        `;
+      } else {
+        badge.classList.remove('logged-in'); 
+        badge.onclick = () => nav('manual');
+        badge.innerHTML = `
+          <div class="login-text">
+            <span class="icon">👤</span>
+            <span>ลงชื่อเข้าใช้</span>
+          </div>
+        `;
+      }
+    }
+
+    function loginStudent(name, cls) {
+      currentLoggedInUser = { name, cls };
+      sessionStorage.setItem('wasLoggedIn', 'true');
+      updateLoginUI();
+      Swal.fire({ icon: 'success', title: 'ยินดีต้อนรับ', text: name, timer: 1500, showConfirmButton: false, background: document.body.classList.contains('light-mode')?'#fff':'#16213e', color: document.body.classList.contains('light-mode')?'#1e293b':'#e2e8f0' });
+      setTimeout(() => executeNav('menu'), 1000);
+    }
+
+    function logoutStudent(e) {
+      if (e) e.stopPropagation();
+      currentLoggedInUser = null;
+      sessionStorage.removeItem('wasLoggedIn');
+      updateLoginUI();
+      ['borrow', 'read', 'hw'].forEach(prefix => {
+        const classEl = document.getElementById(prefix + '-class');
+        const nameElId = prefix === 'hw' ? 'hw-name-1' : prefix + '-name';
+        const nameEl = document.getElementById(nameElId);
+        if(classEl) { classEl.disabled = false; classEl.value = ''; }
+        if(nameEl) { nameEl.disabled = true; nameEl.innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; }
+      });
+      showToast('👋 ออกจากระบบเรียบร้อย', 'info');
+    }
+
+    async function applyLoggedInUserToForm(prefix) {
+      if (!currentLoggedInUser) return;
+      const classEl = document.getElementById(prefix+'-class');
+      if(!classEl) return;
+      classEl.value = currentLoggedInUser.cls; classEl.disabled = true; 
+      let nameElId = prefix === 'hw' ? 'hw-name-1' : prefix+'-name';
+      const nameEl = document.getElementById(nameElId);
+      if (prefix === 'borrow') await fetchStudentsForBorrow();
+      if (prefix === 'read') await fetchStudentsForReading();
+      if (prefix === 'hw') await fetchStudentsForHomework();
+      nameEl.value = currentLoggedInUser.name; nameEl.disabled = true; 
+    }
+
+    // --- THEME ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    if (currentTheme === 'light') { document.body.classList.add('light-mode'); themeToggle.checked = true; }
+    themeToggle.addEventListener('change', function(e) {
+      if (e.target.checked) { document.body.classList.add('light-mode'); localStorage.setItem('theme', 'light'); } 
+      else { document.body.classList.remove('light-mode'); localStorage.setItem('theme', 'dark'); }
+    });
+
+    window.onload = () => {
+      document.getElementById('api-url-input').value = API_URL;
+      updateLoginUI();
+      loadModels();
+      if (API_URL) {
+        loadDashboardData();
+      } else {
+        document.getElementById('apiWarning').style.display = 'block';
+      }
+      if (sessionStorage.getItem('wasLoggedIn') === 'true') {
+        sessionStorage.removeItem('wasLoggedIn');
+        Swal.fire({ icon: 'info', title: 'รีเฟรชหน้าจอ', text: 'ระบบทำการล็อกเอาท์อัตโนมัติ เพื่อความปลอดภัยครับ', background: document.body.classList.contains('light-mode') ? '#ffffff' : '#16213e', color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0', confirmButtonColor: '#3b82f6' });
+      }
+    };
+
+    // --- NAVIGATION ---
+    function nav(pageId) {
+      if (pageId === 'config') {
+        Swal.fire({ title: '🔒 ยืนยันตัวตน', text: 'กรุณาใส่รหัสผ่าน', input: 'password', inputPlaceholder: 'รหัสผ่าน', inputAttributes: { autocapitalize: 'off', autocorrect: 'off', style: 'text-align: center; letter-spacing: 2px; font-size: 1.2em;' }, showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#6366f1', cancelButtonColor: '#ef4444', preConfirm: (pwd) => { if (pwd !== '1221') { Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); } return pwd === '1221'; } }).then((result) => { if (result.isConfirmed) executeNav('config'); }); return; 
+      }
+      executeNav(pageId);
+    }
+
+    function executeNav(pageId) {
+      if (streamActive) { streamActive.getTracks().forEach(t => t.stop()); streamActive = null; }
+      if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+      document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
+      
+      if (!API_URL && pageId !== 'config' && pageId !== 'menu') { showToast('กรุณาตั้งค่า API URL', 'warning'); executeNav('config'); return; }
+      
+      if (pageId === 'menu') loadDashboardData(); 
+      if (pageId === 'scan') initScanPage(); 
+      if (pageId === 'register') initRegisterPage(); 
+      if (pageId === 'stats') fetchStats(); 
+      if (pageId === 'borrow') switchBorrowTab(1); 
+      if (pageId === 'reading') switchReadingTab(1); 
+      if (pageId === 'homework') switchHomeworkTab(1); 
+      if (pageId === 'links') fetchLinks(); 
+      if (pageId === 'studentdata') switchDataTab(1);
+    }
+
+    // --- TOOLS ---
+    async function loadDashboardData() { 
+      if (!API_URL) return; 
+      try { 
+        const data = await gasGet('getDashboardSummary'); 
+        document.getElementById('apiWarning').style.display = 'none';
+        document.getElementById('dash-att').innerText = data.attendance || 0; 
+        document.getElementById('dash-bor').innerText = data.borrows || 0; 
+        document.getElementById('dash-read').innerText = data.reading || 0; 
+        document.getElementById('dash-hw').innerText = data.homework || 0; 
+      } catch (e) {
+        document.getElementById('apiWarning').style.display = 'block';
+        document.getElementById('apiWarning').innerHTML = '⚠️ ติดปัญหา CORS หรือ URL ผิด - กรุณาตรวจสอบการ Deploy ว่าเลือก "Anyone (ทุกคน)" หรือยัง';
+      } 
+    }
+    
+    async function loadModels() { if (modelsLoaded) return; try { const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; await Promise.all([ faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL), faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL), faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL) ]); modelsLoaded = true; } catch (e) { showToast('โหลด AI Model ล้มเหลว', 'error'); } }
+    function formatThaiDate(dateString) { if (!dateString) return '-'; try { const d = new Date(dateString); return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); } catch(e) { return dateString; } }
+  async function getBase64(file) {
+
+    return new Promise((resolve, reject) => {
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+
+            const img = new Image();
+
+            img.onload = function() {
+
+                const canvas =
+                    document.createElement('canvas');
+
+                const maxWidth = 800;
+
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = height * (maxWidth / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx =
+                    canvas.getContext('2d');
+
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+                const compressedBase64 =
+                    canvas.toDataURL(
+                        'image/jpeg',
+                        0.7
+                    );
+
+                // สำคัญมาก
+                resolve({
+                    data: compressedBase64,
+                    type: 'image/jpeg',
+                    name: file.name
+                });
+            };
+
+            img.onerror = reject;
+
+            img.src = e.target.result;
+        };
+
+        reader.onerror = reject;
+
+        reader.readAsDataURL(file);
+    });
+}
+    function showToast(msg, type) { const container = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.innerText = msg; container.prepend(toast); setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000); }
+
+    // --- LINKS ---
+    async function fetchLinks() { 
+      const statusDiv = document.getElementById('links-status'), listDiv = document.getElementById('links-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
+      try { 
+        allLinks = await gasGet('getLinks'); 
+        statusDiv.style.display = 'none'; renderLinks(); 
+      } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว หรือติดปัญหา CORS</div>'; } 
+    }
+    function renderLinks() { 
+      const listDiv = document.getElementById('links-list'); if (allLinks.length === 0) { listDiv.innerHTML = '<div class="stats-card c-empty">ยังไม่มีลิงก์ในระบบ</div>'; return; } 
+      let html = ''; allLinks.forEach(item => { html += `<div class="stats-card" style="border-left: 4px solid #10b981; display: flex; justify-content: space-between; align-items: center; padding: 15px;"><div style="flex: 1; overflow: hidden; margin-right: 10px;"><a href="${item.url}" target="_blank" class="c-link-title">🔗 ${item.title || 'ไปที่เว็บไซต์'}</a></div><button onclick="deleteLink(${item.rowIdx})" class="btn-c-del" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex: none;">🗑️</button></div>`; }); listDiv.innerHTML = html; 
+    }
+    async function submitLink() { 
+      const title = document.getElementById('link-title').value.trim(), url = document.getElementById('link-url').value.trim(); if (!url) return showToast('กรุณากรอก URL', 'warning'); let finalUrl = url; if (!/^https?:\/\//i.test(finalUrl)) finalUrl = 'http://' + finalUrl; 
+      Swal.fire({ title: '⏳ กำลังเพิ่มลิงก์...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); 
+      try { await gasPost({ action: 'addLink', title: title, url: finalUrl }); document.getElementById('link-title').value = ''; document.getElementById('link-url').value = ''; Swal.fire({ icon: 'success', title: 'เพิ่มลิงก์สำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1000, showConfirmButton: false }); setTimeout(() => { fetchLinks(); }, 1000); } catch (e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถเพิ่มลิงก์ได้', background: '#16213e', color: '#e2e8f0' }); } 
+    }
+    function deleteLink(rowIdx) { 
+      Swal.fire({ title: 'ยืนยันการลบ?', icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบเลย!', cancelButtonText: 'ยกเลิก', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#ef4444' }).then(async (result) => { if (result.isConfirmed) { Swal.fire({ title: '⏳ กำลังลบ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'deleteLink', rowIdx: rowIdx }); Swal.fire({ icon: 'success', title: 'ลบลิงก์เรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1000, showConfirmButton: false }); setTimeout(() => { fetchLinks(); }, 1000); } catch(e) { Swal.fire({ icon: 'error', title: 'ลบล้มเหลว', background: '#16213e', color: '#e2e8f0' }); } } }); 
+    }
+
+    // --- STUDENT DATA ---
+    function initThaiDatePicker() { const daySel = document.getElementById('data-dob-day'), monthSel = document.getElementById('data-dob-month'), yearSel = document.getElementById('data-dob-year'); if(daySel.options.length > 1) return; for(let i=1; i<=31; i++) { let val = i < 10 ? '0'+i : i.toString(); daySel.add(new Option(i, val)); } const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]; months.forEach((m, idx) => { let val = (idx + 1) < 10 ? '0'+(idx+1) : (idx+1).toString(); monthSel.add(new Option(m, val)); }); const curYearBE = new Date().getFullYear() + 543; for(let i = curYearBE; i >= curYearBE - 30; i--) { yearSel.add(new Option(i, i.toString())); } }
+    function switchDataTab(tabIndex) { document.querySelectorAll('.tab-data .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#page-studentdata .tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-data-' + tabIndex).classList.add('active'); document.getElementById('data-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) initThaiDatePicker(); if (tabIndex === 2) fetchStudentData(); }
+    async function fetchStudentsForData() { 
+      const cls = document.getElementById('data-class').value, nameSelect = document.getElementById('data-name'), overlay = document.getElementById('data-loading'); 
+      nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; 
+      if (!cls) return; overlay.style.display = 'flex'; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } 
+      } catch (e) { showToast('ดึงรายชื่อล้มเหลว', 'error'); } 
+      overlay.style.display = 'none'; 
+    }
+    function updateDataFileLabel() { const input = document.getElementById('data-photo'), label = document.getElementById('label-data-photo'); if (input.files && input.files.length > 0) { label.classList.add('has-file'); label.innerHTML = `✅ เลือกรูปภาพแล้ว`; } else { label.classList.remove('has-file'); label.innerHTML = `📸 เลือกรูปถ่าย / เปิดกล้อง`; } }
+    async function submitStudentData() { 
+      const cls = document.getElementById('data-class').value, name = document.getElementById('data-name').value, gender = document.getElementById('data-gender').value, dDay = document.getElementById('data-dob-day').value, dMonth = document.getElementById('data-dob-month').value, dYear = document.getElementById('data-dob-year').value; let dob = ''; if (dDay && dMonth && dYear) { const adYear = parseInt(dYear) - 543; dob = `${adYear}-${dMonth}-${dDay}`; } const nickname = document.getElementById('data-nickname').value.trim(), phone = document.getElementById('data-phone').value.trim(), photoInput = document.getElementById('data-photo'), rowIdx = document.getElementById('data-row-idx').value, oldPhoto = document.getElementById('data-old-photo').value; 
+      if (!cls || !name) return showToast('กรุณาเลือกชั้นและชื่อ', 'warning'); 
+      Swal.fire({ title: '⏳ กำลังบันทึกข้อมูล...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); 
+      try { 
+        let photoPayload = null; if (photoInput.files.length > 0) { photoPayload = await getBase64(photoInput.files[0]); } 
+        let photoBase64 = '';
+let photoType = '';
+let photoName = '';
+
+if (photoPayload) {
+    photoBase64 = photoPayload.data || '';
+    photoType = photoPayload.type || 'image/jpeg';
+    photoName = photoPayload.name || ('photo_' + Date.now() + '.jpg');
+}
+
+const payload = {
+    action: rowIdx ? 'editStudentData' : 'addStudentData',
+
+    className: cls,
+    name: name,
+    gender: gender,
+    dob: dob,
+    nickname: nickname,
+
+    phone: phone,
+
+    photoBase64: photoBase64,
+    photoType: photoType,
+    photoName: photoName
+};
+console.log(payload);
+        if (rowIdx) { payload.rowIdx = rowIdx; payload.oldPhotoId = oldPhoto; } 
+        await gasPost(payload); 
+        Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
+        document.getElementById('data-class').value = ''; document.getElementById('data-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('data-name').disabled = true; document.getElementById('data-dob-day').value = ''; document.getElementById('data-dob-month').value = ''; document.getElementById('data-dob-year').value = ''; document.getElementById('data-nickname').value = ''; document.getElementById('data-phone').value = ''; document.getElementById('data-photo').value = ''; updateDataFileLabel(); document.getElementById('data-row-idx').value = ''; document.getElementById('data-old-photo').value = ''; document.getElementById('data-photo-preview').style.display = 'none'; setTimeout(() => switchDataTab(2), 1000); 
+      } catch (e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถบันทึกได้', background: '#16213e', color: '#e2e8f0' }); } 
+    }
+    async function fetchStudentData() { 
+      const statusDiv = document.getElementById('data-status'), listDiv = document.getElementById('data-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
+      try { allStudentData = await gasGet('getStudentData'); statusDiv.style.display = 'none'; renderFilteredStudentData(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
+    }
+    function renderFilteredStudentData() { 
+      const container = document.getElementById('data-list'), filterClass = document.getElementById('filter-data-class').value; let filteredData = allStudentData; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); 
+      if (filteredData.length === 0) { container.innerHTML = '<div class="stats-card c-empty">ไม่พบข้อมูลทำเนียบนักเรียน</div>'; return; } container.innerHTML = ''; 
+      filteredData.forEach(item => { 
+        let imgHtml = item.photoId && item.photoId !== '-' ? `<img src="https://lh3.googleusercontent.com/d/${item.photoId}" class="profile-img" onerror="this.onerror=null; this.outerHTML='<div class=\\'profile-img\\'>👤</div>';">` : `<div class="profile-img">👤</div>`; const safeName = (item.name||'').replace(/'/g, "\\'"), safeNick = (item.nickname||'').replace(/'/g, "\\'"); 
+        const card = `<div class="profile-card">${imgHtml}<div class="profile-content"><div class="profile-badge">${item.className}</div><div class="c-title" style="color: inherit;">${item.name}</div><div class="c-nick">ชื่อเล่น: ${item.nickname || '-'}</div><div class="profile-info"><span>🎂 เกิด:</span> <span>${formatThaiDate(item.dob)}</span></div><div class="profile-info"><span>⚧ เพศ:</span> <span>${item.gender || '-'}</span></div><div class="profile-info" style="margin-bottom: 15px;"><span>📞 โทร:</span> <a href="tel:${item.phone}" class="c-link">${item.phone || '-'}</a></div><div class="profile-actions"><button onclick="editDataForm(${item.rowIdx}, '${item.className}', '${safeName}', '${item.gender}', '${item.dob}', '${safeNick}', '${item.phone}', '${item.photoId}')" class="btn-c-edit">✏️ แก้ไข</button><button onclick="deleteStudentData(${item.rowIdx})" class="btn-c-del">🗑️ ลบ</button></div></div></div>`; 
+        container.innerHTML += card; 
+      }); 
+    }
+    async function editDataForm(rowIdx, cls, name, gender, dob, nick, phone, photoId) { 
+      switchDataTab(1); document.getElementById('data-row-idx').value = rowIdx; document.getElementById('data-old-photo').value = photoId; const overlay = document.getElementById('data-loading'); overlay.style.display = 'flex'; document.getElementById('data-class').value = cls; const nameSelect = document.getElementById('data-name'); nameSelect.innerHTML = '<option value="">⏳ โหลด...</option>'; nameSelect.disabled = true; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; if(Array.isArray(students)) { students.forEach(s => { const isSel = (s === name) ? 'selected' : ''; nameSelect.innerHTML += `<option value="${s}" ${isSel}>${s}</option>`; }); nameSelect.disabled = false; } 
+      } catch(e) {} 
+      overlay.style.display = 'none'; document.getElementById('data-gender').value = gender; if(dob && dob !== '-') { const dObj = new Date(dob); if(!isNaN(dObj.getTime())) { document.getElementById('data-dob-year').value = (dObj.getFullYear() + 543).toString(); document.getElementById('data-dob-month').value = (dObj.getMonth() + 1).toString().padStart(2, '0'); document.getElementById('data-dob-day').value = dObj.getDate().toString().padStart(2, '0'); } } else { document.getElementById('data-dob-day').value = ''; document.getElementById('data-dob-month').value = ''; document.getElementById('data-dob-year').value = ''; } document.getElementById('data-nickname').value = nick; document.getElementById('data-phone').value = phone; document.getElementById('btn-data-submit').innerHTML = '💾 บันทึกการแก้ไข'; document.getElementById('data-photo-preview').style.display = 'block'; 
+    }
+    function deleteStudentData(rowIdx) { Swal.fire({ title: '🔒 ยืนยันการลบ', text: 'ใส่รหัสผ่านเพื่อลบข้อมูลนี้', input: 'password', inputPlaceholder: 'รหัสผ่าน', inputAttributes: { autocapitalize: 'off', autocorrect: 'off', style: 'text-align: center; letter-spacing: 2px; font-size: 1.2em;' }, showCancelButton: true, confirmButtonText: 'ลบข้อมูล', cancelButtonText: 'ยกเลิก', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#ef4444', preConfirm: (pwd) => { if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return pwd === '1221'; } }).then(async (result) => { if (result.isConfirmed) { Swal.fire({ title: '⏳ กำลังลบ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'deleteStudentData', rowIdx: rowIdx }); Swal.fire({ icon: 'success', title: 'ลบสำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1000, showConfirmButton: false }); setTimeout(() => { fetchStudentData(); }, 1000); } catch(e) { Swal.fire({ icon: 'error', title: 'ลบล้มเหลว', background: '#16213e', color: '#e2e8f0' }); } } }); }
+
+    // --- HOMEWORK ---
+    function switchHomeworkTab(tabIndex) { document.querySelectorAll('.tab-hw .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#page-homework .tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-hw-' + tabIndex).classList.add('active'); document.getElementById('homework-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) applyLoggedInUserToForm('hw'); if (tabIndex === 2) fetchHomeworks(); }
+    async function fetchStudentsForHomework() { 
+      const cls = document.getElementById('hw-class').value; const name1 = document.getElementById('hw-name-1'); const name2 = document.getElementById('hw-name-2'); const overlay = document.getElementById('hw-loading'); name1.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; name2.innerHTML = '<option value="">-- ทำคนเดียวไม่ต้องเลือก --</option>'; name1.disabled = true; name2.disabled = true; 
+      if (!cls) return; overlay.style.display = 'flex'; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        if(!Array.isArray(students) || students.length === 0) { name1.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; } else { students.forEach(s => { name1.innerHTML += `<option value="${s}">${s}</option>`; name2.innerHTML += `<option value="${s}">${s}</option>`; }); name1.disabled = false; name2.disabled = false; } 
+      } catch (e) { showToast('ดึงรายชื่อล้มเหลว', 'error'); } 
+      overlay.style.display = 'none'; 
+    }
+    function handleHomeworkNameChange() { const n1 = document.getElementById('hw-name-1').value, n2 = document.getElementById('hw-name-2').value; if (n1 && n1 === n2) { showToast('ไม่สามารถเลือกชื่อซ้ำกันได้', 'warning'); document.getElementById('hw-name-2').value = ''; } }
+    function updateHwFileLabel(inputId) { const input = document.getElementById(inputId), label = document.getElementById('label-' + inputId); if (input.files.length > 0) { label.classList.add('has-file'); label.innerHTML = `✅ เลือกไฟล์แล้ว`; } else { label.classList.remove('has-file'); label.innerHTML = inputId === 'hw-file-1' ? '📁 ไฟล์งาน 1 (บังคับ)' : '📁 ไฟล์งาน 2 (ตัวเลือก)'; } }
+    async function submitHomework() { 
+      const cls = document.getElementById('hw-class').value, n1 = document.getElementById('hw-name-1').value, n2 = document.getElementById('hw-name-2').value, title = document.getElementById('hw-title').value.trim(); const file1 = document.getElementById('hw-file-1').files[0], file2 = document.getElementById('hw-file-2').files[0]; 
+      if (!cls || !n1 || !title || !file1) return showToast('กรุณากรอกข้อมูลและแนบไฟล์ 1', 'warning'); const totalSize = (file1.size || 0) + (file2 ? file2.size : 0); if (totalSize > 5 * 1024 * 1024) return showToast('ขนาดไฟล์รวมเกิน 5MB', 'error'); 
+      Swal.fire({ title: '⏳ กำลังอัปโหลด...', html: 'กรุณารอสักครู่ (อาจใช้เวลา 1-2 นาทีหากไฟล์ใหญ่)', background: '#16213e', color: '#e2e8f0', allowOutsideClick: false, showConfirmButton: false }); 
+      try { 
+        const f1Base64 = await getBase64(file1); let f2Base64 = null; if (file2) f2Base64 = await getBase64(file2); 
+        await gasPost({ action: 'addHomework', className: cls, name1: n1, name2: n2, taskName: title, file1: f1Base64, file2: f2Base64 }); 
+        Swal.fire({ icon: 'success', title: 'ส่งงานสำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
+        document.getElementById('hw-class').value = ''; document.getElementById('hw-name-1').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('hw-name-1').disabled = true; document.getElementById('hw-name-2').innerHTML = '<option value="">-- ทำคนเดียวไม่ต้องเลือก --</option>'; document.getElementById('hw-name-2').disabled = true; document.getElementById('hw-title').value = ''; document.getElementById('hw-file-1').value = ''; document.getElementById('hw-file-2').value = ''; updateHwFileLabel('hw-file-1'); updateHwFileLabel('hw-file-2'); setTimeout(() => switchHomeworkTab(2), 1000); 
+      } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปโหลดไฟล์ได้', background: '#16213e', color: '#e2e8f0' }); } 
+    }
+    async function fetchHomeworks() { 
+      const statusDiv = document.getElementById('hw-status'), listDiv = document.getElementById('hw-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
+      try { allHomeworks = await gasGet('getHomeworks'); statusDiv.style.display = 'none'; renderFilteredHomeworks(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
+    }
+    function renderFilteredHomeworks() { 
+      const listDiv = document.getElementById('hw-list'), filterClass = document.getElementById('filter-hw-class').value, filterStatus = document.getElementById('filter-hw-status').value; let filteredData = allHomeworks; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.status === filterStatus); 
+      if (filteredData.length === 0) { listDiv.innerHTML = '<div class="stats-card c-empty">ไม่พบข้อมูลส่งงาน</div>'; return; } let html = ''; 
+      filteredData.forEach(item => { 
+        let statusColor = '#818cf8'; if(item.status === 'ตรวจแล้ว') statusColor = '#34d399'; 
+        
+        let fileLinks = '<div style="display: flex; gap: 8px; margin-top: 5px;">'; let fileCount = 0; 
+        
+        // ป้องกัน Error โดยการแปลงข้อมูลให้เป็น String (ข้อความ) เสมอก่อนเช็ค
+        let safeFile1 = String(item.file1 || '');
+        let safeFile2 = String(item.file2 || '');
+        
+        if (safeFile1.startsWith('http')) { fileLinks += `<button onclick="viewHomeworkFile('${safeFile1}')" class="btn-action btn-info" style="padding: 6px 12px; font-size: 0.85em; display: inline-flex; width: auto; margin-bottom: 0;">📄 เปิดไฟล์ 1</button>`; fileCount++; } 
+        if (safeFile2.startsWith('http')) { fileLinks += `<button onclick="viewHomeworkFile('${safeFile2}')" class="btn-action btn-secondary" style="padding: 6px 12px; font-size: 0.85em; display: inline-flex; width: auto; margin-bottom: 0;">📄 เปิดไฟล์ 2</button>`; fileCount++; } 
+        
+        fileLinks += '</div>'; if (fileCount === 0) fileLinks = '<span class="c-label">(ไม่มีไฟล์แนบ)</span>'; let names = item.name1; if (item.name2 && item.name2 !== '-') names += ` และ ${item.name2}`; 
+        
+        // แสดงคะแนน (ถ้ามีและไม่ใช่ลิงก์)
+        let scoreDisplay = '';
+        if (safeFile2 && safeFile2 !== '-' && !safeFile2.startsWith('http')) {
+          scoreDisplay = `<div style="margin-top: 10px; font-size: 1.1em; font-weight: 700; color: #facc15;">⭐ คะแนน: ${safeFile2}</div>`;
+        }
+
+        html += `<div class="stats-card" style="border-left: 4px solid ${statusColor};"><div class="c-title">📁 ${item.taskName}</div><div class="c-sub-hw">👤 ${names} (${item.className})</div><div class="c-box-hw"><div style="margin-bottom: 4px;"><span class="c-label">ส่งเมื่อ:</span> <span class="c-val">${formatThaiDate(item.date)}</span></div><div>${fileLinks}</div>${scoreDisplay}</div><div class="c-divider"><div style="font-weight: 600; color: ${statusColor}; background: ${statusColor}15; padding: 4px 10px; border-radius: 20px; font-size: 0.9em;">● ${item.status}</div><button onclick="changeHomeworkStatus(${item.rowIdx}, '${safeFile2.replace(/'/g, "\\'")}')" class="btn-c-action">ครูตรวจงาน</button></div></div>`; 
+      }); 
+      listDiv.innerHTML = html; 
+    }
+    function viewHomeworkFile(url) { let embedUrl = url; if (url.includes('drive.google.com') && url.includes('/view')) { embedUrl = url.replace('/view?usp=sharing', '/preview').replace('/view', '/preview'); } Swal.fire({ title: '📄 ตรวจงานนักเรียน', html: `<iframe src="${embedUrl}" style="width: 100%; height: 60vh; border: none; border-radius: 8px; background: white;"></iframe>`, width: '90%', background: document.body.classList.contains('light-mode') ? '#fff' : '#16213e', color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0', showCloseButton: true, showConfirmButton: false }); }
+    
+    async function changeHomeworkStatus(rowIdx, currentScore) { 
+      // ดึงคะแนนเดิมมาแสดงในช่อง (ถ้ามี)
+      let defScore = (currentScore && currentScore !== '-' && !currentScore.startsWith('http')) ? currentScore : '';
+      
+      Swal.fire({ 
+        title: '🔒 ครูตรวจงาน', 
+        html: `
+          <input type="number" id="swal-hw-score" class="swal2-input" placeholder="คะแนนที่ได้ (ถ้ามี)" value="${defScore}" style="text-align: center; font-size: 1.2em; margin-bottom: 10px;">
+          <input type="password" id="swal-hw-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;">
+          <select id="swal-hw-status" class="swal2-select" style="margin-top: 0;">
+            <option value="ตรวจแล้ว">✅ ตรวจแล้ว</option>
+            <option value="รอตรวจ">⏳ รอตรวจ</option>
+          </select>
+        `, 
+        focusConfirm: false, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', showCancelButton: true, cancelButtonColor: '#ef4444', 
+        preConfirm: () => { 
+          const score = document.getElementById('swal-hw-score').value;
+          const pwd = document.getElementById('swal-hw-pwd').value; 
+          const stat = document.getElementById('swal-hw-status').value; 
+          if (pwd !== '1221') { Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return false; } 
+          return { status: stat, score: score }; 
+        } 
+      }).then(async (result) => { 
+        if (result.isConfirmed) { 
+          Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); 
+          try { 
+            await gasPost({ action: 'updateHomeworkStatus', rowIdx: rowIdx, status: result.value.status, score: result.value.score }); 
+            Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
+            fetchHomeworks(); 
+          } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปเดตได้' }); } 
+        } 
+      }); 
+    }
+
+    // --- BORROW / RETURN ---
+    function switchBorrowTab(tabIndex) { document.querySelectorAll('.tab-borrow .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#page-borrow .tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-borrow-' + tabIndex).classList.add('active'); document.getElementById('borrow-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) { showBorrowForm(); applyLoggedInUserToForm('borrow'); } if (tabIndex === 2) fetchBorrows(); }
+    function showBorrowForm() { const today = new Date(), thaiDate = formatThaiDate(today.toISOString().split('T')[0]), rawDate = today.toISOString().split('T')[0]; document.getElementById('borrow-date-display').value = thaiDate; document.getElementById('borrow-date-display').dataset.raw = rawDate; const nextWeek = new Date(); nextWeek.setDate(today.getDate() + 7); if (!fpReturnDate) { fpReturnDate = flatpickr("#borrow-return-date", { locale: "th", defaultDate: nextWeek, dateFormat: "Y-m-d", altInput: true, altFormat: "j F Y", disableMobile: "true", formatDate: (date, format) => { if (format === 'j F Y') { const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"]; return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543}`; } return flatpickr.formatDate(date, format); } }); } else { fpReturnDate.setDate(nextWeek); } }
+    async function fetchStudentsForBorrow() { 
+      const cls = document.getElementById('borrow-class').value, nameSelect = document.getElementById('borrow-name'); nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; 
+      if (!cls) return; Swal.fire({ title: '⏳ กำลังโหลดรายชื่อ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } Swal.close(); 
+      } catch (e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถดึงรายชื่อได้' }); } 
+    }
+    async function submitBorrow() { const cls = document.getElementById('borrow-class').value, name = document.getElementById('borrow-name').value, bookName = document.getElementById('borrow-book-name').value.trim(), borrowDateRaw = document.getElementById('borrow-date-display').dataset.raw, returnDateRaw = document.getElementById('borrow-return-date').value; if (!cls || !name || !bookName || !returnDateRaw) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning'); Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'addBorrow', className: cls, name: name, bookName: bookName, borrowDate: borrowDateRaw, returnDate: returnDateRaw }); Swal.fire({ icon: 'success', title: 'ยืมหนังสือสำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); document.getElementById('borrow-class').value = ''; document.getElementById('borrow-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('borrow-name').disabled = true; document.getElementById('borrow-book-name').value = ''; setTimeout(() => switchBorrowTab(2), 1000); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถบันทึกได้' }); } }
+    async function fetchBorrows() { 
+      const statusDiv = document.getElementById('borrow-status'), listDiv = document.getElementById('borrow-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
+      try { allBorrows = await gasGet('getBorrows'); statusDiv.style.display = 'none'; renderFilteredBorrows(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
+    }
+    function renderFilteredBorrows() { const container = document.getElementById('borrow-list'), filterClass = document.getElementById('filter-borrow-class').value, filterStatus = document.getElementById('filter-borrow-status').value, today = new Date(); today.setHours(0,0,0,0); let processedData = allBorrows.map(item => { let derivedStatus = item.status; if (item.status !== 'คืนเรียบร้อย') { let returnDateObj = new Date(); if (item.returnDate && item.returnDate.includes('-')) { const parts = item.returnDate.split('-'); returnDateObj = new Date(parts[0], parts[1] - 1, parts[2]); } else { returnDateObj = new Date(item.returnDate); } returnDateObj.setHours(0,0,0,0); if (today > returnDateObj) derivedStatus = 'เกินกำหนด'; else derivedStatus = 'กำลังยืม'; } return { ...item, derivedStatus: derivedStatus }; }); let filteredData = processedData; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.derivedStatus === filterStatus); if (filteredData.length === 0) { container.innerHTML = '<div class="stats-card c-empty">ไม่พบข้อมูล</div>'; return; } container.innerHTML = ''; filteredData.forEach(item => { let statusColor = '', actionText = ''; if (item.derivedStatus === 'คืนเรียบร้อย') { statusColor = '#34d399'; actionText = '✅ คืนเรียบร้อย'; } else if (item.derivedStatus === 'เกินกำหนด') { statusColor = '#ef4444'; actionText = '❌ เกินกำหนด'; } else { statusColor = '#f59e0b'; actionText = '⏳ กำลังยืม'; } const card = `<div class="stats-card" style="border-left: 4px solid ${statusColor};"><div class="c-title" style="font-size: 1.1em;">📖 ${item.bookName}</div><div class="c-desc">ผู้ยืม: ${item.name} (${item.className})</div><div class="c-box"><div><span class="c-label">วันที่ยืม:</span> <br><span class="c-val-b1">${formatThaiDate(item.borrowDate)}</span></div><div style="text-align: right;"><span class="c-label">กำหนดคืน:</span> <br><span class="c-val-b2">${formatThaiDate(item.returnDate)}</span></div></div><div class="c-divider"><div style="font-weight: 600; color: ${statusColor}; background: ${statusColor}15; padding: 4px 10px; border-radius: 20px; font-size: 0.85em;">${actionText}</div>${item.derivedStatus !== 'คืนเรียบร้อย' ? `<button onclick="changeBorrowStatus(${item.rowIdx})" class="btn-c-status">เปลี่ยนสถานะ</button>` : `<span class="c-label" style="font-size: 0.85em;">✅ ปิดรายการแล้ว</span>`}</div></div>`; container.innerHTML += card; }); }
+    function changeBorrowStatus(rowIdx) { Swal.fire({ title: '🔒 ยืนยันการคืนหนังสือ', text: 'กรุณากรอกรหัสผ่านเพื่อยืนยันว่านักเรียนนำหนังสือมาคืนแล้ว', input: 'password', inputPlaceholder: 'รหัสผ่าน', inputAttributes: { autocapitalize: 'off', autocorrect: 'off', style: 'text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;' }, showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', preConfirm: (pwd) => { if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return pwd === '1221'; } }).then((result) => { if (result.isConfirmed) updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย'); }); }
+    async function updateBorrowStatusAPI(rowIdx, newStatus) { Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'updateBorrowStatus', rowIdx: rowIdx, status: newStatus }); Swal.fire({ icon: 'success', title: 'อัปเดตสถานะเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); fetchBorrows(); } catch(e) { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถอัปเดตได้' }); } }
+
+    // --- READING LOGS ---
+    function switchReadingTab(tabIndex) { document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-' + tabIndex).classList.add('active'); document.getElementById('reading-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) applyLoggedInUserToForm('read'); if (tabIndex === 2) fetchReadingLogs(); if (tabIndex === 3) fetchReadingStats(); }
+    function setReadingStar(val) { currentReadingStar = val; const spans = document.querySelectorAll('#read-stars span'); spans.forEach(span => { if(parseInt(span.dataset.val) <= val) span.classList.add('active'); else span.classList.remove('active'); }); }
+    async function fetchStudentsForReading() { 
+      const cls = document.getElementById('read-class').value; const nameSelect = document.getElementById('read-name'); const overlay = document.getElementById('reading-loading'); nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; 
+      if (!cls) return; overlay.style.display = 'flex'; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        if (students.error) throw new Error(students.error); if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } 
+      } catch (e) { showToast('ล้มเหลวในการดึงรายชื่อ', 'error'); } 
+      overlay.style.display = 'none'; 
+    }
+    function syncScroll(el) { document.getElementById('highlight-overlay').scrollTop = el.scrollTop; }
+    function updateWordCount() { const textarea = document.getElementById('read-synopsis'); const text = textarea.value; let count = 0; if (text.trim()) { if (typeof Intl.Segmenter === 'function') { const segmenter = new Intl.Segmenter('th', { granularity: 'word' }); const segments = segmenter.segment(text); for (const segment of segments) { if (segment.isWordLike) count++; } } else { count = text.trim().split(/\s+/).filter(w => w.length > 0).length; } } document.getElementById('word-count-display').innerText = count; let highlightedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); const dict = { "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย", "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต", "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก", "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต" }; for (const wrong of Object.keys(dict)) { const regex = new RegExp(wrong, 'g'); highlightedText = highlightedText.replace(regex, `<span class="error">${wrong}</span>`); } if (highlightedText.endsWith('\n')) highlightedText += ' '; document.getElementById('highlight-overlay').innerHTML = highlightedText; }
+    function checkThaiSpelling() { const text = document.getElementById('read-synopsis').value; if (!text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนครับ', 'warning'); const dict = { "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย", "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต", "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก", "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต" }; let foundMistakes = []; for (const [wrong, correct] of Object.entries(dict)) { if (text.includes(wrong)) { foundMistakes.push(`❌ <b>${wrong}</b> → ✅ <b>${correct}</b>`); } } if (foundMistakes.length > 0) { Swal.fire({ title: '🔍 พบคำที่พิมพ์ผิด', html: `<div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; font-size: 0.9em; line-height: 1.8;">${foundMistakes.join('<br>')}</div>`, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', confirmButtonText: '✨ แก้ไขให้อัตโนมัติ', showCancelButton: true, cancelButtonText: 'ปิด', cancelButtonColor: '#64748b' }).then((result) => { if (result.isConfirmed) { let newText = text; for (const [wrong, correct] of Object.entries(dict)) { newText = newText.split(wrong).join(correct); } document.getElementById('read-synopsis').value = newText; updateWordCount(); Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); } }); } else { Swal.fire({ icon: 'success', title: 'เยี่ยมมาก!', text: 'ไม่มีคำผิดครับ (เก่งมาก!)', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981' }); } }
+    async function editStudentReading(rowIdx, cls, name, title, synopsis, rating) { 
+      switchReadingTab(1); const overlay = document.getElementById('reading-loading'); overlay.style.display = 'flex'; document.getElementById('read-class').value = cls; const nameSelect = document.getElementById('read-name'); nameSelect.innerHTML = '<option value="">⏳ โหลดรายชื่อ...</option>'; nameSelect.disabled = true; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; if(Array.isArray(students)) { students.forEach(s => { const isSelected = (s === name) ? 'selected' : ''; nameSelect.innerHTML += `<option value="${s}" ${isSelected}>${s}</option>`; }); nameSelect.disabled = false; } 
+      } catch(e) {} 
+      overlay.style.display = 'none'; document.getElementById('read-title').value = title; const el = document.createElement('textarea'); el.innerHTML = synopsis.replace(/<br>/g, "\n"); document.getElementById('read-synopsis').value = el.value; updateWordCount(); setReadingStar(rating); document.getElementById('read-row-idx').value = rowIdx; document.getElementById('btn-read-submit').innerHTML = '💾 บันทึกการแก้ไข'; 
+    }
+    async function submitReadingLog() { const cls = document.getElementById('read-class').value, name = document.getElementById('read-name').value, title = document.getElementById('read-title').value.trim(), synopsis = document.getElementById('read-synopsis').value.trim(); if (!cls || !name || !title || !synopsis || currentReadingStar === 0) return showToast('กรุณากรอกข้อมูลและให้ดาวให้ครบถ้วน', 'warning'); const rowIdx = document.getElementById('read-row-idx').value; const actionName = rowIdx ? 'editReadingLog' : 'addReadingLog'; const payload = { action: actionName, className: cls, name: name, bookTitle: title, synopsis: synopsis, rating: currentReadingStar }; if (rowIdx) payload.rowIdx = rowIdx; Swal.fire({ title: '⏳ กำลังส่งงาน...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); try { await gasPost(payload); Swal.fire({ icon: 'success', title: rowIdx ? 'แก้ไขงานสำเร็จ!' : 'ส่งบันทึกสำเร็จ!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); document.getElementById('read-class').value = ''; document.getElementById('read-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('read-name').disabled = true; document.getElementById('read-title').value = ''; document.getElementById('read-synopsis').value = ''; document.getElementById('highlight-overlay').innerHTML = ''; document.getElementById('word-count-display').innerText = '0'; document.getElementById('read-row-idx').value = ''; document.getElementById('btn-read-submit').innerHTML = '✅ ส่งงาน'; setReadingStar(0); setTimeout(() => switchReadingTab(2), 1000); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถบันทึกได้' }); } }
+    async function fetchReadingLogs() { 
+      const statusDiv = document.getElementById('reading-status'), listDiv = document.getElementById('reading-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
+      try { allReadingLogs = await gasGet('getReadingLogs'); statusDiv.style.display = 'none'; renderFilteredReadingLogs(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
+    }
+    function renderFilteredReadingLogs() { const listDiv = document.getElementById('reading-list'), filterClass = document.getElementById('filter-read-class').value, filterStatus = document.getElementById('filter-read-status').value; let filteredData = allReadingLogs; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.status === filterStatus); if (filteredData.length === 0) { listDiv.innerHTML = '<div class="stats-card" style="text-align: center; color: #94a3b8; grid-column: 1 / -1;">ไม่พบข้อมูล</div>'; return; } let html = ''; filteredData.forEach(item => { let statusColor = '#facc15'; if(item.status === 'ตรวจแล้ว') statusColor = '#34d399'; else if(item.status === 'กลับไปแก้ไข') statusColor = '#ef4444'; let starHtml = ''; for(let i=1; i<=5; i++) { starHtml += (i <= item.rating) ? '★' : '<span class="empty">☆</span>'; } const safeSynopsis = (item.synopsis||'').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>"); const safeTitle = (item.bookTitle||'').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;"); html += `<div class="stats-card" style="border-left: 4px solid ${statusColor};"><div class="c-title" style="font-size: 1.4em;">📖 ${item.bookTitle}</div><div class="c-sub" style="font-size: 1.15em;">👤 ${item.name} (${item.className})</div><div class="c-desc">📅 วันที่ส่ง: <span class="c-val">${formatThaiDate(item.date)}</span></div><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><div class="display-stars">${starHtml}</div><button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}')" class="btn-c-read">อ่านเนื้อเรื่อง</button></div><div class="c-divider"><div style="font-weight: 600; color: ${statusColor}; background: ${statusColor}15; padding: 4px 10px; border-radius: 20px; font-size: 0.9em;">● ${item.status}</div><div style="display: flex; gap: 8px;">${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReading(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-c-edit-hw">✏️ แก้ไขงาน</button>` : ''}<button onclick="changeReadingStatus(${item.rowIdx})" class="btn-c-action">ครูตรวจ</button></div></div></div>`; }); listDiv.innerHTML = html; }
+    function showSynopsisModal(title, text) { Swal.fire({ title: title, html: `<div class="modal-content-box">${text}</div>`, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#facc15', confirmButtonText: 'ปิด', customClass: { popup: 'light-override-popup' } }); }
+    async function changeReadingStatus(rowIdx) { Swal.fire({ title: '🔒 ครูตรวจงาน', html: `<input type="password" id="swal-read-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;"><select id="swal-read-status" class="swal2-select" style="margin-top: 0;"><option value="ตรวจแล้ว">✅ ตรวจแล้ว</option><option value="รอตรวจ">⏳ รอตรวจ</option><option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option></select>`, focusConfirm: false, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', showCancelButton: true, cancelButtonColor: '#ef4444', preConfirm: () => { const pwd = document.getElementById('swal-read-pwd').value; const stat = document.getElementById('swal-read-status').value; if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return stat; } }).then(async (result) => { if (result.isConfirmed) { Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'updateReadingStatus', rowIdx: rowIdx, status: result.value }); Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); fetchReadingLogs(); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปเดตได้' }); } } }); }
+    
+    listDiv.innerHTML = "";
+
+// 5 อันดับทั้งโรงเรียน
+listDiv.innerHTML += `
+<h3 style="color:#facc15">
+🏆 5 อันดับทั้งโรงเรียน
+</h3>
+`;
+
+data.overall.forEach((s,i)=>{
+
+    listDiv.innerHTML += `
+    <div class="stat-row">
+        <div>
+            <span class="rank-badge">${i+1}</span>
+            ${s.name}
+        </div>
+        <div class="stat-count">${s.count} เรื่อง</div>
+    </div>
+    `;
+
+});
+
+// แสดงแยกแต่ละชั้น
+Object.keys(data.byClass).sort().forEach(cls=>{
+
+    listDiv.innerHTML += `
+    <br>
+    <h3 style="color:#38bdf8">
+    📚 ${cls}
+    </h3>
+    `;
+
+    data.byClass[cls].forEach((s,i)=>{
+
+        listDiv.innerHTML += `
+        <div class="stat-row">
+            <div>
+                <span class="rank-badge">${i+1}</span>
+                ${s.name}
+            </div>
+            <div class="stat-count">${s.count} เรื่อง</div>
+        </div>
+        `;
+
+    });
+
+});
+
+    // --- STATS ---
+    async function fetchStats() { 
+      const statusDiv = document.getElementById('stats-status'); statusDiv.style.display = 'flex'; document.getElementById('stats-content').style.display = 'none'; 
+      try { 
+        const data = await gasGet('getStats'); const overallDiv = document.getElementById('stats-overall'); overallDiv.innerHTML = ''; 
+        if(data.overall.length === 0) overallDiv.innerHTML = '<div class="c-empty">ยังไม่มีข้อมูล</div>'; data.overall.forEach((s, i) => { overallDiv.innerHTML += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> <span class="c-rank-text">${s.name}</span> <span class="c-rank-sub">(${s.cls})</span></div><div class="stat-count">${s.count} ครั้ง</div></div>`; }); 
+        const byClassDiv = document.getElementById('stats-by-class'); byClassDiv.innerHTML = ''; const classes = ['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6']; classes.forEach(cls => { if(data.byClass[cls] && data.byClass[cls].length > 0) { let html = `<div class="stats-card"><h3>📍 ยอดฮิต ชั้น ${cls}</h3>`; data.byClass[cls].forEach((s, i) => { html += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> <span class="c-rank-text">${s.name}</span></div><div class="stat-count">${s.count} ครั้ง</div></div>`; }); html += `</div>`; byClassDiv.innerHTML += html; } }); 
+        statusDiv.style.display = 'none'; document.getElementById('stats-content').style.display = 'block'; 
+      } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดาวน์โหลดข้อมูลล้มเหลว</div>'; } 
+    }
+
+    // --- FACE SCAN ---
+    async function initScanPage() { 
+      const status = document.getElementById('scan-status'); 
+      document.getElementById('scan-btn-group').style.display = 'flex'; 
+      document.getElementById('btn-stop-scan').style.display = 'none'; 
+      document.getElementById('scan-line').classList.remove('active'); 
+      
+      // ดักรอ Sweet Alert โหลดข้อมูลก่อน
+      Swal.fire({
+        title: '⏳ กำลังเตรียมระบบสแกน...',
+        text: 'รอโหลด AI และฐานข้อมูลใบหน้าสักครู่ครับ',
+        background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      if (!modelsLoaded) { status.innerHTML = '⏳ กำลังโหลด AI...'; await loadModels(); } 
+      status.innerHTML = '⏳ กำลังโหลดฐานข้อมูลนักเรียน...'; 
+      try { 
+        const data = await gasGet('getKnownFaces'); 
+        knownFaces = data.map(u => ({ name: u.label, cls: u.class || '-', descriptor: new Float32Array(u.descriptor) })); 
+        status.innerHTML = '<span class="highlight">✅ ระบบพร้อมสแกน</span>'; 
+        Swal.close(); // ปิดโหลดเมื่อพร้อม
+      } catch (e) { 
+        status.innerHTML = '<span class="error-text">❌ โหลดฐานข้อมูลล้มเหลว</span>'; 
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถโหลดฐานข้อมูลใบหน้าได้', 'error');
+      } 
+    }
+    
+    async function startScanning(mode) { 
+      if (knownFaces.length === 0) return showToast('ไม่พบข้อมูลนักเรียน กรุณาลงทะเบียนก่อน', 'warning'); 
+      currentScanMode = mode;
+      const video = document.getElementById('video-scan'); 
+      document.getElementById('scan-status').innerHTML = 'กำลังเปิดกล้อง...'; 
+      try { 
+        streamActive = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); 
+        video.srcObject = streamActive; 
+        document.getElementById('scan-btn-group').style.display = 'none'; 
+        document.getElementById('btn-stop-scan').style.display = 'flex'; 
+        document.getElementById('scan-line').classList.add('active'); 
+        
+        let modeText = mode === 'login' ? 'ล็อกอินเข้าระบบ' : 'บันทึกต่อเนื่อง';
+        document.getElementById('scan-status').innerHTML = `<span class="highlight">🟢 กำลังสแกน (${modeText})...</span>`; 
+        scanLoop(video); 
+      } catch (err) { 
+        showToast('ไม่สามารถเปิดกล้องได้', 'error'); 
+        document.getElementById('scan-status').innerHTML = '<span class="error-text">❌ ไม่สามารถเปิดกล้องได้</span>'; 
+      } 
+    }
+    
+    function stopScanning() { 
+      if (streamActive) { streamActive.getTracks().forEach(t => t.stop()); streamActive = null; } 
+      if (scanInterval) { clearInterval(scanInterval); scanInterval = null; } 
+      document.getElementById('scan-line').classList.remove('active'); 
+      document.getElementById('scan-btn-group').style.display = 'flex'; 
+      document.getElementById('btn-stop-scan').style.display = 'none'; 
+      document.getElementById('scan-status').innerHTML = '⏹ หยุดสแกนแล้ว'; 
+    }
+    
+    function scanLoop(video) { 
+      let isProcessing = false; 
+      scanInterval = setInterval(async () => { 
+        if (video.paused || video.ended || isProcessing) return; 
+        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(); 
+        if (detection) { 
+          let best = { name: 'unknown', cls: '-', distance: 1.0 }; 
+          knownFaces.forEach(u => { 
+            const d = faceapi.euclideanDistance(detection.descriptor, u.descriptor); 
+            if (d < best.distance) best = { name: u.name, cls: u.cls, distance: d }; 
+          }); 
+          if (best.distance < MATCH_THRESHOLD && best.name !== 'unknown') { 
+            isProcessing = true; 
+            await handleSuccessfulScan(best.name, best.cls); 
+            // หน่วงเวลา 2.5 วิ กันการสแกนคนเดิมซ้ำรัวๆ
+            setTimeout(() => { isProcessing = false; }, 2500); 
+          } 
+        } 
+      }, 600); 
+    }
+    
+    async function handleSuccessfulScan(name, cls) { 
+      const now = Date.now(), oneHour = 60 * 60 * 1000; 
+      for(let key in recentScans) { if(now - recentScans[key] > oneHour) delete recentScans[key]; } 
+      
+      if (recentScans[name] && (now - recentScans[name] < oneHour)) {
+        Swal.fire({
+          icon: 'info',
+          title: '✅ สแกนแล้ว',
+          text: `${name} เข้าสู่ระบบไปแล้ว\n(ป้องกันการบันทึกซ้ำใน 1 ชั่วโมง)`,
+          timer: 2000,
+          showConfirmButton: false,
+          background: document.body.classList.contains('light-mode') ? '#fff' : '#16213e',
+          color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0'
+        });
+
+        if(currentScanMode === 'login') {
+          stopScanning();
+          loginStudent(name, cls); 
+        }
+        return; 
+      }
+      
+      showToast(`⏳ กำลังบันทึก ${name}...`, 'info'); 
+      recentScans[name] = now; localStorage.setItem('recentScans', JSON.stringify(recentScans)); 
+      
+      try { 
+        await gasPost({ action: 'logAttendance', name: name, className: cls }); 
+        
+        if (currentScanMode === 'login') {
+          showToast(`✅ บันทึกเข้า Attendance สำเร็จ!`, 'success'); 
+          stopScanning();
+          loginStudent(name, cls); 
+        } else {
+          // โหมดต่อเนื่อง ให้สแกนต่อได้เลย
+          Swal.fire({
+            icon: 'success',
+            title: '✅ เช็คชื่อสำเร็จ',
+            text: `บันทึก ${name} ลงชีต Attendance แล้ว`,
+            timer: 1500,
+            showConfirmButton: false,
+            backdrop: `rgba(16,185,129,0.2)`
+          });
+        }
+      } catch (e) { 
+        showToast(`❌ บันทึก ${name} ไม่สำเร็จ`, 'error'); 
+        delete recentScans[name]; 
+      } 
+    }
+
+    // --- MANUAL LOGIN ---
+    async function fetchStudentsForManual() { 
+      const cls = document.getElementById('manual-class').value; const nameSelect = document.getElementById('manual-name'); const btn = document.getElementById('btn-manual-submit'); const overlay = document.getElementById('manual-loading'); nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; btn.disabled = true; 
+      if (!cls) return; overlay.style.display = 'flex'; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; nameSelect.onchange = () => { btn.disabled = !nameSelect.value; }; } 
+      } catch (e) { showToast('ดึงรายชื่อล้มเหลว', 'error'); } 
+      overlay.style.display = 'none'; 
+    }
+    
+    async function submitManualLogin() { 
+      const name = document.getElementById('manual-name').value, cls = document.getElementById('manual-class').value, btn = document.getElementById('btn-manual-submit'); 
+      if (!name) return; 
+      const now = Date.now(), oneHour = 60 * 60 * 1000; 
+      for(let key in recentScans) { if(now - recentScans[key] > oneHour) delete recentScans[key]; } 
+      localStorage.setItem('recentScans', JSON.stringify(recentScans)); 
+      
+      if (recentScans[name] && (now - recentScans[name] < oneHour)) {
+        Swal.fire({
+          icon: 'info',
+          title: '✅ เข้าสู่ระบบแล้ว',
+          text: `${name} ทำรายการไปแล้ว\n(ป้องกันการบันทึกซ้ำใน 1 ชั่วโมง)`,
+          timer: 2000,
+          showConfirmButton: false,
+          background: document.body.classList.contains('light-mode') ? '#fff' : '#16213e',
+          color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0'
+        });
+        loginStudent(name, cls);
+        document.getElementById('manual-class').value = ''; document.getElementById('manual-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('manual-name').disabled = true; return;
+      }
+
+      btn.disabled = true; const originalText = btn.innerHTML; btn.innerHTML = '⏳ กำลังบันทึก...'; 
+      try { 
+        await gasPost({ action: 'logAttendance', name: name, className: cls }); 
+        recentScans[name] = now; localStorage.setItem('recentScans', JSON.stringify(recentScans)); 
+        showToast(`✅ บันทึกเข้า Attendance สำเร็จ!`, 'success'); 
+        loginStudent(name, cls); 
+        document.getElementById('manual-class').value = ''; document.getElementById('manual-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('manual-name').disabled = true; 
+      } catch (e) { showToast(`❌ บันทึกไม่สำเร็จ`, 'error'); } finally { btn.innerHTML = originalText; btn.disabled = false; } 
+    }
+
+    // --- CONFIG & REGISTER ---
+    async function initRegisterPage() { 
+      resetRegSelection(); // รีเซ็ตหน้าต่างเลือกลงทะเบียน
+      document.getElementById('reg-class').value = '';
+      const video = document.getElementById('video-reg'); 
+      saveFaceCount = 0; 
+      try { 
+        streamActive = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); 
+        video.srcObject = streamActive; 
+      } catch (err) { 
+        showToast('ไม่สามารถเปิดกล้องได้', 'error'); 
+      } 
+    }
+
+    function resetRegSelection() {
+      document.getElementById('reg-selection-area').style.display = 'block';
+      document.getElementById('reg-selected-student').style.display = 'none';
+      document.getElementById('reg-name').value = '';
+      document.getElementById('btn-save-face').disabled = true;
+      document.getElementById('btn-save-face').innerHTML = `📸 บันทึกใบหน้า <span id="save-count" style="background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; margin-left: 8px;">0/3</span>`;
+      saveFaceCount = 0;
+    }
+
+    async function fetchStudentsForClass() { 
+      const cls = document.getElementById('reg-class').value, nameSelect = document.getElementById('reg-name'), overlay = document.getElementById('reg-loading'); 
+      nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; 
+      nameSelect.disabled = true; 
+      document.getElementById('btn-save-face').disabled = true; 
+      
+      if (!cls) return; 
+      overlay.style.display = 'flex'; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อในระบบ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } 
+      } catch (e) { showToast('ล้มเหลว: ' + e.message, 'error'); } 
+      overlay.style.display = 'none'; 
+    }
+
+    function handleRegNameSelection() {
+      const nameSelect = document.getElementById('reg-name');
+      const btn = document.getElementById('btn-save-face');
+      if (nameSelect.value) {
+        btn.disabled = false;
+        // ซ่อนกล่องเลือกเพื่อประหยัดพื้นที่ และแสดงชื่อที่เลือก
+        document.getElementById('reg-selection-area').style.display = 'none';
+        document.getElementById('reg-selected-student').style.display = 'block';
+        document.getElementById('reg-selected-student-name').innerText = nameSelect.value;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function updateSaveBtn() { 
+      const btn = document.getElementById('btn-save-face'); 
+      if(saveFaceCount >= 3) { 
+        btn.innerHTML = '✅ บันทึกเสร็จสมบูรณ์'; 
+        btn.classList.replace('btn-secondary', 'btn-primary'); 
+        btn.disabled = true; 
+        setTimeout(() => { nav('menu'); }, 1500); 
+      } else { 
+        btn.innerHTML = `📸 บันทึกมุมที่ ${saveFaceCount + 1} <span style="background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; margin-left: 8px;">${saveFaceCount}/3</span>`; 
+      } 
+    }
+    
+    async function saveFace() { 
+      const name = document.getElementById('reg-name').value, cls = document.getElementById('reg-class').value, video = document.getElementById('video-reg'), btn = document.getElementById('btn-save-face'); 
+      btn.disabled = true; 
+      const originalText = btn.innerHTML; 
+      btn.innerHTML = '⏳ กำลังประมวลผล...'; 
+      const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(); 
+      if (!detection) { 
+        showToast('ไม่พบใบหน้า! กรุณามองกล้องให้ชัดเจน', 'warning'); 
+        btn.disabled = false; 
+        btn.innerHTML = originalText; 
+        return; 
+      } 
+      try { 
+        await gasPost({ action: 'registerUser', name: name, className: cls, faceDescriptor: Array.from(detection.descriptor) }); 
+        saveFaceCount++; 
+        showToast(`✅ บันทึกมุมที่ ${saveFaceCount} สำเร็จ!`, 'success'); 
+        updateSaveBtn(); 
+        if(saveFaceCount < 3) btn.disabled = false; 
+      } catch (e) { 
+        showToast('บันทึกล้มเหลว', 'error'); 
+        btn.disabled = false; 
+        btn.innerHTML = originalText; 
+      } 
+    }
+    
+    function saveConfig() { 
+      const url = document.getElementById('api-url-input').value.trim(); 
+      if (!url.includes('/exec')) return Swal.fire('URL ไม่ถูกต้อง', 'ต้องเป็น URL ที่ลงท้ายด้วย /exec', 'warning');
+      localStorage.setItem('gasApiUrl', url); API_URL = url; 
+      Swal.fire({ title: '⏳ กำลังทดสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      loadDashboardData().then(() => {
+        if (document.getElementById('apiWarning').style.display === 'none') {
+          Swal.fire('สำเร็จ!', 'เชื่อมต่อฐานข้อมูลเรียบร้อย', 'success');
+          setTimeout(() => nav('menu'), 1000);
+        }
+      });
+    }
+
+    function resetConfig() {
+      Swal.fire({ title: 'ยืนยันคืนค่าเดิม?', text: "ระบบจะกลับไปใช้ URL ที่ฝังไว้ตอนเริ่มต้น", icon: 'warning', showCancelButton: true, confirmButtonText: 'คืนค่า', cancelButtonText: 'ยกเลิก', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#ef4444' }).then((result) => { 
+        if (result.isConfirmed) { 
+          localStorage.removeItem('gasApiUrl'); 
+          API_URL = MY_GAS_URL; 
+          document.getElementById('api-url-input').value = MY_GAS_URL;
+          Swal.fire({ icon: 'success', title: 'คืนค่าเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1000, showConfirmButton: false }); 
+          loadDashboardData();
+        } 
+      });
+    }
+    
+    async function addStudent() { const cls = document.getElementById('new-student-class').value, name = document.getElementById('new-student-name').value.trim(), btn = document.getElementById('btn-add-student'); if (!name || !API_URL) return showToast('ข้อมูลไม่ครบ', 'warning'); btn.disabled = true; const originalText = btn.innerHTML; btn.innerHTML = '⏳ กำลังบันทึก...'; try { await gasPost({ action: 'addStudent', className: cls, name: name }); showToast(`✅ เพิ่ม ${name} สำเร็จ!`, 'success'); document.getElementById('new-student-name').value = ''; } catch (e) { showToast('❌ เพิ่มรายชื่อล้มเหลว', 'error'); } finally { btn.disabled = false; btn.innerHTML = originalText; } }
+  </script>
+</body>
+</html>
