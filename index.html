@@ -590,7 +590,7 @@ body.light-mode .highlight-overlay {
         <label>เลือกระดับชั้น</label><select id="read-class" onchange="fetchStudentsForReading()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
         <label>เลือกชื่อนักเรียน</label><select id="read-name" disabled><option value="">-- กรุณาเลือกชื่อ --</option></select>
         <label>ชื่อเรื่องที่อ่าน</label><input type="text" id="read-title" placeholder="เช่น หนูน้อยหมวกแดง" spellcheck="true" lang="th">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;"><label style="margin-bottom: 0;">เรื่องย่อ / ข้อคิดที่ได้</label><button type="button" onclick="checkThaiSpelling()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; padding: 4px 12px; border-radius: 12px; cursor: pointer; font-family: 'Sarabun'; font-size: 0.85em; transition: 0.2s;">✨ แก้คำผิดอัตโนมัติ</button></div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;"><label style="margin-bottom: 0;">เรื่องย่อ / ข้อคิดที่ได้</label><button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" style="background: linear-gradient(135deg, #10b981, #059669); border: none; color: white; padding: 5px 14px; border-radius: 14px; cursor: pointer; font-family: 'Sarabun'; font-size: 0.88em; font-weight: 600; box-shadow: 0 4px 12px rgba(16,185,129,0.3); transition: 0.2s;">🤖 ให้ AI ตรวจคำผิด</button></div>
         <div class="textarea-container"><div id="highlight-overlay" class="highlight-overlay"></div><textarea id="read-synopsis" placeholder="พิมพ์เรื่องย่อที่อ่าน หรือข้อคิดที่ได้รับ..." spellcheck="false" oninput="updateWordCount()" onscroll="syncScroll(this)"></textarea></div>
         <div style="text-align: right; color: #bae6fd; font-size: 0.95em; font-weight: 600; margin-bottom: 16px; margin-top: 5px;">พิมพ์ไปแล้ว: <span id="word-count-display">0</span> คำ</div>
         <label style="text-align: center; margin-top: 10px;">คะแนนความสนุก</label>
@@ -700,6 +700,13 @@ body.light-mode .highlight-overlay {
       <button class="btn-action btn-primary" onclick="saveConfig()">💾 บันทึกและทดสอบ</button>
       <button class="btn-action btn-danger" onclick="resetConfig()" style="margin-top: 10px;">🔄 คืนค่า URL เริ่มต้น</button>
       <p style="font-size: 0.8em; color: #94a3b8; margin-top: 15px; line-height: 1.5;">*ในหน้า GAS ต้อง Deploy เป็น <b>Anyone</b> (ไม่ใช่ Anyone with Google Account)</p>
+    </div>
+    
+    <div class="form-section" style="margin-top: 20px;">
+      <h3 style="color: #38bdf8; margin-bottom: 5px; font-size: 1.1em;">🤖 ตั้งค่า Gemini AI API Key (ฟรี 100%)</h3>
+      <p style="font-size: 0.8em; color: #94a3b8; margin-bottom: 10px;">*(ระบุเพื่อใช้งาน AI ตรวจคำผิดภาษาไทยและวิเคราะห์เรื่องย่อแบบละเอียดฟรี)*</p>
+      <label>Google Gemini API Key</label><input type="password" id="gemini-api-key-input" placeholder="วาง API Key ที่นี่ (เช่น AIzaSy...)">
+      <button class="btn-action btn-primary" onclick="saveGeminiKey()" style="background: linear-gradient(135deg, #38bdf8, #0284c7);">💾 บันทึก API Key</button>
     </div>
     
     <div class="form-section" style="margin-top: 20px;">
