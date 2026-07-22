@@ -1171,7 +1171,110 @@ console.log(payload);
     }
     function syncScroll(el) { document.getElementById('highlight-overlay').scrollTop = el.scrollTop; }
     function updateWordCount() { const textarea = document.getElementById('read-synopsis'); const text = textarea.value; let count = 0; if (text.trim()) { if (typeof Intl.Segmenter === 'function') { const segmenter = new Intl.Segmenter('th', { granularity: 'word' }); const segments = segmenter.segment(text); for (const segment of segments) { if (segment.isWordLike) count++; } } else { count = text.trim().split(/\s+/).filter(w => w.length > 0).length; } } document.getElementById('word-count-display').innerText = count; let highlightedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); const dict = { "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย", "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต", "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก", "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต" }; for (const wrong of Object.keys(dict)) { const regex = new RegExp(wrong, 'g'); highlightedText = highlightedText.replace(regex, `<span class="error">${wrong}</span>`); } if (highlightedText.endsWith('\n')) highlightedText += ' '; document.getElementById('highlight-overlay').innerHTML = highlightedText; }
-    function checkThaiSpelling() { const text = document.getElementById('read-synopsis').value; if (!text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนครับ', 'warning'); const dict = { "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย", "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต", "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก", "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต" }; let foundMistakes = []; for (const [wrong, correct] of Object.entries(dict)) { if (text.includes(wrong)) { foundMistakes.push(`❌ <b>${wrong}</b> → ✅ <b>${correct}</b>`); } } if (foundMistakes.length > 0) { Swal.fire({ title: '🔍 พบคำที่พิมพ์ผิด', html: `<div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; font-size: 0.9em; line-height: 1.8;">${foundMistakes.join('<br>')}</div>`, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', confirmButtonText: '✨ แก้ไขให้อัตโนมัติ', showCancelButton: true, cancelButtonText: 'ปิด', cancelButtonColor: '#64748b' }).then((result) => { if (result.isConfirmed) { let newText = text; for (const [wrong, correct] of Object.entries(dict)) { newText = newText.split(wrong).join(correct); } document.getElementById('read-synopsis').value = newText; updateWordCount(); Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); } }); } else { Swal.fire({ icon: 'success', title: 'เยี่ยมมาก!', text: 'ไม่มีคำผิดครับ (เก่งมาก!)', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981' }); } }
+    function saveGeminiKey() {
+      const key = document.getElementById('gemini-api-key-input').value.trim();
+      if (!key) {
+        localStorage.removeItem('geminiApiKey');
+        return Swal.fire('ลบเรียบร้อย', 'ยกเลิกการใช้ Gemini API Key แล้ว', 'info');
+      }
+      localStorage.setItem('geminiApiKey', key);
+      Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'พร้อมใช้งาน AI ตรวจคำผิดภาษาไทยเรียบร้อยแล้ว', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+    }
+
+    async function analyzeSpellingWithAI(text) {
+      if (!text || !text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนวิเคราะห์ครับ', 'warning');
+      const apiKey = localStorage.getItem('geminiApiKey') || '';
+      
+      Swal.fire({
+        title: '🤖 AI กำลังตรวจภาษาไทย...',
+        html: 'กำลังวิเคราะห์คำผิด การสะกดคำ และสรุปข้อคิดอย่างละเอียดยิบ...',
+        background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียนประถม ข้อความเรื่องย่อของนักเรียนคือ:\n"${text}"\n\nโปรดตรวจสอบคำผิดและวิเคราะห์โดยตอบรูปแบบนี้:
+1. ❌ **คำที่สะกดผิด**: (ถ้ามี ระบุคำที่ผิด -> คำที่ถูกต้อง เช่น สังเกตุ ❌ -> สังเกต ✅)
+2. 💡 **คำแนะนำภาษาไทย**: (ข้อคิดเห็นหรือคำชมสั้นๆ 1-2 ประโยค)
+3. ✨ **ข้อความที่แก้ไขถูกต้องสมบูรณ์แล้ว**: (ข้อความเดิมที่ได้รับการแก้ไขสะกดผิดเรียบร้อย)`
+                }]
+              }]
+            })
+          });
+
+          const data = await res.json();
+          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            const aiText = data.candidates[0].content.parts[0].text;
+            const formattedHtml = aiText.replace(/\*\*(.*?)\*\*/g, '<b style="color:#facc15;">$1</b>').replace(/\n/g, '<br>');
+            return Swal.fire({
+              title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
+              html: `<div style="text-align: left; background: rgba(0,0,0,0.25); padding: 16px; border-radius: 12px; font-size: 0.95em; line-height: 1.8; max-height: 55vh; overflow-y: auto;">${formattedHtml}</div>`,
+              background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง'
+            });
+          }
+        } catch (e) {
+          console.warn('Gemini API fetch error, fallback to dict', e);
+        }
+      }
+
+      // Fallback: ใช้คลังคำผิดภาษาไทยในตัว
+      checkThaiSpellingFallback(text);
+    }
+
+    function checkThaiSpelling() {
+      const text = document.getElementById('read-synopsis').value;
+      analyzeSpellingWithAI(text);
+    }
+
+    function checkThaiSpellingFallback(text) {
+      const dict = {
+        "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย",
+        "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต",
+        "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก",
+        "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต", "คำนวน": "คำนวณ", "คลินิค": "คลินิก", "เว็ปไซต์": "เว็บไซต์",
+        "กราฟฟิก": "กราฟิก", "ผัดวัน": "ผลัดวัน", "เกมส์": "เกม", "ไอศครีม": "ไอศกรีม", "กังวลใจ": "กังวล"
+      };
+      let foundMistakes = [];
+      for (const [wrong, correct] of Object.entries(dict)) {
+        if (text.includes(wrong)) {
+          foundMistakes.push(`❌ <b>${wrong}</b> → ✅ <b style="color:#34d399;">${correct}</b>`);
+        }
+      }
+      const apiKeyNote = `<div style="font-size: 0.8em; color: #94a3b8; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">💡 สดใหม่! สามารถใส่ Gemini API Key ในหน้า ⚙️ ตั้งค่าระบบ เพื่อใช้งาน AI วิเคราะห์แบบละเอียด 100% ฟรีได้ครับ</div>`;
+      
+      if (foundMistakes.length > 0) {
+        Swal.fire({
+          title: '🔍 ผลตรวจคำผิด (คลังคำในระบบ)',
+          html: `<div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; font-size: 0.9em; line-height: 1.8;">${foundMistakes.join('<br>')}${apiKeyNote}</div>`,
+          background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', confirmButtonText: '✨ แก้ไขให้อัตโนมัติ', showCancelButton: true, cancelButtonText: 'ปิด', cancelButtonColor: '#64748b'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            let newText = text;
+            for (const [wrong, correct] of Object.entries(dict)) {
+              newText = newText.split(wrong).join(correct);
+            }
+            const synopsisEl = document.getElementById('read-synopsis');
+            if (synopsisEl) { synopsisEl.value = newText; updateWordCount(); }
+            Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'เยี่ยมมาก!',
+          html: `ไม่พบคำผิดจากคลังคำพื้นฐานครับ (เขียนได้เก่งมาก!)${apiKeyNote}`,
+          background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981'
+        });
+      }
+    }
+
     async function editStudentReading(rowIdx, cls, name, title, synopsis, rating) { 
       switchReadingTab(1); const overlay = document.getElementById('reading-loading'); overlay.style.display = 'flex'; document.getElementById('read-class').value = cls; const nameSelect = document.getElementById('read-name'); nameSelect.innerHTML = '<option value="">⏳ โหลดรายชื่อ...</option>'; nameSelect.disabled = true; 
       try { 
@@ -1186,48 +1289,45 @@ console.log(payload);
       try { allReadingLogs = await gasGet('getReadingLogs'); statusDiv.style.display = 'none'; renderFilteredReadingLogs(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
     }
     function renderFilteredReadingLogs() { const listDiv = document.getElementById('reading-list'), filterClass = document.getElementById('filter-read-class').value, filterStatus = document.getElementById('filter-read-status').value; let filteredData = allReadingLogs; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.status === filterStatus); if (filteredData.length === 0) { listDiv.innerHTML = '<div class="stats-card" style="text-align: center; color: #94a3b8; grid-column: 1 / -1;">ไม่พบข้อมูล</div>'; return; } let html = ''; filteredData.forEach(item => { let statusColor = '#facc15'; if(item.status === 'ตรวจแล้ว') statusColor = '#34d399'; else if(item.status === 'กลับไปแก้ไข') statusColor = '#ef4444'; let starHtml = ''; for(let i=1; i<=5; i++) { starHtml += (i <= item.rating) ? '★' : '<span class="empty">☆</span>'; } const safeSynopsis = (item.synopsis||'').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>"); const safeTitle = (item.bookTitle||'').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;"); html += `<div class="stats-card" style="border-left: 4px solid ${statusColor};"><div class="c-title" style="font-size: 1.4em;">📖 ${item.bookTitle}</div><div class="c-sub" style="font-size: 1.15em;">👤 ${item.name} (${item.className})</div><div class="c-desc">📅 วันที่ส่ง: <span class="c-val">${formatThaiDate(item.date)}</span></div><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><div class="display-stars">${starHtml}</div><button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}')" class="btn-c-read">อ่านเนื้อเรื่อง</button></div><div class="c-divider"><div style="font-weight: 600; color: ${statusColor}; background: ${statusColor}15; padding: 4px 10px; border-radius: 20px; font-size: 0.9em;">● ${item.status}</div><div style="display: flex; gap: 8px;">${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReading(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-c-edit-hw">✏️ แก้ไขงาน</button>` : ''}<button onclick="changeReadingStatus(${item.rowIdx})" class="btn-c-action">ครูตรวจ</button></div></div></div>`; }); listDiv.innerHTML = html; }
-    function showSynopsisModal(title, text) { Swal.fire({ title: title, html: `<div class="modal-content-box">${text}</div>`, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#facc15', confirmButtonText: 'ปิด', customClass: { popup: 'light-override-popup' } }); }
+    function showSynopsisModal(title, text) { 
+      const plainText = text.replace(/<br\s*[\/]?>/gi, "\n");
+      Swal.fire({ 
+        title: title, 
+        html: `
+          <div class="modal-content-box" style="text-align: left; max-height: 40vh; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; font-size: 0.95em; line-height: 1.6; margin-bottom: 15px;">${text}</div>
+          <button onclick="analyzeSpellingWithAI(decodeURIComponent('${encodeURIComponent(plainText)}'))" class="btn-action btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); margin-bottom: 0;">🤖 ให้ AI ช่วยวิเคราะห์คำผิดเรื่องนี้</button>
+        `, 
+        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#facc15', confirmButtonText: 'ปิด', customClass: { popup: 'light-override-popup' } 
+      }); 
+    }
     async function changeReadingStatus(rowIdx) { Swal.fire({ title: '🔒 ครูตรวจงาน', html: `<input type="password" id="swal-read-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;"><select id="swal-read-status" class="swal2-select" style="margin-top: 0;"><option value="ตรวจแล้ว">✅ ตรวจแล้ว</option><option value="รอตรวจ">⏳ รอตรวจ</option><option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option></select>`, focusConfirm: false, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', showCancelButton: true, cancelButtonColor: '#ef4444', preConfirm: () => { const pwd = document.getElementById('swal-read-pwd').value; const stat = document.getElementById('swal-read-status').value; if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return stat; } }).then(async (result) => { if (result.isConfirmed) { Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'updateReadingStatus', rowIdx: rowIdx, status: result.value }); Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); fetchReadingLogs(); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปเดตได้' }); } } }); }
     
-    listDiv.innerHTML = "";
-
-// 5 อันดับทั้งโรงเรียน
-listDiv.innerHTML += `
-<h3 style="color:#facc15">
-🏆 5 อันดับทั้งโรงเรียน
-</h3>
-`;
-
-data.overall.forEach((s,i)=>{
-
-    listDiv.innerHTML += `
-    <div class="stat-row">
-        <div>
-            <span class="rank-badge">${i+1}</span>
-            ${s.name}
-        </div>
-        <div class="stat-count">${s.count} เรื่อง</div>
-    </div>
-    `;
-
-});
-
-// แสดงแยกแต่ละชั้น
-Object.keys(data.byClass).sort().forEach(cls=>{
-
-    listDiv.innerHTML += `
-    <br>
-    <h3 style="color:#38bdf8">
-    📚 ${cls}
-    </h3>
-    `;
-
-    data.byClass[cls].forEach((s,i)=>{
-
-        listDiv.innerHTML += `
-        <div class="stat-row">
-            <div>
-                <span class="rank-badge">${i+1}</span>
+    async function fetchReadingStats() {
+      const statusDiv = document.getElementById('reading-stats-status'), listDiv = document.getElementById('reading-top5-list');
+      if (!statusDiv || !listDiv) return;
+      statusDiv.style.display = 'flex';
+      listDiv.innerHTML = '';
+      try {
+        const data = await gasGet('getReadingStats');
+        statusDiv.style.display = 'none';
+        listDiv.innerHTML = '';
+        if (data && data.overall) {
+          data.overall.forEach((s, i) => {
+            listDiv.innerHTML += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> ${s.name}</div><div class="stat-count">${s.count} เรื่อง</div></div>`;
+          });
+        }
+        if (data && data.byClass) {
+          Object.keys(data.byClass).sort().forEach(cls => {
+            listDiv.innerHTML += `<br><h3 style="color:#38bdf8">📚 ${cls}</h3>`;
+            data.byClass[cls].forEach((s, i) => {
+              listDiv.innerHTML += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> ${s.name}</div><div class="stat-count">${s.count} เรื่อง</div></div>`;
+            });
+          });
+        }
+      } catch (e) {
+        statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>';
+      }
+    }
                 ${s.name}
             </div>
             <div class="stat-count">${s.count} เรื่อง</div>
