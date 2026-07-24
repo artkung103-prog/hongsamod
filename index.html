@@ -640,6 +640,73 @@ body.light-mode .highlight-overlay {
       border-color: #cbd5e1;
       box-shadow: 0 4px 10px rgba(0,0,0,0.04);
     }
+
+    /* Dashboard Neon Glow Cards */
+    .dash-card.neon-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 6px;
+      height: 110px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .dash-card.neon-card:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .dash-value {
+      font-size: 1.85em;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 6px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .neon-text-cyan {
+      color: #00f2fe;
+      text-shadow: 0 0 12px rgba(0, 242, 254, 0.8), 0 0 22px rgba(0, 242, 254, 0.4);
+    }
+    .neon-text-green {
+      color: #10b981;
+      text-shadow: 0 0 12px rgba(16, 185, 129, 0.8), 0 0 22px rgba(16, 185, 129, 0.4);
+    }
+    .neon-text-gold {
+      color: #facc15;
+      text-shadow: 0 0 12px rgba(250, 204, 21, 0.8), 0 0 22px rgba(250, 204, 21, 0.4);
+    }
+    .neon-text-pink {
+      color: #f43f5e;
+      text-shadow: 0 0 12px rgba(244, 63, 94, 0.8), 0 0 22px rgba(244, 63, 94, 0.4);
+    }
+    .dash-icon-box {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dash-img-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+      transition: transform 0.3s ease;
+    }
+    .dash-card.neon-card:hover .dash-img-icon {
+      transform: scale(1.12);
+    }
+
+    body.light-mode .dash-card.neon-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
   </style>
 </head>
 <body>
@@ -678,12 +745,24 @@ body.light-mode .highlight-overlay {
       <div id="apiWarning" class="api-warning" style="margin-bottom: 0;">⚠️ ระบบยังไม่ได้เชื่อมต่อ API — กรุณาไปที่ปุ่ม "ตั้งค่าระบบ"</div>
     </div>
 
-    <!-- สถิติบนสุด -->
+    <!-- สถิติบนสุด (ตัวเลขเรืองแสงแบบนีออน + ไอคอนการ์ตูน) -->
     <div class="dashboard-grid" id="main-dashboard">
-      <div class="dash-card att" onclick="nav('stats')"><div class="dash-icon">👨‍🎓👩‍🎓</div><div class="dash-value att" id="dash-att">-</div><div class="dash-label">เข้าใช้ (ครั้ง)</div></div>
-      <div class="dash-card bor" onclick="nav('borrow')"><div class="dash-icon">📖</div><div class="dash-value bor" id="dash-bor">-</div><div class="dash-label">ยืมหนังสือ</div></div>
-      <div class="dash-card read" onclick="nav('reading')"><div class="dash-icon">⭐</div><div class="dash-value read" id="dash-read">-</div><div class="dash-label">รักการอ่าน</div></div>
-      <div class="dash-card hw" onclick="nav('homework')"><div class="dash-icon">📁</div><div class="dash-value hw" id="dash-hw">-</div><div class="dash-label">ส่งงาน</div></div>
+      <div class="dash-card att neon-card" onclick="nav('stats')">
+        <div class="dash-value att neon-text-cyan" id="dash-att">-</div>
+        <div class="dash-icon-box"><img src="assets/icon-attendance.png" alt="เข้าใช้" class="dash-img-icon"></div>
+      </div>
+      <div class="dash-card bor neon-card" onclick="nav('borrow')">
+        <div class="dash-value bor neon-text-green" id="dash-bor">-</div>
+        <div class="dash-icon-box"><img src="assets/icon-borrow.png" alt="ยืมหนังสือ" class="dash-img-icon"></div>
+      </div>
+      <div class="dash-card read neon-card" onclick="nav('reading')">
+        <div class="dash-value read neon-text-gold" id="dash-read">-</div>
+        <div class="dash-icon-box"><img src="assets/icon-reading.png" alt="รักการอ่าน" class="dash-img-icon"></div>
+      </div>
+      <div class="dash-card hw neon-card" onclick="nav('homework')">
+        <div class="dash-value hw neon-text-pink" id="dash-hw">-</div>
+        <div class="dash-icon-box"><img src="assets/icon-homework.png" alt="ส่งงาน" class="dash-img-icon"></div>
+      </div>
     </div>
 
     <!-- ปุ่มเข้าใช้งานและสแกน -->
@@ -1586,6 +1665,18 @@ console.log(payload);
       }
     }
 
+    function getStudentAvatarHtml(name) {
+      if (!name) return '🧑';
+      const clean = name.trim();
+      if (clean.startsWith('เด็กชาย') || clean.startsWith('ด.ช.') || clean.startsWith('นาย')) {
+        return '👦';
+      }
+      if (clean.startsWith('เด็กหญิง') || clean.startsWith('ด.ญ.') || clean.startsWith('นางสาว') || clean.startsWith('นาง')) {
+        return '👧';
+      }
+      return '🧑';
+    }
+
     // --- STATS ---
     async function fetchStats() { 
       const statusDiv = document.getElementById('stats-status'); 
@@ -1625,7 +1716,7 @@ console.log(payload);
                 ${rank2 ? `
                   <div class="podium-card rank-2">
                     <div class="podium-crown">🥈</div>
-                    <div class="podium-avatar">🐱</div>
+                    <div class="podium-avatar">${getStudentAvatarHtml(rank2.name)}</div>
                     <div class="podium-name">${rank2.name}</div>
                     <div class="podium-badge">📍 ${rank2.cls}</div>
                     <div class="podium-count">${rank2.count}</div>
@@ -1639,7 +1730,7 @@ console.log(payload);
                 ${rank1 ? `
                   <div class="podium-card rank-1">
                     <div class="podium-crown">👑</div>
-                    <div class="podium-avatar">🐱</div>
+                    <div class="podium-avatar">${getStudentAvatarHtml(rank1.name)}</div>
                     <div class="podium-name">${rank1.name}</div>
                     <div class="podium-badge">★ ผู้ชนะ ★</div>
                     <div style="font-size:0.8em; opacity:0.9; margin-bottom:4px;">📍 ${rank1.cls}</div>
@@ -1654,7 +1745,7 @@ console.log(payload);
                 ${rank3 ? `
                   <div class="podium-card rank-3">
                     <div class="podium-crown">🥉</div>
-                    <div class="podium-avatar">🐱</div>
+                    <div class="podium-avatar">${getStudentAvatarHtml(rank3.name)}</div>
                     <div class="podium-name">${rank3.name}</div>
                     <div class="podium-badge">📍 ${rank3.cls}</div>
                     <div class="podium-count">${rank3.count}</div>
@@ -1675,7 +1766,7 @@ console.log(payload);
               html += `
               <div class="white-stat-card">
                 <div class="white-rank-num">${rankNum}</div>
-                <div class="white-avatar">🐱</div>
+                <div class="white-avatar">${getStudentAvatarHtml(s.name)}</div>
                 <div class="white-info">
                   <div class="white-name">${s.name}</div>
                   <div class="white-sub">ชั้น ${s.cls}</div>
@@ -1699,7 +1790,7 @@ console.log(payload);
               html += `
               <div class="white-stat-card" style="margin-bottom: 8px;">
                 <div class="white-rank-num" style="width: 36px; height: 36px; font-size: 1.05em; margin-right: 10px;">${i+1}</div>
-                <div class="white-avatar" style="width: 34px; height: 34px; font-size: 1.1em; margin-right: 10px;">🐱</div>
+                <div class="white-avatar" style="width: 34px; height: 34px; font-size: 1.1em; margin-right: 10px;">${getStudentAvatarHtml(s.name)}</div>
                 <div class="white-info">
                   <div class="white-name" style="font-size: 0.98em;">${s.name}</div>
                 </div>
