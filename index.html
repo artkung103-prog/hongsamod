@@ -401,6 +401,244 @@ body.light-mode .highlight-overlay {
       .mobile-name { display: inline !important; }
       
       .dashboard-grid, .menu-grid-4, .menu-row { gap: 6px; }
+      .podium-card.rank-1 { min-height: 210px !important; }
+      .podium-card.rank-2 { min-height: 175px !important; }
+      .podium-card.rank-3 { min-height: 160px !important; }
+      .podium-avatar { width: 46px !important; height: 46px !important; font-size: 1.4em !important; }
+      .podium-name { font-size: 0.95em !important; }
+      .podium-count { font-size: 1.5em !important; }
+    }
+
+    /* ========================================================
+       🏆 PODIUM & LEADERBOARD STYLING
+       ======================================================== */
+    .podium-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 750px;
+      margin: 10px auto 25px auto;
+      padding: 25px 10px 10px 10px;
+      box-sizing: border-box;
+    }
+    .podium-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+    .podium-column {
+      flex: 1;
+      max-width: 210px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .podium-card {
+      width: 100%;
+      border-radius: 20px;
+      padding: 18px 10px 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      transition: transform 0.3s ease;
+    }
+    .podium-card:hover {
+      transform: translateY(-5px);
+    }
+    .podium-card.rank-1 {
+      min-height: 250px;
+      background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+      color: #1e293b;
+      border: 3px solid #fef08a;
+      box-shadow: 0 12px 35px rgba(245, 158, 11, 0.45);
+    }
+    .podium-card.rank-2 {
+      min-height: 205px;
+      background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+      color: #0f172a;
+      border: 3px solid #f8fafc;
+      box-shadow: 0 8px 25px rgba(148, 163, 184, 0.35);
+    }
+    .podium-card.rank-3 {
+      min-height: 185px;
+      background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      border: 3px solid #fde68a;
+      box-shadow: 0 8px 25px rgba(217, 119, 6, 0.35);
+    }
+    .podium-crown {
+      position: absolute;
+      top: -22px;
+      font-size: 26px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+      animation: floatCrown 2.5s ease-in-out infinite alternate;
+    }
+    @keyframes floatCrown {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-6px); }
+    }
+    .podium-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #ffedd5;
+      border: 3px solid rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8em;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .podium-name {
+      font-weight: 800;
+      font-size: 1.1em;
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .podium-badge {
+      background: rgba(0,0,0,0.12);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.78em;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .podium-count {
+      font-size: 2em;
+      font-weight: 900;
+      color: #0284c7;
+      margin-top: auto;
+      text-shadow: 0 2px 4px rgba(255,255,255,0.3);
+    }
+    .rank-3 .podium-count {
+      color: #fef08a;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .podium-base {
+      width: 100%;
+      margin-top: 8px;
+      border-radius: 14px;
+      padding: 8px;
+      font-size: 1.6em;
+      font-weight: 900;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .rank-1 + .podium-base { background: #f59e0b; color: #fff; }
+    .rank-2 + .podium-base { background: #94a3b8; color: #fff; }
+    .rank-3 + .podium-base { background: #b45309; color: #fff; }
+
+    /* Party Confetti Elements */
+    .confetti-particle {
+      position: absolute;
+      z-index: 1;
+      pointer-events: none;
+      animation: floatSparkle 3s ease-in-out infinite alternate;
+    }
+    .p-star { color: #facc15; font-size: 20px; }
+    .p-circle { color: #ec4899; font-size: 14px; }
+    .p-square { color: #3b82f6; font-size: 14px; }
+    .p-plus { color: #10b981; font-size: 18px; font-weight: bold; }
+    
+    .p1 { top: 10px; left: 12%; animation-delay: 0s; }
+    .p2 { top: 45px; left: 22%; animation-delay: 0.5s; }
+    .p3 { top: 20px; left: 45%; animation-delay: 1s; }
+    .p4 { top: 5px; right: 40%; animation-delay: 1.5s; }
+    .p5 { top: 35px; right: 20%; animation-delay: 0.3s; }
+    .p6 { top: 80px; left: 8%; animation-delay: 1.2s; }
+    .p7 { top: 15px; right: 10%; animation-delay: 0.8s; }
+    .p8 { top: 90px; right: 14%; animation-delay: 1.7s; }
+
+    @keyframes floatSparkle {
+      0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.7; }
+      50% { transform: translateY(-12px) rotate(20deg) scale(1.2); opacity: 1; }
+      100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.7; }
+    }
+
+    /* White Stat Cards (Ranks 4-10 and By Class) */
+    .white-stat-card {
+      background: #ffffff;
+      color: #1e293b;
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .white-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .white-rank-num {
+      width: 42px;
+      height: 42px;
+      background: #f1f5f9;
+      color: #475569;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2em;
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+    .white-avatar {
+      width: 40px;
+      height: 40px;
+      background: #ffedd5;
+      color: #ea580c;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3em;
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+    .white-info {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+    .white-name {
+      font-weight: 700;
+      font-size: 1em;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .white-sub {
+      font-size: 0.82em;
+      color: #64748b;
+      margin-top: 1px;
+    }
+    .white-count {
+      font-weight: 900;
+      font-size: 1.35em;
+      color: #0284c7;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+
+    body.light-mode .white-stat-card {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
     }
   </style>
 </head>
@@ -1350,13 +1588,134 @@ console.log(payload);
 
     // --- STATS ---
     async function fetchStats() { 
-      const statusDiv = document.getElementById('stats-status'); statusDiv.style.display = 'flex'; document.getElementById('stats-content').style.display = 'none'; 
+      const statusDiv = document.getElementById('stats-status'); 
+      if (statusDiv) statusDiv.style.display = 'flex'; 
+      const contentDiv = document.getElementById('stats-content');
+      if (contentDiv) contentDiv.style.display = 'none'; 
+      
       try { 
-        const data = await gasGet('getStats'); const overallDiv = document.getElementById('stats-overall'); overallDiv.innerHTML = ''; 
-        if(data.overall.length === 0) overallDiv.innerHTML = '<div class="c-empty">ยังไม่มีข้อมูล</div>'; data.overall.forEach((s, i) => { overallDiv.innerHTML += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> <span class="c-rank-text">${s.name}</span> <span class="c-rank-sub">(${s.cls})</span></div><div class="stat-count">${s.count} ครั้ง</div></div>`; }); 
-        const byClassDiv = document.getElementById('stats-by-class'); byClassDiv.innerHTML = ''; const classes = ['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6']; classes.forEach(cls => { if(data.byClass[cls] && data.byClass[cls].length > 0) { let html = `<div class="stats-card"><h3>📍 ยอดฮิต ชั้น ${cls}</h3>`; data.byClass[cls].forEach((s, i) => { html += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> <span class="c-rank-text">${s.name}</span></div><div class="stat-count">${s.count} ครั้ง</div></div>`; }); html += `</div>`; byClassDiv.innerHTML += html; } }); 
-        statusDiv.style.display = 'none'; document.getElementById('stats-content').style.display = 'block'; 
-      } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดาวน์โหลดข้อมูลล้มเหลว</div>'; } 
+        const data = await gasGet('getStats'); 
+        const overallDiv = document.getElementById('stats-overall'); 
+        overallDiv.innerHTML = ''; 
+        
+        if (!data || !data.overall || data.overall.length === 0) {
+          overallDiv.innerHTML = '<div class="c-empty">ยังไม่มีข้อมูลสถิติ</div>';
+        } else {
+          // --- 1. RENDER PODIUM (Rank 1-3) ---
+          const top3 = data.overall.slice(0, 3);
+          const rank1 = top3[0] || null;
+          const rank2 = top3[1] || null;
+          const rank3 = top3[2] || null;
+
+          let html = `
+          <div class="podium-wrapper">
+            <!-- Particle Confetti Elements -->
+            <span class="confetti-particle p-star p1">★</span>
+            <span class="confetti-particle p-circle p2">●</span>
+            <span class="confetti-particle p-square p3">■</span>
+            <span class="confetti-particle p-plus p4">+</span>
+            <span class="confetti-particle p-star p5">★</span>
+            <span class="confetti-particle p-circle p6">●</span>
+            <span class="confetti-particle p-square p7">■</span>
+            <span class="confetti-particle p-plus p8">+</span>
+
+            <div class="podium-container">
+              <!-- RANK 2 (Left) -->
+              <div class="podium-column">
+                ${rank2 ? `
+                  <div class="podium-card rank-2">
+                    <div class="podium-crown">🥈</div>
+                    <div class="podium-avatar">🐱</div>
+                    <div class="podium-name">${rank2.name}</div>
+                    <div class="podium-badge">📍 ${rank2.cls}</div>
+                    <div class="podium-count">${rank2.count}</div>
+                  </div>
+                  <div class="podium-base">2</div>
+                ` : '<div style="visibility:hidden"></div>'}
+              </div>
+
+              <!-- RANK 1 (Center) -->
+              <div class="podium-column">
+                ${rank1 ? `
+                  <div class="podium-card rank-1">
+                    <div class="podium-crown">👑</div>
+                    <div class="podium-avatar">🐱</div>
+                    <div class="podium-name">${rank1.name}</div>
+                    <div class="podium-badge">★ ผู้ชนะ ★</div>
+                    <div style="font-size:0.8em; opacity:0.9; margin-bottom:4px;">📍 ${rank1.cls}</div>
+                    <div class="podium-count">${rank1.count}</div>
+                  </div>
+                  <div class="podium-base">1</div>
+                ` : '<div style="visibility:hidden"></div>'}
+              </div>
+
+              <!-- RANK 3 (Right) -->
+              <div class="podium-column">
+                ${rank3 ? `
+                  <div class="podium-card rank-3">
+                    <div class="podium-crown">🥉</div>
+                    <div class="podium-avatar">🐱</div>
+                    <div class="podium-name">${rank3.name}</div>
+                    <div class="podium-badge">📍 ${rank3.cls}</div>
+                    <div class="podium-count">${rank3.count}</div>
+                  </div>
+                  <div class="podium-base">3</div>
+                ` : '<div style="visibility:hidden"></div>'}
+              </div>
+            </div>
+          </div>
+          `;
+
+          // --- 2. RENDER RANK 4 - 10 (White Cards) ---
+          const rest = data.overall.slice(3, 10);
+          if (rest.length > 0) {
+            html += `<h4 style="margin: 30px 0 15px 0; color: #94a3b8; font-size: 1.15em; text-align: left;">🏆 อันดับอื่นๆ (4 - 10)</h4>`;
+            rest.forEach((s, idx) => {
+              const rankNum = idx + 4;
+              html += `
+              <div class="white-stat-card">
+                <div class="white-rank-num">${rankNum}</div>
+                <div class="white-avatar">🐱</div>
+                <div class="white-info">
+                  <div class="white-name">${s.name}</div>
+                  <div class="white-sub">ชั้น ${s.cls}</div>
+                </div>
+                <div class="white-count">${s.count} <span style="font-size:0.65em; font-weight:normal; color:#64748b;">ครั้ง</span></div>
+              </div>`;
+            });
+          }
+
+          overallDiv.innerHTML = html;
+        }
+
+        // --- 3. RENDER BY CLASS (White Cards) ---
+        const byClassDiv = document.getElementById('stats-by-class'); 
+        byClassDiv.innerHTML = ''; 
+        const classes = ['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6']; 
+        classes.forEach(cls => { 
+          if(data.byClass && data.byClass[cls] && data.byClass[cls].length > 0) { 
+            let html = `<div class="stats-card" style="background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); padding: 18px;"><h3 style="color:#38bdf8; font-size:1.15em; margin-bottom:15px;">📍 ยอดฮิต ชั้น ${cls}</h3>`; 
+            data.byClass[cls].forEach((s, i) => { 
+              html += `
+              <div class="white-stat-card" style="margin-bottom: 8px;">
+                <div class="white-rank-num" style="width: 36px; height: 36px; font-size: 1.05em; margin-right: 10px;">${i+1}</div>
+                <div class="white-avatar" style="width: 34px; height: 34px; font-size: 1.1em; margin-right: 10px;">🐱</div>
+                <div class="white-info">
+                  <div class="white-name" style="font-size: 0.98em;">${s.name}</div>
+                </div>
+                <div class="white-count" style="font-size: 1.2em;">${s.count} <span style="font-size:0.65em; font-weight:normal; color:#64748b;">ครั้ง</span></div>
+              </div>`; 
+            }); 
+            html += `</div>`; 
+            byClassDiv.innerHTML += html; 
+          } 
+        }); 
+
+        if (statusDiv) statusDiv.style.display = 'none'; 
+        if (contentDiv) contentDiv.style.display = 'block'; 
+      } catch (e) { 
+        if (statusDiv) statusDiv.innerHTML = '<div class="c-empty">❌ ดาวน์โหลดข้อมูลล้มเหลว</div>'; 
+      } 
     }
 
     // --- FACE SCAN ---
