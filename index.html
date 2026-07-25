@@ -250,7 +250,8 @@ body:not(.dark-mode) textarea,
     .tab-btn { flex: 1; min-width: 110px; padding: 10px 5px; text-align: center; border-radius: 10px; cursor: pointer; color: #94a3b8; font-weight: 600; font-size: 0.9em; transition: all 0.3s; white-space: nowrap;}
     .tab-btn.active { background: rgba(250, 204, 21, 0.2); color: #facc15; }
     .tab-hw .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
-    .tab-borrow .tab-btn.active { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+    .tab-borrow .tab-btn { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .tab-borrow .tab-btn.active { background: linear-gradient(135deg, #ef4444, #dc2626) !important; color: #ffffff !important; font-weight: 800 !important; border-color: #ef4444 !important; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.65), 0 0 10px rgba(239, 68, 68, 0.4) !important; }
     .tab-data .tab-btn.active { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
     .tab-content { width: 100%; display: none; animation: fadeIn 0.3s ease; }
     .tab-content.active { display: block; }
@@ -1358,28 +1359,26 @@ body.light-mode .highlight-overlay {
           </div>
         </div>
 
-        <!-- แถวที่ 2: ชื่อหนังสือ (ซ้าย) + วันที่ยืม (ขวา) -->
-        <div style="display: flex; gap: 16px; margin-bottom: 14px;">
-          <div style="flex: 1;">
-            <label>ชื่อหนังสือ</label>
-            <input type="text" id="borrow-book-name" placeholder="ระบุชื่อหนังสือ" style="margin-bottom: 0;">
-          </div>
+        <!-- แถวที่ 2: ชื่อหนังสือ (1 แถวเดี่ยวเต็มความกว้าง 100%) -->
+        <div style="margin-bottom: 14px;">
+          <label>ชื่อหนังสือ</label>
+          <input type="text" id="borrow-book-name" placeholder="ระบุชื่อหนังสือที่ต้องการยืม" style="margin-bottom: 0;">
+        </div>
+
+        <!-- แถวที่ 3: วันที่ยืม (ซ้าย) + วันที่คืน (กลาง) + ปุ่มบันทึกการยืม (ขวา) อยู่ในแถวเดียวกัน -->
+        <div style="display: flex; gap: 14px; align-items: flex-end;">
           <div style="flex: 1;">
             <label>วันที่ยืม</label>
             <input type="text" id="borrow-date-display" readonly style="background: rgba(0,0,0,0.2); color: #94a3b8; cursor: not-allowed; border-color: rgba(255,255,255,0.05); margin-bottom: 0;">
           </div>
-        </div>
-
-        <!-- แถวที่ 3: วันที่คืน (ซ้าย) + ปุ่มบันทึกการยืม (ขวา) -->
-        <div style="display: flex; gap: 16px; align-items: flex-end;">
           <div style="flex: 1;">
             <label>วันที่คืน (กำหนดส่ง)</label>
             <div style="position: relative; margin-bottom: 0;">
-              <input type="text" id="borrow-return-date" class="date-picker-input" placeholder="คลิกเลือกวันที่คืน พ.ศ. ไทย" style="margin-bottom: 0;">
-              <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 1.2em; pointer-events: none; z-index: 5;">📅</span>
+              <input type="text" id="borrow-return-date" class="date-picker-input" placeholder="คลิกเลือกวันที่คืน" style="margin-bottom: 0;">
+              <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 1.2em; pointer-events: none; z-index: 5;">📅</span>
             </div>
           </div>
-          <div style="flex: 1;">
+          <div style="flex: 1.1;">
             <button class="btn-action btn-primary" onclick="submitBorrow()" style="margin-bottom: 0; height: 56px; font-size: 1.1em; background: linear-gradient(135deg, #10b981, #059669);">💾 บันทึกการยืม</button>
           </div>
         </div>
@@ -1387,9 +1386,26 @@ body.light-mode .highlight-overlay {
     </div>
 
     <div id="borrow-tab-2" class="tab-content">
-      <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;"><select id="filter-borrow-class" onchange="renderFilteredBorrows()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📚 ทุกชั้นเรียน</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select><select id="filter-borrow-status" onchange="renderFilteredBorrows()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📌 ทุกสถานะ</option><option value="กำลังยืม">⏳ กำลังยืม</option><option value="คืนเรียบร้อย">✅ คืนเรียบร้อย</option><option value="เกินกำหนด">❌ เกินกำหนด</option></select></div>
+      <div id="borrow-filter-container" style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;">
+        <select id="filter-borrow-class" onchange="renderFilteredBorrows()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);">
+          <option value="all">📚 ทุกชั้นเรียน</option>
+          <option value="ป.1">ชั้น ป.1</option>
+          <option value="ป.2">ชั้น ป.2</option>
+          <option value="ป.3">ชั้น ป.3</option>
+          <option value="ป.4">ชั้น ป.4</option>
+          <option value="ป.5">ชั้น ป.5</option>
+          <option value="ป.6">ชั้น ป.6</option>
+        </select>
+        <select id="filter-borrow-status" onchange="renderFilteredBorrows()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);">
+          <option value="all">📌 ทุกสถานะ</option>
+          <option value="กำลังยืม">⏳ กำลังยืม</option>
+          <option value="รอครูยืนยันการคืน">⏳ รอครูยืนยันการคืน</option>
+          <option value="คืนเรียบร้อย">✅ คืนเรียบร้อย</option>
+          <option value="เกินกำหนด">❌ เกินกำหนด</option>
+        </select>
+      </div>
       <div class="status-text" id="borrow-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #ec4899; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #fbcfe8;">กำลังดึงข้อมูล...</div></div>
-      <div id="borrow-list" class="stats-grid-container"></div>
+      <div id="borrow-list"></div>
     </div>
   </div>
 
@@ -2280,7 +2296,161 @@ console.log(payload);
       const statusDiv = document.getElementById('borrow-status'), listDiv = document.getElementById('borrow-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
       try { allBorrows = await gasGet('getBorrows'); statusDiv.style.display = 'none'; renderFilteredBorrows(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
     }
-    function renderFilteredBorrows() { const container = document.getElementById('borrow-list'), filterClass = document.getElementById('filter-borrow-class').value, filterStatus = document.getElementById('filter-borrow-status').value, today = new Date(); today.setHours(0,0,0,0); let processedData = allBorrows.map(item => { let derivedStatus = item.status; if (item.status !== 'คืนเรียบร้อย') { let returnDateObj = new Date(); if (item.returnDate && item.returnDate.includes('-')) { const parts = item.returnDate.split('-'); returnDateObj = new Date(parts[0], parts[1] - 1, parts[2]); } else { returnDateObj = new Date(item.returnDate); } returnDateObj.setHours(0,0,0,0); if (today > returnDateObj) derivedStatus = 'เกินกำหนด'; else derivedStatus = 'กำลังยืม'; } return { ...item, derivedStatus: derivedStatus }; }); let filteredData = processedData; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.derivedStatus === filterStatus); if (filteredData.length === 0) { container.innerHTML = '<div class="stats-card c-empty">ไม่พบข้อมูล</div>'; return; } container.innerHTML = ''; filteredData.forEach(item => { let statusColor = '', actionText = ''; if (item.derivedStatus === 'คืนเรียบร้อย') { statusColor = '#34d399'; actionText = '✅ คืนเรียบร้อย'; } else if (item.derivedStatus === 'เกินกำหนด') { statusColor = '#ef4444'; actionText = '❌ เกินกำหนด'; } else { statusColor = '#f59e0b'; actionText = '⏳ กำลังยืม'; } const card = `<div class="stats-card" style="border-left: 4px solid ${statusColor};"><div class="c-title" style="font-size: 1.1em;">📖 ${item.bookName}</div><div class="c-desc">ผู้ยืม: ${item.name} (${item.className})</div><div class="c-box"><div><span class="c-label">วันที่ยืม:</span> <br><span class="c-val-b1">${formatThaiDate(item.borrowDate)}</span></div><div style="text-align: right;"><span class="c-label">กำหนดคืน:</span> <br><span class="c-val-b2">${formatThaiDate(item.returnDate)}</span></div></div><div class="c-divider"><div style="font-weight: 600; color: ${statusColor}; background: ${statusColor}15; padding: 4px 10px; border-radius: 20px; font-size: 0.85em;">${actionText}</div>${item.derivedStatus !== 'คืนเรียบร้อย' ? `<button onclick="changeBorrowStatus(${item.rowIdx})" class="btn-c-status">เปลี่ยนสถานะ</button>` : `<span class="c-label" style="font-size: 0.85em;">✅ ปิดรายการแล้ว</span>`}</div></div>`; container.innerHTML += card; }); }
+    function renderFilteredBorrows() {
+      const container = document.getElementById('borrow-list');
+      const filterContainer = document.getElementById('borrow-filter-container');
+      const filterClassEl = document.getElementById('filter-borrow-class');
+      const filterStatusEl = document.getElementById('filter-borrow-status');
+      
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      
+      // Hide filter dropdowns in Student Mode, show in Teacher Mode
+      if (filterContainer) {
+        filterContainer.style.display = isTeacher ? 'flex' : 'none';
+      }
+
+      const filterClass = filterClassEl ? filterClassEl.value : 'all';
+      const filterStatus = filterStatusEl ? filterStatusEl.value : 'all';
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let processedData = allBorrows.map(item => {
+        let derivedStatus = item.status;
+        if (item.status !== 'คืนเรียบร้อย' && item.status !== 'รอครูยืนยันการคืน') {
+          let returnDateObj = new Date();
+          if (item.returnDate && item.returnDate.includes('-')) {
+            const parts = item.returnDate.split('-');
+            returnDateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+          } else {
+            returnDateObj = new Date(item.returnDate);
+          }
+          returnDateObj.setHours(0, 0, 0, 0);
+          if (today > returnDateObj) derivedStatus = 'เกินกำหนด';
+          else derivedStatus = 'กำลังยืม';
+        }
+        return { ...item, derivedStatus: derivedStatus };
+      });
+
+      let filteredData = processedData;
+
+      // In Student Mode: ONLY show books borrowed by current student!
+      if (!isTeacher && currentLoggedInUser && currentLoggedInUser.name) {
+        filteredData = filteredData.filter(item => item.name === currentLoggedInUser.name);
+      } else if (isTeacher) {
+        if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass);
+        if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.derivedStatus === filterStatus);
+      }
+
+      if (filteredData.length === 0) {
+        container.innerHTML = '<div class="stats-card c-empty">ไม่พบรายการยืม-คืนหนังสือ</div>';
+        return;
+      }
+
+      let html = '';
+
+      if (isTeacher) {
+        // --- TEACHER VIEW: Full Single Horizontal Row Cards ---
+        container.style.display = 'block';
+        filteredData.forEach(item => {
+          let statusColor = '#f59e0b', actionText = item.derivedStatus;
+          if (item.derivedStatus === 'คืนเรียบร้อย') {
+            statusColor = '#10b981';
+            actionText = '✅ คืนเรียบร้อย';
+          } else if (item.derivedStatus === 'รอครูยืนยันการคืน') {
+            statusColor = '#f97316';
+            actionText = '⏳ รอครูยืนยันการคืน';
+          } else if (item.derivedStatus === 'เกินกำหนด') {
+            statusColor = '#ef4444';
+            actionText = '❌ เกินกำหนด';
+          } else {
+            statusColor = '#f59e0b';
+            actionText = '⏳ กำลังยืม';
+          }
+
+          html += `
+          <div class="stats-card" style="border-left: 5px solid ${statusColor}; box-shadow: 0 4px 16px ${statusColor}33; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; margin-bottom: 12px; border-radius: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1.5; min-width: 0;">
+              <div style="font-size: 1.5em;">📖</div>
+              <div style="text-align: left; overflow: hidden;">
+                <div style="font-weight: 800; font-size: 1.1em; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.bookName}</div>
+                <div style="font-size: 0.85em; color: #cbd5e1;">ผู้ยืม: <b style="color:#facc15;">${item.name}</b> (${item.className})</div>
+              </div>
+            </div>
+
+            <div style="flex: 1.2; text-align: center; font-size: 0.85em; color: #cbd5e1; display: flex; gap: 16px; justify-content: center;">
+              <div>ยืม: <b style="color:#38bdf8;">${formatThaiDate(item.borrowDate)}</b></div>
+              <div>คืน: <b style="color:#f43f5e;">${formatThaiDate(item.returnDate)}</b></div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+              <div style="font-weight: 700; color: ${statusColor}; background: ${statusColor}20; border: 1px solid ${statusColor}50; padding: 6px 14px; border-radius: 20px; font-size: 0.88em;">${actionText}</div>
+              ${item.derivedStatus !== 'คืนเรียบร้อย' ? `<button onclick="approveReturnBook(${item.rowIdx})" class="btn-action" style="padding: 8px 16px; font-size: 0.9em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px;">✅ อนุมัติคืนหนังสือ</button>` : `<span style="font-size: 0.85em; color: #34d399; font-weight: 600;">✅ ปิดรายการแล้ว</span>`}
+            </div>
+          </div>`;
+        });
+      } else {
+        // --- STUDENT VIEW: Personal Cards ---
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+        container.style.gap = '15px';
+
+        filteredData.forEach(item => {
+          let statusColor = '#f59e0b', actionText = item.derivedStatus;
+          if (item.derivedStatus === 'คืนเรียบร้อย') {
+            statusColor = '#10b981';
+            actionText = '✅ คืนเรียบร้อย';
+          } else if (item.derivedStatus === 'รอครูยืนยันการคืน') {
+            statusColor = '#f97316';
+            actionText = '⏳ รอครูยืนยันการคืน';
+          } else if (item.derivedStatus === 'เกินกำหนด') {
+            statusColor = '#ef4444';
+            actionText = '❌ เกินกำหนด';
+          } else {
+            statusColor = '#f59e0b';
+            actionText = '⏳ กำลังยืม';
+          }
+
+          html += `
+          <div class="stats-card" style="border-left: 4px solid ${statusColor}; box-shadow: 0 4px 16px ${statusColor}33; text-align: left;">
+            <div class="c-title" style="font-size: 1.2em; font-weight: 800;">📖 ${item.bookName}</div>
+            <div class="c-desc" style="color: #cbd5e1; margin-bottom: 10px;">ผู้ยืม: ${item.name} (${item.className})</div>
+            <div class="c-box">
+              <div><span class="c-label">วันที่ยืม:</span> <br><span class="c-val-b1">${formatThaiDate(item.borrowDate)}</span></div>
+              <div style="text-align: right;"><span class="c-label">กำหนดคืน:</span> <br><span class="c-val-b2">${formatThaiDate(item.returnDate)}</span></div>
+            </div>
+            <div class="c-divider">
+              <div style="font-weight: 700; color: ${statusColor}; background: ${statusColor}20; border: 1px solid ${statusColor}50; padding: 4px 12px; border-radius: 20px; font-size: 0.85em;">${actionText}</div>
+              ${(item.derivedStatus === 'กำลังยืม' || item.derivedStatus === 'เกินกำหนด') ? `<button onclick="requestReturnBook(${item.rowIdx})" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #f97316, #ea580c); color: white; border-radius: 20px;">📤 แจ้งคืนหนังสือ</button>` : ''}
+              ${item.derivedStatus === 'รอครูยืนยันการคืน' ? `<span style="font-size: 0.82em; color: #f97316; font-weight: 600;">⏳ รอครูตรวจ</span>` : ''}
+              ${item.derivedStatus === 'คืนเรียบร้อย' ? `<span style="font-size: 0.82em; color: #34d399; font-weight: 600;">✅ คืนแล้ว</span>` : ''}
+            </div>
+          </div>`;
+        });
+      }
+
+      container.innerHTML = html;
+    }
+
+    async function requestReturnBook(rowIdx) {
+      Swal.fire({
+        title: '📤 ยืนยันการแจ้งคืนหนังสือ',
+        text: 'ส่งคำขอแจ้งคืนหนังสือให้คุณครูตรวจใช่หรือไม่?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, แจ้งคืนหนังสือ',
+        cancelButtonText: 'ยกเลิก',
+        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#f97316'
+      }).then(async (res) => {
+        if (res.isConfirmed) {
+          updateBorrowStatusAPI(rowIdx, 'รอครูยืนยันการคืน');
+        }
+      });
+    }
+
+    async function approveReturnBook(rowIdx) {
+      updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย');
+    }
+
     function changeBorrowStatus(rowIdx) { 
       if (currentLoggedInUser && currentLoggedInUser.isTeacher) {
         updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย');
