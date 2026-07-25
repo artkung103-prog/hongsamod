@@ -751,6 +751,46 @@ body.light-mode .highlight-overlay {
       background: rgba(168, 85, 247, 0.15);
       border: 1.5px solid rgba(168, 85, 247, 0.4);
     }
+    .box-cyan {
+      background: rgba(0, 242, 254, 0.15);
+      border: 1.5px solid rgba(0, 242, 254, 0.4);
+    }
+    .box-teal {
+      background: rgba(20, 184, 166, 0.15);
+      border: 1.5px solid rgba(20, 184, 166, 0.4);
+    }
+
+    .card-cyan {
+      border-bottom: 3.5px solid #00f2fe;
+      box-shadow: 0 8px 22px -4px rgba(0, 242, 254, 0.35);
+    }
+    .card-cyan:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: #00f2fe;
+      box-shadow: 0 16px 36px rgba(0, 242, 254, 0.6), 0 0 18px rgba(0, 242, 254, 0.4);
+    }
+    .card-teal {
+      border-bottom: 3.5px solid #14b8a6;
+      box-shadow: 0 8px 22px -4px rgba(20, 184, 166, 0.35);
+    }
+    .card-teal:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: #14b8a6;
+      box-shadow: 0 16px 36px rgba(20, 184, 166, 0.6), 0 0 18px rgba(20, 184, 166, 0.4);
+    }
+
+    .menu-icon-text {
+      font-size: 24px;
+      line-height: 1;
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+    .full-neon-menu {
+      flex-direction: row !important;
+      height: auto !important;
+      padding: 16px 20px !important;
+      text-align: left !important;
+    }
 
     .dash-img-icon {
       width: 100%;
@@ -761,7 +801,8 @@ body.light-mode .highlight-overlay {
     }
 
     /* Hover Icon Wiggle Bounce Animation */
-    .dash-card:hover .dash-img-icon {
+    .neon-card:hover .dash-img-icon,
+    .neon-card:hover .menu-icon-text {
       animation: iconWiggleBounce 0.6s ease-in-out infinite alternate;
     }
     @keyframes iconWiggleBounce {
@@ -841,21 +882,39 @@ body.light-mode .highlight-overlay {
 
     <!-- ปุ่มเข้าใช้งานและสแกน -->
     <div class="menu-row">
-      <div class="btn-half btn-manual" onclick="nav('manual')"><div class="card-icon">📝</div><div class="card-title">ลงชื่อเข้าใช้</div></div>
-      <div class="btn-half btn-scan" onclick="nav('scan')"><div class="card-icon">📷</div><div class="card-title">สแกนใบหน้า</div></div>
+      <div class="btn-half btn-manual neon-card card-cyan" onclick="nav('manual')">
+        <div class="dash-icon-box box-cyan"><span class="menu-icon-text">📝</span></div>
+        <div class="card-title" style="margin-top: 8px;">ลงชื่อเข้าใช้</div>
+      </div>
+      <div class="btn-half btn-scan neon-card card-green" onclick="nav('scan')">
+        <div class="dash-icon-box box-green"><span class="menu-icon-text">📷</span></div>
+        <div class="card-title" style="margin-top: 8px;">สแกนใบหน้า</div>
+      </div>
     </div>
 
     <!-- เมนูอื่นๆ ของระบบ -->
     <div class="menu-grid-4">
-      <div class="btn-quarter btn-link" onclick="nav('links')"><div class="card-icon">🔗</div><div class="card-title">ฝากลิงก์</div></div>
-      <div class="btn-quarter btn-profile" onclick="nav('studentdata')"><div class="card-icon">📇</div><div class="card-title">ทำเนียบ</div></div>
-      <div class="btn-quarter btn-register" onclick="nav('register')"><div class="card-icon">👤</div><div class="card-title">ลงทะเบียน</div></div>
-      <div class="btn-quarter btn-config" onclick="nav('config')"><div class="card-icon">⚙️</div><div class="card-title">ตั้งค่าระบบ</div></div>
+      <div class="btn-quarter btn-link neon-card card-teal" onclick="nav('links')">
+        <div class="dash-icon-box box-teal"><span class="menu-icon-text">🔗</span></div>
+        <div class="card-title" style="margin-top: 6px;">ฝากลิงก์</div>
+      </div>
+      <div class="btn-quarter btn-profile neon-card card-pink" onclick="nav('studentdata')">
+        <div class="dash-icon-box box-pink"><span class="menu-icon-text">📇</span></div>
+        <div class="card-title" style="margin-top: 6px;">ทำเนียบ</div>
+      </div>
+      <div class="btn-quarter btn-register neon-card card-cyan" onclick="nav('register')">
+        <div class="dash-icon-box box-cyan"><span class="menu-icon-text">👤</span></div>
+        <div class="card-title" style="margin-top: 6px;">ลงทะเบียน</div>
+      </div>
+      <div class="btn-quarter btn-config neon-card card-gold" onclick="nav('config')">
+        <div class="dash-icon-box box-gold"><span class="menu-icon-text">⚙️</span></div>
+        <div class="card-title" style="margin-top: 6px;">ตั้งค่าระบบ</div>
+      </div>
     </div>
 
     <div class="menu-cards">
-      <div class="btn-menu btn-online" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
-        <div class="card-icon">💻</div>
+      <div class="btn-menu btn-online neon-card card-gold full-neon-menu" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
+        <div class="dash-icon-box box-gold"><span class="menu-icon-text">💻</span></div>
         <div class="card-text">
           <div class="card-title">ห้องเรียนออนไลน์ ครูอาร์ต</div>
           <div class="card-desc">เข้าสู่บทเรียนและสื่อการสอน ป.2</div>
