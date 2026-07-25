@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=NK&background=ea580c&color=fff&size=256&bold=true">
   <meta name="apple-mobile-web-app-title" content="ระบบห้องสมุด">
 
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;800&family=Prompt:wght@400;600;700;800&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
@@ -42,7 +42,7 @@ body:not(.dark-mode) textarea,
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Sarabun', sans-serif; min-height: 100vh; background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1b2a 100%); color: #e2e8f0; position: relative; overflow-x: hidden; }
+    body { font-family: 'Noto Sans Thai', 'Prompt', 'Sarabun', sans-serif; min-height: 100vh; background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1b2a 100%); color: #e2e8f0; position: relative; overflow-x: hidden; }
     body::before, body::after { content: ''; position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; z-index: 0; }
     body::before { width: 400px; height: 400px; background: #6366f1; top: -100px; left: -100px; }
     body::after { width: 350px; height: 350px; background: #10b981; bottom: -80px; right: -80px; }
@@ -284,15 +284,15 @@ body:not(.dark-mode) textarea,
     /* ========================================================
        🌞 LIGHT MODE STYLES (ปรับความชัดทั้งหมดเมื่อเปิดพื้นหลังขาว)
        ======================================================== */
-    body.light-mode { background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 50%, #e0e7ff 100%); color: #334155; }
-    body.light-mode::before { background: #93c5fd; }
-    body.light-mode::after { background: #6ee7b7; }
-    body.light-mode h1 { background: linear-gradient(135deg, #3b82f6, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    body.light-mode .page-title, body.light-mode .card-title, body.light-mode .profile-name { color: #1e293b; }
-    body.light-mode .subtitle, body.light-mode .card-desc, body.light-mode .dash-label { color: #64748b; }
-    body.light-mode .btn-half, body.light-mode .btn-quarter, body.light-mode .btn-menu, body.light-mode .dash-card, body.light-mode .stats-card, body.light-mode .profile-card, body.light-mode .form-section { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-    body.light-mode .dash-value { color: #0f172a; } body.light-mode .dash-value.att { color: #0284c7; } body.light-mode .dash-value.bor { color: #db2777; } body.light-mode .dash-value.read { color: #ca8a04; } body.light-mode .dash-value.hw { color: #4338ca; }
-    body.light-mode select, body.light-mode input[type="text"], body.light-mode input[type="url"], body.light-mode input[type="password"], body.light-mode input[type="tel"], body.light-mode textarea, body.light-mode .file-upload-btn, body.light-mode .textarea-container { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.15); color: #1e293b; }
+    body.light-mode { background: linear-gradient(135deg, #FFF3ED 0%, #FDF0EA 50%, #FBEBE3 100%); color: #2d3748; }
+    body.light-mode::before { background: #FFD8C2; opacity: 0.6; }
+    body.light-mode::after { background: #FFE0D1; opacity: 0.6; }
+    body.light-mode h1 { background: linear-gradient(135deg, #FF5722, #EA580C); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    body.light-mode .page-title, body.light-mode .card-title, body.light-mode .profile-name { color: #1e293b; font-weight: 700; }
+    body.light-mode .subtitle, body.light-mode .card-desc, body.light-mode .dash-label { color: #c2410c; }
+    body.light-mode .btn-half, body.light-mode .btn-quarter, body.light-mode .btn-menu, body.light-mode .stats-card, body.light-mode .profile-card, body.light-mode .form-section { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255, 87, 34, 0.15); box-shadow: 0 8px 25px rgba(255, 87, 34, 0.08); border-radius: 20px; }
+    body.light-mode .dash-value { color: #0f172a; } body.light-mode .dash-value.att { color: #0284c7; } body.light-mode .dash-value.bor { color: #059669; } body.light-mode .dash-value.read { color: #d97706; } body.light-mode .dash-value.hw { color: #e11d48; }
+    body.light-mode select, body.light-mode input[type="text"], body.light-mode input[type="url"], body.light-mode input[type="password"], body.light-mode input[type="tel"], body.light-mode textarea, body.light-mode .file-upload-btn, body.light-mode .textarea-container { background: #ffffff; border: 1px solid rgba(255, 87, 34, 0.2); color: #1e293b; border-radius: 14px; }
     body.light-mode select option { background: #ffffff; color: #1e293b; }
     body.light-mode label { color: #475569; }
     body.light-mode .date-picker-input { background: rgba(236, 72, 153, 0.05) !important; border-color: rgba(236, 72, 153, 0.3) !important; color: #db2777 !important; }
