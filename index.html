@@ -2345,6 +2345,18 @@ console.log(payload);
     }
 
     // --- BORROW / RETURN ---
+    function switchReadingTab(tabIndex) {
+      document.querySelectorAll('#page-reading .tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('#page-reading .tab-content').forEach(content => content.classList.remove('active'));
+      const activeBtn = document.getElementById('tab-btn-' + tabIndex);
+      const activeContent = document.getElementById('reading-tab-' + tabIndex);
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activeContent) activeContent.classList.add('active');
+      if (tabIndex === 1) applyLoggedInUserToForm('read');
+      if (tabIndex === 2) fetchReadingLogs();
+      if (tabIndex === 3) fetchReadingStats();
+    }
+
     function switchBorrowTab(tabIndex) { document.querySelectorAll('.tab-borrow .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#page-borrow .tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-borrow-' + tabIndex).classList.add('active'); document.getElementById('borrow-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) { showBorrowForm(); applyLoggedInUserToForm('borrow'); } if (tabIndex === 2) fetchBorrows(); }
     function updateFlatpickrThaiBE(instance) {
       if (!instance || !instance.currentYearElement) return;
