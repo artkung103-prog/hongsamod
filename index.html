@@ -641,72 +641,146 @@ body.light-mode .highlight-overlay {
       box-shadow: 0 4px 10px rgba(0,0,0,0.04);
     }
 
-    /* Dashboard Neon Glow Cards */
+    /* Dashboard Neon Glow Cards & 4-Color Themes */
     .dash-card.neon-card {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 10px 6px;
-      height: 110px;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 12px 6px 10px 6px;
+      height: 122px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 22px;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+      position: relative;
     }
-    .dash-card.neon-card:hover {
-      transform: translateY(-4px) scale(1.03);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-      border-color: rgba(255, 255, 255, 0.25);
+    
+    /* 4 Color Specific Bottom Glow & Resting Shadows */
+    .dash-card.card-green {
+      border-bottom: 3.5px solid #10b981;
+      box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.35);
     }
+    .dash-card.card-pink {
+      border-bottom: 3.5px solid #f43f5e;
+      box-shadow: 0 8px 22px -4px rgba(244, 63, 94, 0.35);
+    }
+    .dash-card.card-gold {
+      border-bottom: 3.5px solid #facc15;
+      box-shadow: 0 8px 22px -4px rgba(250, 204, 21, 0.35);
+    }
+    .dash-card.card-purple {
+      border-bottom: 3.5px solid #a855f7;
+      box-shadow: 0 8px 22px -4px rgba(168, 85, 247, 0.35);
+    }
+
+    /* Hover Neon Glow Effects */
+    .dash-card.card-green:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: #10b981;
+      box-shadow: 0 16px 36px rgba(16, 185, 129, 0.6), 0 0 18px rgba(16, 185, 129, 0.4);
+    }
+    .dash-card.card-pink:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: #f43f5e;
+      box-shadow: 0 16px 36px rgba(244, 63, 94, 0.6), 0 0 18px rgba(244, 63, 94, 0.4);
+    }
+    .dash-card.card-gold:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: #facc15;
+      box-shadow: 0 16px 36px rgba(250, 204, 21, 0.6), 0 0 18px rgba(250, 204, 21, 0.4);
+    }
+    .dash-card.card-purple:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: #a855f7;
+      box-shadow: 0 16px 36px rgba(168, 85, 247, 0.6), 0 0 18px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Stat Numbers (Noto Sans Thai) */
     .dash-value {
-      font-size: 1.85em;
-      font-weight: 900;
+      font-size: 1.95em;
+      font-weight: 800;
       line-height: 1;
       margin-bottom: 6px;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .neon-text-cyan {
-      color: #00f2fe;
-      text-shadow: 0 0 12px rgba(0, 242, 254, 0.8), 0 0 22px rgba(0, 242, 254, 0.4);
+      font-family: 'Noto Sans Thai', 'Prompt', sans-serif;
     }
     .neon-text-green {
       color: #10b981;
-      text-shadow: 0 0 12px rgba(16, 185, 129, 0.8), 0 0 22px rgba(16, 185, 129, 0.4);
-    }
-    .neon-text-gold {
-      color: #facc15;
-      text-shadow: 0 0 12px rgba(250, 204, 21, 0.8), 0 0 22px rgba(250, 204, 21, 0.4);
+      text-shadow: 0 0 12px rgba(16, 185, 129, 0.8), 0 0 24px rgba(16, 185, 129, 0.4);
     }
     .neon-text-pink {
       color: #f43f5e;
-      text-shadow: 0 0 12px rgba(244, 63, 94, 0.8), 0 0 22px rgba(244, 63, 94, 0.4);
+      text-shadow: 0 0 12px rgba(244, 63, 94, 0.8), 0 0 24px rgba(244, 63, 94, 0.4);
     }
+    .neon-text-gold {
+      color: #facc15;
+      text-shadow: 0 0 12px rgba(250, 204, 21, 0.8), 0 0 24px rgba(250, 204, 21, 0.4);
+    }
+    .neon-text-purple {
+      color: #a855f7;
+      text-shadow: 0 0 12px rgba(168, 85, 247, 0.8), 0 0 24px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Rounded Square Icon Box Containers */
     .dash-icon-box {
       width: 48px;
       height: 48px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 6px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
+    .box-green {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1.5px solid rgba(16, 185, 129, 0.4);
+    }
+    .box-pink {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1.5px solid rgba(244, 63, 94, 0.4);
+    }
+    .box-gold {
+      background: rgba(250, 204, 21, 0.15);
+      border: 1.5px solid rgba(250, 204, 21, 0.4);
+    }
+    .box-purple {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1.5px solid rgba(168, 85, 247, 0.4);
+    }
+
     .dash-img-icon {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
       transition: transform 0.3s ease;
     }
-    .dash-card.neon-card:hover .dash-img-icon {
-      transform: scale(1.12);
+
+    /* Hover Icon Wiggle Bounce Animation */
+    .dash-card:hover .dash-img-icon {
+      animation: iconWiggleBounce 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes iconWiggleBounce {
+      0% { transform: scale(1.08) rotate(0deg); }
+      25% { transform: scale(1.2) rotate(-10deg); }
+      50% { transform: scale(1.2) rotate(10deg); }
+      75% { transform: scale(1.15) rotate(-5deg); }
+      100% { transform: scale(1.15) rotate(0deg); }
     }
 
+    /* Light Mode Dashboard Overrides */
     body.light-mode .dash-card.neon-card {
-      background: rgba(255, 255, 255, 0.9);
+      background: #ffffff;
       border-color: rgba(0, 0, 0, 0.08);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
     }
+    body.light-mode .dash-card.card-green { border-bottom-color: #10b981; box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.25); }
+    body.light-mode .dash-card.card-pink { border-bottom-color: #f43f5e; box-shadow: 0 8px 22px -4px rgba(244, 63, 94, 0.25); }
+    body.light-mode .dash-card.card-gold { border-bottom-color: #d97706; box-shadow: 0 8px 22px -4px rgba(217, 119, 6, 0.25); }
+    body.light-mode .dash-card.card-purple { border-bottom-color: #a855f7; box-shadow: 0 8px 22px -4px rgba(168, 85, 247, 0.25); }
   </style>
 </head>
 <body>
@@ -745,23 +819,23 @@ body.light-mode .highlight-overlay {
       <div id="apiWarning" class="api-warning" style="margin-bottom: 0;">⚠️ ระบบยังไม่ได้เชื่อมต่อ API — กรุณาไปที่ปุ่ม "ตั้งค่าระบบ"</div>
     </div>
 
-    <!-- สถิติบนสุด (ตัวเลขเรืองแสงแบบนีออน + ไอคอนการ์ตูน) -->
+    <!-- สถิติบนสุด (ตัวเลข Noto Sans Thai + เรืองแสง 4 สี + สี่เหลี่ยมขอบมน + ไอคอนดุ๊กดิ๊ก) -->
     <div class="dashboard-grid" id="main-dashboard">
-      <div class="dash-card att neon-card" onclick="nav('stats')">
-        <div class="dash-value att neon-text-cyan" id="dash-att">-</div>
-        <div class="dash-icon-box"><img src="assets/icon-attendance.png" alt="เข้าใช้" class="dash-img-icon"></div>
+      <div class="dash-card att neon-card card-green" onclick="nav('stats')">
+        <div class="dash-value att neon-text-green" id="dash-att">-</div>
+        <div class="dash-icon-box box-green"><img src="assets/icon-attendance.png" alt="เข้าใช้" class="dash-img-icon"></div>
       </div>
-      <div class="dash-card bor neon-card" onclick="nav('borrow')">
-        <div class="dash-value bor neon-text-green" id="dash-bor">-</div>
-        <div class="dash-icon-box"><img src="assets/icon-borrow.png" alt="ยืมหนังสือ" class="dash-img-icon"></div>
+      <div class="dash-card bor neon-card card-pink" onclick="nav('borrow')">
+        <div class="dash-value bor neon-text-pink" id="dash-bor">-</div>
+        <div class="dash-icon-box box-pink"><img src="assets/icon-borrow.png" alt="ยืมหนังสือ" class="dash-img-icon"></div>
       </div>
-      <div class="dash-card read neon-card" onclick="nav('reading')">
+      <div class="dash-card read neon-card card-gold" onclick="nav('reading')">
         <div class="dash-value read neon-text-gold" id="dash-read">-</div>
-        <div class="dash-icon-box"><img src="assets/icon-reading.png" alt="รักการอ่าน" class="dash-img-icon"></div>
+        <div class="dash-icon-box box-gold"><img src="assets/icon-reading.png" alt="รักการอ่าน" class="dash-img-icon"></div>
       </div>
-      <div class="dash-card hw neon-card" onclick="nav('homework')">
-        <div class="dash-value hw neon-text-pink" id="dash-hw">-</div>
-        <div class="dash-icon-box"><img src="assets/icon-homework.png" alt="ส่งงาน" class="dash-img-icon"></div>
+      <div class="dash-card hw neon-card card-purple" onclick="nav('homework')">
+        <div class="dash-value hw neon-text-purple" id="dash-hw">-</div>
+        <div class="dash-icon-box box-purple"><img src="assets/icon-homework.png" alt="ส่งงาน" class="dash-img-icon"></div>
       </div>
     </div>
 
