@@ -723,7 +723,7 @@ body.light-mode .highlight-overlay {
       text-shadow: 0 0 12px rgba(168, 85, 247, 0.8), 0 0 24px rgba(168, 85, 247, 0.4);
     }
 
-    /* Solid Dark Non-Transparent Icon Box Containers */
+    /* Solid Dark Non-Transparent Opaque Icon Box Containers */
     .dash-icon-box {
       width: 46px;
       height: 46px;
@@ -733,17 +733,18 @@ body.light-mode .highlight-overlay {
       justify-content: center;
       padding: 6px;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: #0d1322 !important;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
     }
-    .box-green { background: #0c2b1e; border: 1.5px solid #10b981; }
-    .box-pink { background: #2d111a; border: 1.5px solid #f43f5e; }
-    .box-gold { background: #2b240b; border: 1.5px solid #facc15; }
-    .box-purple { background: #201133; border: 1.5px solid #a855f7; }
-    .box-red { background: #2b1114; border: 1.5px solid #ef4444; }
-    .box-cyan { background: #082533; border: 1.5px solid #00f2fe; }
-    .box-orange { background: #2b180a; border: 1.5px solid #f97316; }
-    .box-emerald { background: #0c2b1e; border: 1.5px solid #10b981; }
-    .box-silver { background: #1e293b; border: 1.5px solid #94a3b8; }
+    .box-green { background: #081c15 !important; border: 2px solid #10b981; }
+    .box-pink { background: #240c14 !important; border: 2px solid #f43f5e; }
+    .box-gold { background: #241e06 !important; border: 2px solid #facc15; }
+    .box-purple { background: #180b29 !important; border: 2px solid #a855f7; }
+    .box-red { background: #240b0e !important; border: 2px solid #ef4444; }
+    .box-cyan { background: #051a24 !important; border: 2px solid #00f2fe; }
+    .box-orange { background: #241306 !important; border: 2px solid #f97316; }
+    .box-emerald { background: #081c15 !important; border: 2px solid #10b981; }
+    .box-silver { background: #131c29 !important; border: 2px solid #94a3b8; }
 
     /* 12-Card Color Specific Glowing Themes */
     .card-green { border-bottom: 3.5px solid #10b981; box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.35); }
@@ -786,8 +787,9 @@ body.light-mode .highlight-overlay {
       right: 20px;
       z-index: 999;
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
     }
     .user-badge-wrapper {
       cursor: pointer;
@@ -910,42 +912,42 @@ body.light-mode .highlight-overlay {
       </div>
     </div>
 
-    <!-- แถวที่ 2: เมนูหลัก 4 ช่อง (ฝากลิงก์ / ทำเนียบ / ห้องเรียน / สแกนใบหน้า) -->
+    <!-- แถวที่ 2: เมนูหลัก 4 ช่อง (ลิ้งก์ / สมาชิก / ห้องเรียน / สแกน) -->
     <div class="dashboard-grid" style="margin-bottom: 12px;">
       <div class="dash-card neon-card card-green" onclick="nav('links')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">🔗 ฝากลิงก์</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">ลิ้งก์</div>
         <div class="dash-icon-box box-green"><span class="menu-icon-text">🔗</span></div>
       </div>
       <div class="dash-card neon-card card-red" onclick="nav('studentdata')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">📇 ทำเนียบ</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">สมาชิก</div>
         <div class="dash-icon-box box-red"><span class="menu-icon-text">📇</span></div>
       </div>
       <div class="dash-card neon-card card-gold" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">💻 ห้องเรียน</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">ห้องเรียน</div>
         <div class="dash-icon-box box-gold"><span class="menu-icon-text">💻</span></div>
       </div>
       <div class="dash-card neon-card card-purple" onclick="nav('scan')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">📷 สแกนใบหน้า</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">สแกน</div>
         <div class="dash-icon-box box-purple"><span class="menu-icon-text">📷</span></div>
       </div>
     </div>
 
-    <!-- แถวที่ 3: เมนูการเรียนรู้ & ตั้งค่า (สอบ / คะแนน / บทเรียน / ตั้งค่าระบบ) -->
+    <!-- แถวที่ 3: เมนูการเรียนรู้ & ตั้งค่า (สอบ / คะแนน / บทเรียน / ตั้งค่า) -->
     <div class="dashboard-grid" style="margin-bottom: 16px;">
       <div class="dash-card neon-card card-cyan" onclick="Swal.fire('📝 ระบบสอบ', 'ระบบแบบทดสอบกำลังเตรียมเปิดใช้งานเร็วๆ นี้', 'info')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">📝 สอบ</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">สอบ</div>
         <div class="dash-icon-box box-cyan"><span class="menu-icon-text">📝</span></div>
       </div>
       <div class="dash-card neon-card card-orange" onclick="nav('stats')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">🏆 คะแนน</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">คะแนน</div>
         <div class="dash-icon-box box-orange"><span class="menu-icon-text">🏆</span></div>
       </div>
       <div class="dash-card neon-card card-emerald" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">📖 บทเรียน</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">บทเรียน</div>
         <div class="dash-icon-box box-emerald"><span class="menu-icon-text">📖</span></div>
       </div>
       <div class="dash-card neon-card card-silver" onclick="nav('config')">
-        <div class="card-title" style="font-size: 0.9em; margin-bottom: 6px;">⚙️ ตั้งค่า</div>
+        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">ตั้งค่า</div>
         <div class="dash-icon-box box-silver"><span class="menu-icon-text">⚙️</span></div>
       </div>
     </div>
