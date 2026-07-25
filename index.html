@@ -2714,6 +2714,104 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       });
     }
 
+    async function analyzeSpellingWithAI(text) {
+      if (!text || !text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนวิเคราะห์ครับ', 'warning');
+      const apiKey = localStorage.getItem('geminiApiKey') || '';
+      
+      Swal.fire({
+        title: '🤖 AI กำลังตรวจ...',
+        html: '⏳ กำลังตรวจคำผิด การสะกดคำ และสรุปข้อคิดอย่างละเอียด...',
+        background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียนประถม ข้อความเรื่องย่อของนักเรียนคือ:\n"${text}"\n\nโปรดตรวจสอบคำผิดและวิเคราะห์โดยตอบรูปแบบนี้:
+1. ❌ **คำที่สะกดผิด**: (ถ้ามี ระบุคำที่ผิด -> คำที่ถูกต้อง เช่น สังเกตุ ❌ -> สังเกต ✅)
+2. 💡 **คำแนะนำภาษาไทย**: (ข้อคิดเห็นหรือคำชมสั้นๆ 1-2 ประโยค)
+3. ✨ **ข้อความที่แก้ไขถูกต้องสมบูรณ์แล้ว**: (ข้อความเดิมที่ได้รับการแก้ไขสะกดผิดเรียบร้อย)`
+                }]
+              }]
+            })
+          });
+
+          const data = await res.json();
+          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            const aiText = data.candidates[0].content.parts[0].text;
+            const formattedHtml = aiText.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706; font-size:1.05em;">$1</b>').replace(/\n/g, '<br>');
+            return Swal.fire({
+              title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
+              html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${formattedHtml}</div>`,
+              width: '95%',
+              maxWidth: '920px',
+              background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
+              customClass: { popup: 'light-override-popup' }
+            });
+          }
+        } catch (e) {
+          console.warn('Gemini API fetch error, fallback to dict', e);
+        }
+      }
+
+      // Fallback: ใช้คลังคำผิดภาษาไทยในตัว
+      checkThaiSpellingFallback(text);
+    }
+
+    function checkThaiSpellingFallback(text) {
+      const dict = {
+        "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย",
+        "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต",
+        "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก",
+        "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต", "คำนวน": "คำนวณ", "คลินิค": "คลินิก", "เว็ปไซต์": "เว็บไซต์",
+        "กราฟฟิก": "กราฟิก", "ผัดวัน": "ผลัดวัน", "เกมส์": "เกม", "ไอศครีม": "ไอศกรีม", "กังวลใจ": "กังวล"
+      };
+      let foundMistakes = [];
+      for (const [wrong, correct] of Object.entries(dict)) {
+        if (text.includes(wrong)) {
+          foundMistakes.push(`❌ <b>${wrong}</b> → ✅ <b style="color:#10b981;">${correct}</b>`);
+        }
+      }
+      const apiKeyNote = `<div style="font-size: 0.85em; color: #64748b; margin-top: 10px; border-top: 1px solid #cbd5e1; padding-top: 8px;">💡 สดใหม่! สามารถใส่ Gemini API Key ในหน้า ⚙️ ตั้งค่าระบบ เพื่อใช้งาน AI วิเคราะห์แบบละเอียด 100% ฟรีได้ครับ</div>`;
+      
+      if (foundMistakes.length > 0) {
+        Swal.fire({
+          title: '🔍 ผลตรวจคำผิด (คลังคำในระบบ)',
+          html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 0.95em; line-height: 1.8; border: 1px solid #cbd5e1;">${foundMistakes.join('<br>')}${apiKeyNote}</div>`,
+          width: '95%',
+          maxWidth: '920px',
+          background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: '✨ แก้ไขให้อัตโนมัติ', showCancelButton: true, cancelButtonText: 'ปิด', cancelButtonColor: '#64748b',
+          customClass: { popup: 'light-override-popup' }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            let newText = text;
+            for (const [wrong, correct] of Object.entries(dict)) {
+              newText = newText.split(wrong).join(correct);
+            }
+            const synopsisEl = document.getElementById('read-synopsis');
+            if (synopsisEl) { synopsisEl.value = newText; updateWordCount(); }
+            Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย!', background: '#ffffff', color: '#0f172a', timer: 1500, showConfirmButton: false, customClass: { popup: 'light-override-popup' } });
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'เยี่ยมมาก!',
+          html: `<div style="color: #0f172a;">ไม่พบคำผิดจากคลังคำพื้นฐานครับ (เขียนได้เก่งมาก!)</div>${apiKeyNote}`,
+          width: '95%',
+          maxWidth: '920px',
+          background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981',
+          customClass: { popup: 'light-override-popup' }
+        });
+      }
+    }
+
     async function teacherAIAnalyzeReadingLog(rowIdx) {
       const item = allReadingLogs.find(i => i.rowIdx === rowIdx);
       if (!item) return;
