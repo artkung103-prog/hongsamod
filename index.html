@@ -824,6 +824,18 @@ body.light-mode .highlight-overlay {
       border-color: #cbd5e1;
       box-shadow: 0 4px 10px rgba(0,0,0,0.04);
     }
+    body.light-mode label,
+    body.light-mode .swal2-popup label {
+      color: #1e293b !important;
+      font-weight: 700 !important;
+    }
+    body.light-mode .swal2-popup .swal2-title {
+      color: #0f172a !important;
+    }
+    body.light-mode .c-label,
+    body.light-mode .c-desc {
+      color: #334155 !important;
+    }
 
     /* Dashboard Neon Glow Cards & 4-Color Themes */
     .dash-card.neon-card {
@@ -1620,17 +1632,20 @@ body.light-mode .highlight-overlay {
 
     // --- SWEETALERT2 LOGIN MODAL (นักเรียน / ครู) ---
     function openLoginModal() {
+      const isLight = document.body.classList.contains('light-mode');
+      const labelColor = isLight ? '#1e293b' : '#cbd5e1';
+
       Swal.fire({
         title: '🔑 เข้าสู่ระบบ',
         html: `
-          <div style="display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; background: ${isLight ? '#f1f5f9' : 'rgba(0,0,0,0.3)'}; padding: 4px; border-radius: 12px;">
             <button id="swal-tab-btn-student" onclick="switchSwalTab('student')" class="tab-btn active" style="flex: 1; border: none; font-size: 0.98em; padding: 10px 12px; margin: 0; color: #0f172a; background: linear-gradient(135deg, #facc15, #eab308); border-radius: 8px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-weight: 800; box-shadow: 0 4px 14px rgba(250,204,21,0.5); transition: 0.2s;">👤 นักเรียน</button>
-            <button id="swal-tab-btn-teacher" onclick="switchSwalTab('teacher')" class="tab-btn" style="flex: 1; border: none; font-size: 0.98em; padding: 10px 12px; margin: 0; color: #cbd5e1; background: rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-weight: 600; transition: 0.2s;">👨‍🏫 คุณครู</button>
+            <button id="swal-tab-btn-teacher" onclick="switchSwalTab('teacher')" class="tab-btn" style="flex: 1; border: none; font-size: 0.98em; padding: 10px 12px; margin: 0; color: ${isLight ? '#64748b' : '#cbd5e1'}; background: transparent; border-radius: 8px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-weight: 600; transition: 0.2s;">👨‍🏫 คุณครู</button>
           </div>
 
           <!-- TAB 1: STUDENT LOGIN -->
           <div id="swal-tab-student" style="display: block; text-align: left;">
-            <label style="display: block; font-size: 0.9em; color: #cbd5e1; margin-bottom: 6px; font-weight: 600;">เลือกระดับชั้น</label>
+            <label style="display: block; font-size: 0.9em; color: ${labelColor}; margin-bottom: 6px; font-weight: 700;">เลือกระดับชั้น</label>
             <select id="swal-student-class" onchange="fetchStudentsForSwalModal()" class="swal2-select" style="width: 100% !important; max-width: 100% !important; margin: 0 0 14px 0 !important; font-size: 16px !important; padding: 12px 14px !important; background: #ffffff !important; color: #0f172a !important; font-weight: 600 !important; border: 2px solid #cbd5e1 !important; border-radius: 12px !important;">
               <option value="">-- เลือกชั้นเรียน --</option>
               <option value="ป.1">ชั้น ป.1</option>
@@ -1641,7 +1656,7 @@ body.light-mode .highlight-overlay {
               <option value="ป.6">ชั้น ป.6</option>
             </select>
             
-            <label style="display: block; font-size: 0.9em; color: #cbd5e1; margin-bottom: 6px; font-weight: 600;">เลือกชื่อนักเรียน</label>
+            <label style="display: block; font-size: 0.9em; color: ${labelColor}; margin-bottom: 6px; font-weight: 700;">เลือกชื่อนักเรียน</label>
             <select id="swal-student-name" disabled class="swal2-select" style="width: 100% !important; max-width: 100% !important; margin: 0 0 18px 0 !important; font-size: 16px !important; padding: 12px 14px !important; background: #ffffff !important; color: #0f172a !important; font-weight: 600 !important; border: 2px solid #cbd5e1 !important; border-radius: 12px !important;">
               <option value="">-- กรุณาเลือกชั้นก่อน --</option>
             </select>
@@ -1651,15 +1666,15 @@ body.light-mode .highlight-overlay {
 
           <!-- TAB 2: TEACHER LOGIN -->
           <div id="swal-tab-teacher" style="display: none; text-align: left;">
-            <label style="display: block; font-size: 0.9em; color: #cbd5e1; margin-bottom: 6px; font-weight: 600;">รหัสผ่านครู</label>
-            <input type="password" id="swal-teacher-password" placeholder="กรอกรหัสผ่านครู" class="swal2-input" style="width: 100% !important; max-width: 100% !important; margin: 0 0 18px 0 !important; font-size: 18px !important; padding: 12px 16px !important; text-align: center; letter-spacing: 2px; background: #ffffff !important; color: #0f172a !important; font-weight: 700 !important; border-radius: 12px !important;">
+            <label style="display: block; font-size: 0.9em; color: ${labelColor}; margin-bottom: 6px; font-weight: 700;">รหัสผ่านครู</label>
+            <input type="password" id="swal-teacher-password" onkeydown="if(event.key==='Enter') submitSwalTeacherLogin()" placeholder="กรอกรหัสผ่านครู" class="swal2-input" style="width: 100% !important; max-width: 100% !important; margin: 0 0 18px 0 !important; font-size: 18px !important; padding: 12px 16px !important; text-align: center; letter-spacing: 2px; background: #ffffff !important; color: #0f172a !important; font-weight: 700 !important; border-radius: 12px !important; border: 2px solid #cbd5e1 !important;">
             <button onclick="submitSwalTeacherLogin()" class="btn-action btn-secondary" style="margin-bottom: 0; width: 100%; border-radius: 50px; background: linear-gradient(135deg, #ff5722, #ea580c); font-size: 16px; font-weight: 700; box-shadow: 0 4px 16px rgba(255,87,34,0.4);">👨‍🏫 เข้าใช้โหมดครู</button>
           </div>
         `,
         showConfirmButton: false,
         showCloseButton: true,
-        background: document.body.classList.contains('light-mode') ? '#ffffff' : '#16213e',
-        color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0',
+        background: isLight ? '#ffffff' : '#16213e',
+        color: isLight ? '#1e293b' : '#e2e8f0',
         customClass: { popup: 'light-override-popup' }
       });
     }
