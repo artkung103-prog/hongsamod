@@ -2411,6 +2411,135 @@ console.log(payload);
       } catch (e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถดึงรายชื่อได้' }); } 
     }
     async function submitBorrow() { const cls = document.getElementById('borrow-class').value, name = document.getElementById('borrow-name').value, bookName = document.getElementById('borrow-book-name').value.trim(), borrowDateRaw = document.getElementById('borrow-date-display').dataset.raw, returnDateRaw = document.getElementById('borrow-return-date').value; if (!cls || !name || !bookName || !returnDateRaw) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning'); Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'addBorrow', className: cls, name: name, bookName: bookName, borrowDate: borrowDateRaw, returnDate: returnDateRaw }); Swal.fire({ icon: 'success', title: 'ยืมหนังสือสำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); document.getElementById('borrow-class').value = ''; document.getElementById('borrow-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('borrow-name').disabled = true; document.getElementById('borrow-book-name').value = ''; setTimeout(() => switchBorrowTab(2), 1000); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถบันทึกได้' }); } }
+    async function fetchStudentsForReading() { 
+      const cls = document.getElementById('read-class').value; 
+      const nameSelect = document.getElementById('read-name'); 
+      const overlay = document.getElementById('reading-loading'); 
+      nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; 
+      nameSelect.disabled = true; 
+      if (!cls) return; 
+      overlay.style.display = 'flex'; 
+      try { 
+        const students = await gasGet('getStudents', { class: cls }); 
+        if(!Array.isArray(students) || students.length === 0) { 
+          nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; 
+        } else { 
+          students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); 
+          nameSelect.disabled = false; 
+        } 
+      } catch (e) { 
+        showToast('ดึงรายชื่อล้มเหลว', 'error'); 
+      } 
+      overlay.style.display = 'none'; 
+    }
+
+    function saveGeminiKey() {
+      const key = document.getElementById('gemini-api-key-input').value.trim();
+      if (!key) {
+        localStorage.removeItem('geminiApiKey');
+        return Swal.fire('ลบเรียบร้อย', 'ยกเลิกการใช้ Gemini API Key แล้ว', 'info');
+      }
+      localStorage.setItem('geminiApiKey', key);
+      Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'พร้อมใช้งาน AI ตรวจคำผิดภาษาไทยเรียบร้อยแล้ว', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+    }
+
+    function toggleSelectAllBorrows(masterChk) {
+      const chks = document.querySelectorAll('.borrow-select-chk');
+      chks.forEach(c => c.checked = masterChk.checked);
+      updateBatchReturnCount();
+    }
+
+    function updateBatchReturnCount() {
+      const selected = document.querySelectorAll('.borrow-select-chk:checked');
+      const btn = document.getElementById('btn-batch-return');
+      if (btn) {
+        btn.innerText = `✅ คืนหนังสือที่เลือก (${selected.length})`;
+        btn.disabled = selected.length === 0;
+        btn.style.opacity = selected.length === 0 ? '0.5' : '1';
+      }
+    }
+
+    async function submitBatchReturn() {
+      const selected = document.querySelectorAll('.borrow-select-chk:checked');
+      if (selected.length === 0) return showToast('กรุณาเลือกหนังสือที่ต้องการคืน', 'warning');
+      const rowIdxs = Array.from(selected).map(c => parseInt(c.value));
+      
+      Swal.fire({
+        title: `คืนหนังสือ ${rowIdxs.length} เล่ม?`,
+        text: 'ยืนยันอนุมัติการคืนหนังสือตามรายการที่เลือก',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยันคืนหนังสือ',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#64748b',
+        background: '#16213e', color: '#e2e8f0'
+      }).then(async (res) => {
+        if (res.isConfirmed) {
+          Swal.fire({ title: '⏳ กำลังบันทึกการคืน...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false });
+          try {
+            for (const rowIdx of rowIdxs) {
+              await gasPost({ action: 'updateBorrowStatus', rowIdx: rowIdx, status: 'คืนเรียบร้อย' });
+            }
+            Swal.fire({ icon: 'success', title: 'คืนหนังสือเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+            fetchBorrows();
+          } catch(e) {
+            Swal.fire('ล้มเหลว', 'ไม่สามารถบันทึกได้', 'error');
+          }
+        }
+      });
+    }
+
+    async function requestReturnBook(rowIdx) {
+      Swal.fire({
+        title: '📤 แจ้งคืนหนังสือ',
+        text: 'ยืนยันส่งคำขอคืนหนังสือเล่มนี้ถึงคุณครู?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยันส่งคำขอ',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#64748b',
+        background: '#16213e', color: '#e2e8f0'
+      }).then(async (res) => {
+        if (res.isConfirmed) {
+          Swal.fire({ title: '⏳ กำลังส่งคำขอ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false });
+          try {
+            await gasPost({ action: 'updateBorrowStatus', rowIdx: rowIdx, status: 'รอครูยืนยันการคืน' });
+            Swal.fire({ icon: 'success', title: 'ส่งคำขอคืนเรียบร้อย!', text: 'รอคุณครูยืนยันการคืนหนังสือครับ', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+            fetchBorrows();
+          } catch(e) {
+            Swal.fire('ล้มเหลว', 'ไม่สามารถบันทึกได้', 'error');
+          }
+        }
+      });
+    }
+
+    async function approveReturnBook(rowIdx) {
+      Swal.fire({
+        title: '✅ อนุมัติคืนหนังสือ',
+        text: 'ยืนยันรับคืนหนังสือเล่มนี้เรียบร้อยแล้ว?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'อนุมัติการคืน',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#64748b',
+        background: '#16213e', color: '#e2e8f0'
+      }).then(async (res) => {
+        if (res.isConfirmed) {
+          Swal.fire({ title: '⏳ กำลังอนุมัติ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false });
+          try {
+            await gasPost({ action: 'updateBorrowStatus', rowIdx: rowIdx, status: 'คืนเรียบร้อย' });
+            Swal.fire({ icon: 'success', title: 'อนุมัติการคืนเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+            fetchBorrows();
+          } catch(e) {
+            Swal.fire('ล้มเหลว', 'ไม่สามารถอนุมัติได้', 'error');
+          }
+        }
+      });
+    }
+
     async function fetchBorrows() { 
       const statusDiv = document.getElementById('borrow-status'), listDiv = document.getElementById('borrow-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
       try { allBorrows = await gasGet('getBorrows'); statusDiv.style.display = 'none'; renderFilteredBorrows(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
