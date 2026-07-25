@@ -723,7 +723,7 @@ body.light-mode .highlight-overlay {
       text-shadow: 0 0 12px rgba(168, 85, 247, 0.8), 0 0 24px rgba(168, 85, 247, 0.4);
     }
 
-    /* Solid Dark Non-Transparent Opaque Icon Box Containers */
+    /* 100% Solid Fully-Filled Color Icon Badges */
     .dash-icon-box {
       width: 46px;
       height: 46px;
@@ -733,46 +733,45 @@ body.light-mode .highlight-overlay {
       justify-content: center;
       padding: 6px;
       transition: all 0.3s ease;
-      background: #0d1322 !important;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
     }
-    .box-green { background: #081c15 !important; border: 2px solid #10b981; }
-    .box-pink { background: #240c14 !important; border: 2px solid #f43f5e; }
-    .box-gold { background: #241e06 !important; border: 2px solid #facc15; }
-    .box-purple { background: #180b29 !important; border: 2px solid #a855f7; }
-    .box-red { background: #240b0e !important; border: 2px solid #ef4444; }
-    .box-cyan { background: #051a24 !important; border: 2px solid #00f2fe; }
-    .box-orange { background: #241306 !important; border: 2px solid #f97316; }
-    .box-emerald { background: #081c15 !important; border: 2px solid #10b981; }
-    .box-silver { background: #131c29 !important; border: 2px solid #94a3b8; }
+    .box-green { background: #10b981 !important; border: 2px solid #059669; color: #ffffff; }
+    .box-pink { background: #f43f5e !important; border: 2px solid #e11d48; color: #ffffff; }
+    .box-gold { background: #facc15 !important; border: 2px solid #d97706; color: #1e293b; }
+    .box-purple { background: #a855f7 !important; border: 2px solid #7e22ce; color: #ffffff; }
+    .box-red { background: #ef4444 !important; border: 2px solid #dc2626; color: #ffffff; }
+    .box-cyan { background: #00f2fe !important; border: 2px solid #0284c7; color: #0f172a; }
+    .box-orange { background: #f97316 !important; border: 2px solid #ea580c; color: #ffffff; }
+    .box-emerald { background: #10b981 !important; border: 2px solid #059669; color: #ffffff; }
+    .box-silver { background: #64748b !important; border: 2px solid #475569; color: #ffffff; }
 
-    /* 12-Card Color Specific Glowing Themes */
-    .card-green { border-bottom: 3.5px solid #10b981; box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.35); }
-    .card-green:hover { transform: translateY(-6px) scale(1.04); border-color: #10b981; box-shadow: 0 16px 36px rgba(16, 185, 129, 0.6), 0 0 18px rgba(16, 185, 129, 0.4); }
+    /* 12-Card Color Specific Glowing Themes (4px Solid Bottom Border) */
+    .card-green { border: 1.5px solid rgba(16, 185, 129, 0.4); border-bottom: 4px solid #10b981 !important; box-shadow: 0 10px 25px -3px rgba(16, 185, 129, 0.45); }
+    .card-green:hover { transform: translateY(-6px) scale(1.04); border-color: #10b981; box-shadow: 0 16px 36px rgba(16, 185, 129, 0.65), 0 0 18px rgba(16, 185, 129, 0.4); }
 
-    .card-pink { border-bottom: 3.5px solid #f43f5e; box-shadow: 0 8px 22px -4px rgba(244, 63, 94, 0.35); }
-    .card-pink:hover { transform: translateY(-6px) scale(1.04); border-color: #f43f5e; box-shadow: 0 16px 36px rgba(244, 63, 94, 0.6), 0 0 18px rgba(244, 63, 94, 0.4); }
+    .card-pink { border: 1.5px solid rgba(244, 63, 94, 0.4); border-bottom: 4px solid #f43f5e !important; box-shadow: 0 10px 25px -3px rgba(244, 63, 94, 0.45); }
+    .card-pink:hover { transform: translateY(-6px) scale(1.04); border-color: #f43f5e; box-shadow: 0 16px 36px rgba(244, 63, 94, 0.65), 0 0 18px rgba(244, 63, 94, 0.4); }
 
-    .card-gold { border-bottom: 3.5px solid #facc15; box-shadow: 0 8px 22px -4px rgba(250, 204, 21, 0.35); }
-    .card-gold:hover { transform: translateY(-6px) scale(1.04); border-color: #facc15; box-shadow: 0 16px 36px rgba(250, 204, 21, 0.6), 0 0 18px rgba(250, 204, 21, 0.4); }
+    .card-gold { border: 1.5px solid rgba(250, 204, 21, 0.4); border-bottom: 4px solid #facc15 !important; box-shadow: 0 10px 25px -3px rgba(250, 204, 21, 0.45); }
+    .card-gold:hover { transform: translateY(-6px) scale(1.04); border-color: #facc15; box-shadow: 0 16px 36px rgba(250, 204, 21, 0.65), 0 0 18px rgba(250, 204, 21, 0.4); }
 
-    .card-purple { border-bottom: 3.5px solid #a855f7; box-shadow: 0 8px 22px -4px rgba(168, 85, 247, 0.35); }
-    .card-purple:hover { transform: translateY(-6px) scale(1.04); border-color: #a855f7; box-shadow: 0 16px 36px rgba(168, 85, 247, 0.6), 0 0 18px rgba(168, 85, 247, 0.4); }
+    .card-purple { border: 1.5px solid rgba(168, 85, 247, 0.4); border-bottom: 4px solid #a855f7 !important; box-shadow: 0 10px 25px -3px rgba(168, 85, 247, 0.45); }
+    .card-purple:hover { transform: translateY(-6px) scale(1.04); border-color: #a855f7; box-shadow: 0 16px 36px rgba(168, 85, 247, 0.65), 0 0 18px rgba(168, 85, 247, 0.4); }
 
-    .card-red { border-bottom: 3.5px solid #ef4444; box-shadow: 0 8px 22px -4px rgba(239, 68, 68, 0.35); }
-    .card-red:hover { transform: translateY(-6px) scale(1.04); border-color: #ef4444; box-shadow: 0 16px 36px rgba(239, 68, 68, 0.6), 0 0 18px rgba(239, 68, 68, 0.4); }
+    .card-red { border: 1.5px solid rgba(239, 68, 68, 0.4); border-bottom: 4px solid #ef4444 !important; box-shadow: 0 10px 25px -3px rgba(239, 68, 68, 0.45); }
+    .card-red:hover { transform: translateY(-6px) scale(1.04); border-color: #ef4444; box-shadow: 0 16px 36px rgba(239, 68, 68, 0.65), 0 0 18px rgba(239, 68, 68, 0.4); }
 
-    .card-cyan { border-bottom: 3.5px solid #00f2fe; box-shadow: 0 8px 22px -4px rgba(0, 242, 254, 0.35); }
-    .card-cyan:hover { transform: translateY(-6px) scale(1.04); border-color: #00f2fe; box-shadow: 0 16px 36px rgba(0, 242, 254, 0.6), 0 0 18px rgba(0, 242, 254, 0.4); }
+    .card-cyan { border: 1.5px solid rgba(0, 242, 254, 0.4); border-bottom: 4px solid #00f2fe !important; box-shadow: 0 10px 25px -3px rgba(0, 242, 254, 0.45); }
+    .card-cyan:hover { transform: translateY(-6px) scale(1.04); border-color: #00f2fe; box-shadow: 0 16px 36px rgba(0, 242, 254, 0.65), 0 0 18px rgba(0, 242, 254, 0.4); }
 
-    .card-orange { border-bottom: 3.5px solid #f97316; box-shadow: 0 8px 22px -4px rgba(249, 115, 22, 0.35); }
-    .card-orange:hover { transform: translateY(-6px) scale(1.04); border-color: #f97316; box-shadow: 0 16px 36px rgba(249, 115, 22, 0.6), 0 0 18px rgba(249, 115, 22, 0.4); }
+    .card-orange { border: 1.5px solid rgba(249, 115, 22, 0.4); border-bottom: 4px solid #f97316 !important; box-shadow: 0 10px 25px -3px rgba(249, 115, 22, 0.45); }
+    .card-orange:hover { transform: translateY(-6px) scale(1.04); border-color: #f97316; box-shadow: 0 16px 36px rgba(249, 115, 22, 0.65), 0 0 18px rgba(249, 115, 22, 0.4); }
 
-    .card-emerald { border-bottom: 3.5px solid #10b981; box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.35); }
-    .card-emerald:hover { transform: translateY(-6px) scale(1.04); border-color: #10b981; box-shadow: 0 16px 36px rgba(16, 185, 129, 0.6), 0 0 18px rgba(16, 185, 129, 0.4); }
+    .card-emerald { border: 1.5px solid rgba(16, 185, 129, 0.4); border-bottom: 4px solid #10b981 !important; box-shadow: 0 10px 25px -3px rgba(16, 185, 129, 0.45); }
+    .card-emerald:hover { transform: translateY(-6px) scale(1.04); border-color: #10b981; box-shadow: 0 16px 36px rgba(16, 185, 129, 0.65), 0 0 18px rgba(16, 185, 129, 0.4); }
 
-    .card-silver { border-bottom: 3.5px solid #94a3b8; box-shadow: 0 8px 22px -4px rgba(148, 163, 184, 0.35); }
-    .card-silver:hover { transform: translateY(-6px) scale(1.04); border-color: #94a3b8; box-shadow: 0 16px 36px rgba(148, 163, 184, 0.6), 0 0 18px rgba(148, 163, 184, 0.4); }
+    .card-silver { border: 1.5px solid rgba(148, 163, 184, 0.4); border-bottom: 4px solid #94a3b8 !important; box-shadow: 0 10px 25px -3px rgba(148, 163, 184, 0.45); }
+    .card-silver:hover { transform: translateY(-6px) scale(1.04); border-color: #94a3b8; box-shadow: 0 16px 36px rgba(148, 163, 184, 0.65), 0 0 18px rgba(148, 163, 184, 0.4); }
 
     .menu-icon-text {
       font-size: 24px;
@@ -915,40 +914,40 @@ body.light-mode .highlight-overlay {
     <!-- แถวที่ 2: เมนูหลัก 4 ช่อง (ลิ้งก์ / สมาชิก / ห้องเรียน / สแกน) -->
     <div class="dashboard-grid" style="margin-bottom: 12px;">
       <div class="dash-card neon-card card-green" onclick="nav('links')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">ลิ้งก์</div>
         <div class="dash-icon-box box-green"><span class="menu-icon-text">🔗</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">ลิ้งก์</div>
       </div>
       <div class="dash-card neon-card card-red" onclick="nav('studentdata')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">สมาชิก</div>
         <div class="dash-icon-box box-red"><span class="menu-icon-text">📇</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">สมาชิก</div>
       </div>
       <div class="dash-card neon-card card-gold" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">ห้องเรียน</div>
         <div class="dash-icon-box box-gold"><span class="menu-icon-text">💻</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">ห้องเรียน</div>
       </div>
       <div class="dash-card neon-card card-purple" onclick="nav('scan')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">สแกน</div>
         <div class="dash-icon-box box-purple"><span class="menu-icon-text">📷</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">สแกน</div>
       </div>
     </div>
 
     <!-- แถวที่ 3: เมนูการเรียนรู้ & ตั้งค่า (สอบ / คะแนน / บทเรียน / ตั้งค่า) -->
     <div class="dashboard-grid" style="margin-bottom: 16px;">
       <div class="dash-card neon-card card-cyan" onclick="Swal.fire('📝 ระบบสอบ', 'ระบบแบบทดสอบกำลังเตรียมเปิดใช้งานเร็วๆ นี้', 'info')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">สอบ</div>
         <div class="dash-icon-box box-cyan"><span class="menu-icon-text">📝</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">สอบ</div>
       </div>
       <div class="dash-card neon-card card-orange" onclick="nav('stats')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">คะแนน</div>
         <div class="dash-icon-box box-orange"><span class="menu-icon-text">🏆</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">คะแนน</div>
       </div>
       <div class="dash-card neon-card card-emerald" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">บทเรียน</div>
         <div class="dash-icon-box box-emerald"><span class="menu-icon-text">📖</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">บทเรียน</div>
       </div>
       <div class="dash-card neon-card card-silver" onclick="nav('config')">
-        <div class="card-title" style="font-size: 0.95em; margin-bottom: 6px;">ตั้งค่า</div>
         <div class="dash-icon-box box-silver"><span class="menu-icon-text">⚙️</span></div>
+        <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">ตั้งค่า</div>
       </div>
     </div>
   </div>
