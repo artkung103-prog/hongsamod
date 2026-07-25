@@ -2540,237 +2540,54 @@ console.log(payload);
       updateBatchReturnCount();
     }
 
-    function toggleSelectAllBorrows(masterChk) {
-      const chks = document.querySelectorAll('.borrow-select-chk');
-      chks.forEach(c => c.checked = masterChk.checked);
-      updateBatchReturnCount();
-    }
-
-    function updateBatchReturnCount() {
-      const chks = document.querySelectorAll('.borrow-select-chk:checked');
-      const btnBatch = document.getElementById('btn-batch-return');
-      const masterChk = document.getElementById('chk-select-all-borrows');
-      const allChks = document.querySelectorAll('.borrow-select-chk');
-
-      if (masterChk && allChks.length > 0) {
-        masterChk.checked = (chks.length === allChks.length);
-      }
-
-      if (btnBatch) {
-        btnBatch.innerText = `✅ คืนหนังสือที่เลือก (${chks.length})`;
-        if (chks.length > 0) {
-          btnBatch.disabled = false;
-          btnBatch.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-          btnBatch.style.cursor = 'pointer';
-          btnBatch.style.boxShadow = '0 4px 14px rgba(16,185,129,0.4)';
-        } else {
-          btnBatch.disabled = true;
-          btnBatch.style.background = '#64748b';
-          btnBatch.style.cursor = 'not-allowed';
-          btnBatch.style.boxShadow = 'none';
-        }
-      }
-    }
-
-    async function submitBatchReturn() {
-      const selected = Array.from(document.querySelectorAll('.borrow-select-chk:checked')).map(c => parseInt(c.value));
-      if (selected.length === 0) return;
-
-      Swal.fire({
-        title: `✅ ยืนยันการคืนหนังสือ ${selected.length} เล่ม`,
-        text: 'ต้องการทำรายการคืนหนังสือทั้งหมดที่เลือกใช่หรือไม่?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'ยืนยันคืนทั้งหมด',
-        cancelButtonText: 'ยกเลิก',
-        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981'
-      }).then(async (res) => {
-        if (res.isConfirmed) {
-          Swal.fire({ title: '⏳ กำลังบันทึกการคืน...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
-          try {
-            for (const rowIdx of selected) {
-              await gasPost({ action: 'updateBorrowStatus', rowIdx: rowIdx, status: 'คืนเรียบร้อย' });
-            }
-            Swal.fire({ icon: 'success', title: 'คืนหนังสือเรียบร้อยแล้ว', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
-            fetchBorrows();
-          } catch(e) {
-            Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถทำรายการได้ครบทุกเล่ม' });
-          }
-        }
-      });
-    }
-
-    async function requestReturnBook(rowIdx) {
-      Swal.fire({
-        title: '📤 ยืนยันการคืนหนังสือ',
-        text: 'ส่งคำขอคืนหนังสือให้คุณครูตรวจใช่หรือไม่?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'ใช่, คืนหนังสือ',
-        cancelButtonText: 'ยกเลิก',
-        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#f97316'
-      }).then(async (res) => {
-        if (res.isConfirmed) {
-          updateBorrowStatusAPI(rowIdx, 'รอครูยืนยันการคืน');
-        }
-      });
-    }
-
-    async function approveReturnBook(rowIdx) {
-      updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย');
-    }
-
-    function changeBorrowStatus(rowIdx) { 
-      if (currentLoggedInUser && currentLoggedInUser.isTeacher) {
-        updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย');
-        return;
-      }
-      Swal.fire({ 
-        title: '🔒 ยืนยันการคืนหนังสือ', 
-        text: 'กรุณากรอกรหัสผ่านเพื่อยืนยันว่านักเรียนนำหนังสือมาคืนแล้ว', 
-        input: 'password', 
-        inputPlaceholder: 'รหัสผ่าน', 
-        inputAttributes: { autocapitalize: 'off', autocorrect: 'off', style: 'text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;' }, 
-        showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', 
-        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', 
-        preConfirm: (pwd) => { if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return pwd === '1221'; } 
-      }).then((result) => { if (result.isConfirmed) updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย'); }); 
-    }
-    async function updateBorrowStatusAPI(rowIdx, newStatus) { Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'updateBorrowStatus', rowIdx: rowIdx, status: newStatus }); Swal.fire({ icon: 'success', title: 'อัปเดตสถานะเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); fetchBorrows(); } catch(e) { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถอัปเดตได้' }); } }
-
-    // --- READING LOGS ---
-    function switchReadingTab(tabIndex) { document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-' + tabIndex).classList.add('active'); document.getElementById('reading-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) applyLoggedInUserToForm('read'); if (tabIndex === 2) fetchReadingLogs(); if (tabIndex === 3) fetchReadingStats(); }
-    function setReadingStar(val) { currentReadingStar = val; const spans = document.querySelectorAll('#read-stars span'); spans.forEach(span => { if(parseInt(span.dataset.val) <= val) span.classList.add('active'); else span.classList.remove('active'); }); }
-    async function fetchStudentsForReading() { 
-      const cls = document.getElementById('read-class').value; const nameSelect = document.getElementById('read-name'); const overlay = document.getElementById('reading-loading'); nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; 
-      if (!cls) return; overlay.style.display = 'flex'; 
-      try { 
-        const students = await gasGet('getStudents', { class: cls }); 
-        if (students.error) throw new Error(students.error); if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } 
-      } catch (e) { showToast('ล้มเหลวในการดึงรายชื่อ', 'error'); } 
-      overlay.style.display = 'none'; 
-    }
-    function syncScroll(el) { document.getElementById('highlight-overlay').scrollTop = el.scrollTop; }
-    function updateWordCount() { const textarea = document.getElementById('read-synopsis'); const text = textarea.value; let count = 0; if (text.trim()) { if (typeof Intl.Segmenter === 'function') { const segmenter = new Intl.Segmenter('th', { granularity: 'word' }); const segments = segmenter.segment(text); for (const segment of segments) { if (segment.isWordLike) count++; } } else { count = text.trim().split(/\s+/).filter(w => w.length > 0).length; } } document.getElementById('word-count-display').innerText = count; let highlightedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); const dict = { "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย", "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต", "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก", "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต" }; for (const wrong of Object.keys(dict)) { const regex = new RegExp(wrong, 'g'); highlightedText = highlightedText.replace(regex, `<span class="error">${wrong}</span>`); } if (highlightedText.endsWith('\n')) highlightedText += ' '; document.getElementById('highlight-overlay').innerHTML = highlightedText; }
-    function saveGeminiKey() {
-      const key = document.getElementById('gemini-api-key-input').value.trim();
-      if (!key) {
-        localStorage.removeItem('geminiApiKey');
-        return Swal.fire('ลบเรียบร้อย', 'ยกเลิกการใช้ Gemini API Key แล้ว', 'info');
-      }
-      localStorage.setItem('geminiApiKey', key);
-      Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'พร้อมใช้งาน AI ตรวจคำผิดภาษาไทยเรียบร้อยแล้ว', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
-    }
-
-    async function analyzeSpellingWithAI(text) {
-      if (!text || !text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนวิเคราะห์ครับ', 'warning');
-      const apiKey = localStorage.getItem('geminiApiKey') || '';
-      
-      Swal.fire({
-        title: '🤖 AI กำลังตรวจ...',
-        html: '⏳ กำลังตรวจ...',
-        background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
-
-      if (apiKey) {
-        try {
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียนประถม ข้อความเรื่องย่อของนักเรียนคือ:\n"${text}"\n\nโปรดตรวจสอบคำผิดและวิเคราะห์โดยตอบรูปแบบนี้:
-1. ❌ **คำที่สะกดผิด**: (ถ้ามี ระบุคำที่ผิด -> คำที่ถูกต้อง เช่น สังเกตุ ❌ -> สังเกต ✅)
-2. 💡 **คำแนะนำภาษาไทย**: (ข้อคิดเห็นหรือคำชมสั้นๆ 1-2 ประโยค)
-3. ✨ **ข้อความที่แก้ไขถูกต้องสมบูรณ์แล้ว**: (ข้อความเดิมที่ได้รับการแก้ไขสะกดผิดเรียบร้อย)`
-                }]
-              }]
-            })
-          });
-
-          const data = await res.json();
-          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-            const aiText = data.candidates[0].content.parts[0].text;
-            const formattedHtml = aiText.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706; font-size:1.05em;">$1</b>').replace(/\n/g, '<br>');
-            return Swal.fire({
-              title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
-              html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${formattedHtml}</div>`,
-              width: '740px',
-              background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
-              customClass: { popup: 'light-override-popup' }
-            });
-          }
-        } catch (e) {
-          console.warn('Gemini API fetch error, fallback to dict', e);
-        }
-      }
-
-      // Fallback: ใช้คลังคำผิดภาษาไทยในตัว
-      checkThaiSpellingFallback(text);
-    }
-
-    function checkThaiSpelling() {
-      const text = document.getElementById('read-synopsis').value;
-      analyzeSpellingWithAI(text);
-    }
-
-    function checkThaiSpellingFallback(text) {
-      const dict = {
-        "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย",
-        "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต",
-        "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก",
-        "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต", "คำนวน": "คำนวณ", "คลินิค": "คลินิก", "เว็ปไซต์": "เว็บไซต์",
-        "กราฟฟิก": "กราฟิก", "ผัดวัน": "ผลัดวัน", "เกมส์": "เกม", "ไอศครีม": "ไอศกรีม", "กังวลใจ": "กังวล"
-      };
-      let foundMistakes = [];
-      for (const [wrong, correct] of Object.entries(dict)) {
-        if (text.includes(wrong)) {
-          foundMistakes.push(`❌ <b>${wrong}</b> → ✅ <b style="color:#34d399;">${correct}</b>`);
-        }
-      }
-      const apiKeyNote = `<div style="font-size: 0.8em; color: #94a3b8; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">💡 สดใหม่! สามารถใส่ Gemini API Key ในหน้า ⚙️ ตั้งค่าระบบ เพื่อใช้งาน AI วิเคราะห์แบบละเอียด 100% ฟรีได้ครับ</div>`;
-      
-      if (foundMistakes.length > 0) {
-        Swal.fire({
-          title: '🔍 ผลตรวจคำผิด (คลังคำในระบบ)',
-          html: `<div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; font-size: 0.9em; line-height: 1.8;">${foundMistakes.join('<br>')}${apiKeyNote}</div>`,
-          background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', confirmButtonText: '✨ แก้ไขให้อัตโนมัติ', showCancelButton: true, cancelButtonText: 'ปิด', cancelButtonColor: '#64748b'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            let newText = text;
-            for (const [wrong, correct] of Object.entries(dict)) {
-              newText = newText.split(wrong).join(correct);
-            }
-            const synopsisEl = document.getElementById('read-synopsis');
-            if (synopsisEl) { synopsisEl.value = newText; updateWordCount(); }
-            Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
-          }
-        });
-      } else {
-        Swal.fire({
-          icon: 'success',
-          title: 'เยี่ยมมาก!',
-          html: `ไม่พบคำผิดจากคลังคำพื้นฐานครับ (เขียนได้เก่งมาก!)${apiKeyNote}`,
-          background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981'
-        });
-      }
-    }
-
     async function editStudentReading(rowIdx, cls, name, title, synopsis, rating) { 
       switchReadingTab(1); const overlay = document.getElementById('reading-loading'); overlay.style.display = 'flex'; document.getElementById('read-class').value = cls; const nameSelect = document.getElementById('read-name'); nameSelect.innerHTML = '<option value="">⏳ โหลดรายชื่อ...</option>'; nameSelect.disabled = true; 
       try { 
         const students = await gasGet('getStudents', { class: cls }); 
         nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; if(Array.isArray(students)) { students.forEach(s => { const isSelected = (s === name) ? 'selected' : ''; nameSelect.innerHTML += `<option value="${s}" ${isSelected}>${s}</option>`; }); nameSelect.disabled = false; } 
       } catch(e) {} 
-      overlay.style.display = 'none'; document.getElementById('read-title').value = title; const el = document.createElement('textarea'); el.innerHTML = synopsis.replace(/<br>/g, "\n"); document.getElementById('read-synopsis').value = el.value; updateWordCount(); setReadingStar(rating); document.getElementById('read-row-idx').value = rowIdx; document.getElementById('btn-read-submit').innerHTML = '💾 บันทึกการแก้ไข'; 
+      overlay.style.display = 'none'; document.getElementById('read-title').value = title; const el = document.createElement('textarea'); el.innerHTML = synopsis.replace(/<br>/g, "\n"); document.getElementById('read-synopsis').value = el.value; updateWordCount(); setReadingStar(rating); document.getElementById('read-row-idx').value = rowIdx; 
+      const submitBtn = document.getElementById('btn-read-submit');
+      if (submitBtn) {
+        submitBtn.innerHTML = '💾 บันทึกการแก้ไข';
+        submitBtn.title = '💾 บันทึกการแก้ไข';
+      }
     }
-    async function submitReadingLog() { const cls = document.getElementById('read-class').value, name = document.getElementById('read-name').value, title = document.getElementById('read-title').value.trim(), synopsis = document.getElementById('read-synopsis').value.trim(); if (!cls || !name || !title || !synopsis || currentReadingStar === 0) return showToast('กรุณากรอกข้อมูลและให้ดาวให้ครบถ้วน', 'warning'); const rowIdx = document.getElementById('read-row-idx').value; const actionName = rowIdx ? 'editReadingLog' : 'addReadingLog'; const payload = { action: actionName, className: cls, name: name, bookTitle: title, synopsis: synopsis, rating: currentReadingStar }; if (rowIdx) payload.rowIdx = rowIdx; Swal.fire({ title: '⏳ กำลังส่งงาน...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); try { await gasPost(payload); Swal.fire({ icon: 'success', title: rowIdx ? 'แก้ไขงานสำเร็จ!' : 'ส่งบันทึกสำเร็จ!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); document.getElementById('read-class').value = ''; document.getElementById('read-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('read-name').disabled = true; document.getElementById('read-title').value = ''; document.getElementById('read-synopsis').value = ''; document.getElementById('highlight-overlay').innerHTML = ''; document.getElementById('word-count-display').innerText = '0'; document.getElementById('read-row-idx').value = ''; document.getElementById('btn-read-submit').innerHTML = '✅ ส่งงาน'; setReadingStar(0); setTimeout(() => switchReadingTab(2), 1000); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถบันทึกได้' }); } }
+
+    async function submitReadingLog() { 
+      const cls = document.getElementById('read-class').value, name = document.getElementById('read-name').value, title = document.getElementById('read-title').value.trim(), synopsis = document.getElementById('read-synopsis').value.trim(); 
+      if (!cls || !name || !title || !synopsis || currentReadingStar === 0) return showToast('กรุณากรอกข้อมูลและให้ดาวให้ครบถ้วน', 'warning'); 
+      const rowIdx = document.getElementById('read-row-idx').value; 
+      const actionName = rowIdx ? 'editReadingLog' : 'addReadingLog'; 
+      const payload = { action: actionName, className: cls, name: name, bookTitle: title, synopsis: synopsis, rating: currentReadingStar }; 
+      if (rowIdx) payload.rowIdx = rowIdx; 
+      
+      Swal.fire({ title: '⏳ กำลังส่งงาน...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); 
+      try { 
+        await gasPost(payload); 
+        Swal.fire({ icon: 'success', title: rowIdx ? 'แก้ไขงานสำเร็จ!' : 'ส่งบันทึกสำเร็จ!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
+        document.getElementById('read-class').value = ''; 
+        document.getElementById('read-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; 
+        document.getElementById('read-name').disabled = true; 
+        document.getElementById('read-title').value = ''; 
+        document.getElementById('read-synopsis').value = ''; 
+        document.getElementById('highlight-overlay').innerHTML = ''; 
+        document.getElementById('word-count-display').innerText = '0'; 
+        document.getElementById('read-row-idx').value = ''; 
+        const submitBtn = document.getElementById('btn-read-submit');
+        if (submitBtn) submitBtn.innerHTML = '📝 ส่งบันทึก'; 
+        setReadingStar(0); 
+        setTimeout(() => switchReadingTab(2), 1000); 
+      } catch(e) { 
+        Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถบันทึกได้' }); 
+      } 
+    }
+
     async function fetchReadingLogs() { 
       const statusDiv = document.getElementById('reading-status'), listDiv = document.getElementById('reading-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
       try { allReadingLogs = await gasGet('getReadingLogs'); statusDiv.style.display = 'none'; renderFilteredReadingLogs(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
     }
+
     function renderFilteredReadingLogs() {
       const container = document.getElementById('reading-list');
       const filterContainer = document.getElementById('read-filter-container');
@@ -2814,19 +2631,25 @@ console.log(payload);
 
       filteredData.forEach(item => {
         let statusColor = '#facc15';
-        if (item.status === 'ตรวจแล้ว') statusColor = '#10b981';
-        else if (item.status === 'กลับไปแก้ไข') statusColor = '#ef4444';
+        let glowColor = 'rgba(250, 204, 21, 0.45)';
+        if (item.status === 'ตรวจแล้ว') {
+          statusColor = '#10b981';
+          glowColor = 'rgba(16, 185, 129, 0.45)';
+        } else if (item.status === 'กลับไปแก้ไข') {
+          statusColor = '#ef4444';
+          glowColor = 'rgba(239, 68, 68, 0.45)';
+        }
 
         let starHtml = '';
         for (let i = 1; i <= 5; i++) {
           starHtml += (i <= item.rating) ? '★' : '<span class="empty" style="opacity:0.3;">☆</span>';
         }
 
-        const safeSynopsis = (item.synopsis || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>");
+        const safeSynopsis = (item.synopsis || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>").replace(/\r/g, "");
         const safeTitle = (item.bookTitle || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
         html += `
-        <div class="stats-card" style="background: ${cardBg}; border-left: 5px solid ${statusColor}; box-shadow: 0 4px 14px ${statusColor}25; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; gap: 12px; margin-bottom: 10px; border-radius: 14px;">
+        <div class="stats-card" style="background: ${cardBg}; border-left: 5px solid ${statusColor}; box-shadow: 0 4px 20px ${glowColor}; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; gap: 12px; margin-bottom: 10px; border-radius: 14px;">
           <!-- ฝั่งซ้าย: ชื่อเรื่อง + ชื่อผู้ส่ง -->
           <div style="display: flex; align-items: center; gap: 12px; flex: 1.5; min-width: 0;">
             <div style="font-size: 1.4em; flex-shrink: 0;">📖</div>
@@ -2847,11 +2670,10 @@ console.log(payload);
             <div style="font-weight: 700; color: ${statusColor}; background: ${statusColor}18; border: 1px solid ${statusColor}40; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; white-space: nowrap;">● ${item.status}</div>
             
             ${isTeacher ? `
-              <button onclick="teacherAIAnalyzeReadingLog(${item.rowIdx})" title="🤖 AI ช่วยวิเคราะห์" class="btn-action" style="padding: 6px 12px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">🤖 AI ตรวจ</button>
-              <button onclick="editStudentReading(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 12px; font-size: 0.88em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไข</button>
-              <button onclick="changeReadingStatus(${item.rowIdx})" class="btn-action" style="padding: 6px 12px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #facc15, #f59e0b); color: #1e293b; border-radius: 50px; font-weight: 700; white-space: nowrap;">✅ ตรวจแล้ว</button>
+              <button onclick="teacherAIAnalyzeReadingLog(${item.rowIdx})" title="🤖 AI ช่วยวิเคราะห์" class="btn-action" style="padding: 6px 14px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">🤖 AI ตรวจ</button>
+              <button onclick="editStudentReading(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 14px; font-size: 0.88em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไข</button>
             ` : `
-              <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}')" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
+              <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}', ${item.rowIdx}, '${item.className}', '${item.name}', ${item.rating})" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
               ${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReadingWithAuth(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไขงาน</button>` : ''}
             `}
           </div>
@@ -2861,7 +2683,7 @@ console.log(payload);
       container.innerHTML = html;
     }
 
-    function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) {
+function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) {
       if (currentLoggedInUser && currentLoggedInUser.isTeacher) {
         editStudentReading(rowIdx, cls, name, title, synopsis, rating);
         return;
@@ -2939,8 +2761,9 @@ console.log(payload);
           </div>
           <div style="font-size: 0.9em; font-weight: 700; color: #0f172a; margin-bottom: 12px;">คุณครูต้องการดำเนินการอย่างไร?</div>
         `,
-        width: '740px',
-        background: '#ffffff', color: '#0f172a',
+        width: '95%',
+              maxWidth: '920px',
+              background: '#ffffff', color: '#0f172a',
         showCancelButton: true,
         showDenyButton: true,
         confirmButtonText: '✅ แก้ + ตรวจแล้ว',
