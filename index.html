@@ -1323,13 +1323,54 @@ body.light-mode .highlight-overlay {
     <div class="tab-group tab-borrow"><div class="tab-btn active" id="tab-btn-borrow-1" onclick="switchBorrowTab(1)">📝 ยืมหนังสือ</div><div class="tab-btn" id="tab-btn-borrow-2" onclick="switchBorrowTab(2)">📚 รายการยืม-คืน</div></div>
     
     <div id="borrow-tab-1" class="tab-content active">
-      <div class="form-section font-18-input">
-        <label>เลือกระดับชั้น</label><select id="borrow-class" onchange="fetchStudentsForBorrow()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
-        <label>เลือกชื่อนักเรียน</label><select id="borrow-name" disabled><option value="">-- กรุณาเลือกชั้นก่อน --</option></select>
-        <label>ชื่อหนังสือ</label><input type="text" id="borrow-book-name" placeholder="ระบุชื่อหนังสือ">
-        <label>วันที่ยืม</label><input type="text" id="borrow-date-display" readonly style="background: rgba(0,0,0,0.2); color: #94a3b8; cursor: not-allowed; border-color: rgba(255,255,255,0.05);">
-        <label>วันที่คืน (กำหนดส่ง)</label><div style="position: relative; margin-bottom: 16px;"><input type="text" id="borrow-return-date" class="date-picker-input" placeholder="คลิกเพื่อเลือกวันที่"><span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 1.2em; pointer-events: none; z-index: 5;">📅</span></div>
-        <button class="btn-action btn-primary" onclick="submitBorrow()" style="margin-top: 15px;">💾 บันทึกการยืม</button>
+      <div class="form-section full-width font-18-input" style="padding: 24px; max-width: 100%;">
+        <!-- แถวที่ 1: เลือกระดับชั้น (ซ้าย) + เลือกชื่อนักเรียน (ขวา) -->
+        <div style="display: flex; gap: 16px; margin-bottom: 14px;">
+          <div style="flex: 1;">
+            <label>เลือกระดับชั้น</label>
+            <select id="borrow-class" onchange="fetchStudentsForBorrow()" style="margin-bottom: 0;">
+              <option value="">-- เลือกชั้นเรียน --</option>
+              <option value="ป.1">ชั้น ป.1</option>
+              <option value="ป.2">ชั้น ป.2</option>
+              <option value="ป.3">ชั้น ป.3</option>
+              <option value="ป.4">ชั้น ป.4</option>
+              <option value="ป.5">ชั้น ป.5</option>
+              <option value="ป.6">ชั้น ป.6</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label>เลือกชื่อนักเรียน</label>
+            <select id="borrow-name" disabled style="margin-bottom: 0;">
+              <option value="">-- กรุณาเลือกชั้นก่อน --</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- แถวที่ 2: ชื่อหนังสือ (ซ้าย) + วันที่ยืม (ขวา) -->
+        <div style="display: flex; gap: 16px; margin-bottom: 14px;">
+          <div style="flex: 1;">
+            <label>ชื่อหนังสือ</label>
+            <input type="text" id="borrow-book-name" placeholder="ระบุชื่อหนังสือ" style="margin-bottom: 0;">
+          </div>
+          <div style="flex: 1;">
+            <label>วันที่ยืม</label>
+            <input type="text" id="borrow-date-display" readonly style="background: rgba(0,0,0,0.2); color: #94a3b8; cursor: not-allowed; border-color: rgba(255,255,255,0.05); margin-bottom: 0;">
+          </div>
+        </div>
+
+        <!-- แถวที่ 3: วันที่คืน (ซ้าย) + ปุ่มบันทึกการยืม (ขวา) -->
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label>วันที่คืน (กำหนดส่ง)</label>
+            <div style="position: relative; margin-bottom: 0;">
+              <input type="text" id="borrow-return-date" class="date-picker-input" placeholder="คลิกเลือกวันที่คืน พ.ศ. ไทย" style="margin-bottom: 0;">
+              <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 1.2em; pointer-events: none; z-index: 5;">📅</span>
+            </div>
+          </div>
+          <div style="flex: 1;">
+            <button class="btn-action btn-primary" onclick="submitBorrow()" style="margin-bottom: 0; height: 56px; font-size: 1.1em; background: linear-gradient(135deg, #10b981, #059669);">💾 บันทึกการยืม</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2031,7 +2072,50 @@ console.log(payload);
 
     // --- BORROW / RETURN ---
     function switchBorrowTab(tabIndex) { document.querySelectorAll('.tab-borrow .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#page-borrow .tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-borrow-' + tabIndex).classList.add('active'); document.getElementById('borrow-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) { showBorrowForm(); applyLoggedInUserToForm('borrow'); } if (tabIndex === 2) fetchBorrows(); }
-    function showBorrowForm() { const today = new Date(), thaiDate = formatThaiDate(today.toISOString().split('T')[0]), rawDate = today.toISOString().split('T')[0]; document.getElementById('borrow-date-display').value = thaiDate; document.getElementById('borrow-date-display').dataset.raw = rawDate; const nextWeek = new Date(); nextWeek.setDate(today.getDate() + 7); if (!fpReturnDate) { fpReturnDate = flatpickr("#borrow-return-date", { locale: "th", defaultDate: nextWeek, dateFormat: "Y-m-d", altInput: true, altFormat: "j F Y", disableMobile: "true", formatDate: (date, format) => { if (format === 'j F Y') { const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"]; return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543}`; } return flatpickr.formatDate(date, format); } }); } else { fpReturnDate.setDate(nextWeek); } }
+    function updateFlatpickrThaiBE(instance) {
+      if (!instance || !instance.currentYearElement) return;
+      const beYear = instance.currentYear + 543;
+      instance.currentYearElement.value = beYear;
+    }
+
+    function showBorrowForm() { 
+      const today = new Date();
+      const thaiDate = formatThaiDate(today.toISOString().split('T')[0]);
+      const rawDate = today.toISOString().split('T')[0]; 
+      document.getElementById('borrow-date-display').value = thaiDate; 
+      document.getElementById('borrow-date-display').dataset.raw = rawDate; 
+      const nextWeek = new Date(); 
+      nextWeek.setDate(today.getDate() + 7); 
+      
+      if (!fpReturnDate) { 
+        fpReturnDate = flatpickr("#borrow-return-date", { 
+          locale: "th", 
+          defaultDate: nextWeek, 
+          dateFormat: "Y-m-d", 
+          altInput: true, 
+          altFormat: "j F Y", 
+          disableMobile: true,
+          onReady: function(selectedDates, dateStr, instance) {
+            updateFlatpickrThaiBE(instance);
+          },
+          onMonthChange: function(selectedDates, dateStr, instance) {
+            setTimeout(() => updateFlatpickrThaiBE(instance), 50);
+          },
+          onYearChange: function(selectedDates, dateStr, instance) {
+            setTimeout(() => updateFlatpickrThaiBE(instance), 50);
+          },
+          formatDate: (date, format) => { 
+            if (format === 'j F Y') { 
+              const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"]; 
+              return `${date.getDate()} ${months[date.getMonth()]} พ.ศ. ${date.getFullYear() + 543}`; 
+            } 
+            return flatpickr.formatDate(date, format); 
+          } 
+        }); 
+      } else { 
+        fpReturnDate.setDate(nextWeek); 
+      } 
+    }
     async function fetchStudentsForBorrow() { 
       const cls = document.getElementById('borrow-class').value, nameSelect = document.getElementById('borrow-name'); nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; 
       if (!cls) return; Swal.fire({ title: '⏳ กำลังโหลดรายชื่อ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); 
