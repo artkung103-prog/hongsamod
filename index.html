@@ -840,7 +840,92 @@ body.light-mode .highlight-overlay {
       100% { transform: scale(1.15) rotate(0deg); }
     }
 
+    /* Hero Banner Header Style */
+    .hero-header-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 16px 24px;
+      margin: 0 auto 12px auto;
+      width: 100%;
+      max-width: 520px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 27, 75, 0.8));
+      backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      border-radius: 26px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 242, 254, 0.15);
+      transition: all 0.35s ease;
+    }
+    .hero-header-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 28px rgba(0, 242, 254, 0.25);
+      border-color: rgba(0, 242, 254, 0.35);
+    }
+    .hero-logo-icon {
+      font-size: 54px;
+      line-height: 1;
+      filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.6));
+      animation: floatLogo 3s ease-in-out infinite alternate;
+    }
+    @keyframes floatLogo {
+      0% { transform: translateY(0) scale(1) rotate(0deg); }
+      50% { transform: translateY(-6px) scale(1.08) rotate(-4deg); }
+      100% { transform: translateY(0) scale(1) rotate(0deg); }
+    }
+    .hero-title-group {
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .hero-main-title {
+      font-size: 2.1em;
+      font-weight: 800;
+      font-family: 'Noto Sans Thai', 'Prompt', sans-serif;
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #00c6ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      line-height: 1.1;
+      filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.4));
+    }
+    .hero-school-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      background: linear-gradient(135deg, #facc15, #f59e0b);
+      color: #0f172a;
+      font-size: 0.88em;
+      font-weight: 800;
+      font-family: 'Noto Sans Thai', 'Prompt', sans-serif;
+      border-radius: 50px;
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.45);
+      letter-spacing: 0.2px;
+    }
+    .hero-school-badge .star-icon {
+      font-size: 11px;
+    }
+
     /* Light Mode Dashboard Overrides */
+    body.light-mode .hero-header-card {
+      background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+      border-color: rgba(255, 87, 34, 0.2);
+      box-shadow: 0 10px 30px rgba(255, 87, 34, 0.12);
+    }
+    body.light-mode .hero-main-title {
+      background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: none;
+    }
+    body.light-mode .hero-school-badge {
+      background: linear-gradient(135deg, #ff5722, #ea580c);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35);
+    }
     body.light-mode .dash-card.neon-card {
       background: #ffffff;
       border-color: rgba(0, 0, 0, 0.08);
@@ -879,16 +964,18 @@ body.light-mode .highlight-overlay {
 
   <!-- ==================== MENU PAGE ==================== -->
   <div id="page-menu" class="page-container active">
-    <div class="header">
-      <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
-        <span class="logo-icon" style="margin-bottom: 0; line-height: 1;">📚</span>
-        <div style="text-align: left;">
-          <h1 style="margin-bottom: 0; line-height: 1.1;">ระบบห้องสมุด</h1>
-          <p class="subtitle" style="margin-bottom: 0;">โรงเรียนวัดหนองคันทรง</p>
+    <div class="header" style="margin-bottom: 6px;">
+      <div class="hero-header-card">
+        <span class="hero-logo-icon">📚</span>
+        <div class="hero-title-group">
+          <h1 class="hero-main-title">ระบบห้องสมุด</h1>
+          <div class="hero-school-badge">
+            <span class="star-icon">✨</span> โรงเรียนวัดหนองคันทรง <span class="star-icon">✨</span>
+          </div>
         </div>
       </div>
 
-      <div id="apiWarning" class="api-warning" style="margin-bottom: 0;">⚠️ ระบบยังไม่ได้เชื่อมต่อ API — กรุณาไปที่ปุ่ม "ตั้งค่าระบบ"</div>
+      <div id="apiWarning" class="api-warning" style="margin-top: 8px; margin-bottom: 0;">⚠️ ระบบยังไม่ได้เชื่อมต่อ API — กรุณาไปที่ปุ่ม "ตั้งค่าระบบ"</div>
     </div>
 
     <!-- แถวที่ 1: กล่องสถิติเรืองแสง 4 กล่อง -->
