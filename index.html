@@ -2084,13 +2084,13 @@ console.log(payload);
       const rawDate = today.toISOString().split('T')[0]; 
       document.getElementById('borrow-date-display').value = thaiDate; 
       document.getElementById('borrow-date-display').dataset.raw = rawDate; 
-      const nextWeek = new Date(); 
-      nextWeek.setDate(today.getDate() + 7); 
+      const tomorrow = new Date(); 
+      tomorrow.setDate(today.getDate() + 1); 
       
       if (!fpReturnDate) { 
         fpReturnDate = flatpickr("#borrow-return-date", { 
           locale: "th", 
-          defaultDate: nextWeek, 
+          defaultDate: tomorrow, 
           dateFormat: "Y-m-d", 
           altInput: true, 
           altFormat: "j F Y", 
@@ -2113,7 +2113,7 @@ console.log(payload);
           } 
         }); 
       } else { 
-        fpReturnDate.setDate(nextWeek); 
+        fpReturnDate.setDate(tomorrow); 
       } 
     }
     async function fetchStudentsForBorrow() { 
