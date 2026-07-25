@@ -1478,29 +1478,74 @@ body.light-mode .highlight-overlay {
           </div>
         </div>
 
-        <!-- แถวที่ 4: นับคำ + ปุ่ม AI ตรวจคำผิด + ปุ่มส่งบันทึก -->
+        <!-- แถวที่ 4: นับคำ + ปุ่ม AI ตรวจคำผิด (วงกลมเขียว) + ปุ่มส่งบันทึก (วงกลมเหลือง) -->
         <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
           <div style="color: #bae6fd; font-size: 0.95em; font-weight: 700;">
             พิมพ์ไปแล้ว: <span id="word-count-display" style="color: #facc15; font-weight: 800; font-size: 1.1em;">0</span> คำ
           </div>
           
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" style="background: linear-gradient(135deg, #10b981, #059669); border: none; color: white; padding: 10px 18px; border-radius: 50px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-size: 0.95em; font-weight: 700; box-shadow: 0 4px 12px rgba(16,185,129,0.35); transition: 0.2s;">🤖 ให้ AI ตรวจคำผิด</button>
-            <button id="btn-read-submit" class="btn-action btn-warning" onclick="submitReadingLog()" style="margin: 0; padding: 10px 24px; font-size: 0.95em; font-weight: 700; color: #1e293b; background: linear-gradient(135deg, #facc15, #f59e0b); border-radius: 50px;">📝 ส่งบันทึก</button>
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" title="🤖 ให้ AI ตรวจคำผิด" style="width: 48px; height: 48px; border-radius: 50%; border: none; color: white; background: linear-gradient(135deg, #10b981, #059669); cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(16,185,129,0.5); transition: 0.2s;">🤖</button>
+            <button id="btn-read-submit" onclick="submitReadingLog()" title="📝 ส่งบันทึกรักการอ่าน" style="width: 48px; height: 48px; border-radius: 50%; border: none; color: #1e293b; background: linear-gradient(135deg, #facc15, #f59e0b); cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(250,204,21,0.5); transition: 0.2s;">📝</button>
           </div>
         </div>
       </div>
     </div>
     
     <div id="reading-tab-2" class="tab-content">
-      <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;"><select id="filter-read-class" onchange="renderFilteredReadingLogs()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📚 ทุกชั้นเรียน</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select><select id="filter-read-status" onchange="renderFilteredReadingLogs()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);"><option value="all">📌 ทุกสถานะ</option><option value="รอตรวจ">⏳ รอตรวจ</option><option value="ตรวจแล้ว">✅ ตรวจแล้ว</option><option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option></select></div>
+      <div id="read-filter-container" style="display: flex; gap: 10px; margin-bottom: 14px; max-width: 500px; margin-left: auto; margin-right: auto;">
+        <select id="filter-read-class" onchange="renderFilteredReadingLogs()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);">
+          <option value="all">📚 ทุกชั้นเรียน</option>
+          <option value="ป.1">ชั้น ป.1</option>
+          <option value="ป.2">ชั้น ป.2</option>
+          <option value="ป.3">ชั้น ป.3</option>
+          <option value="ป.4">ชั้น ป.4</option>
+          <option value="ป.5">ชั้น ป.5</option>
+          <option value="ป.6">ชั้น ป.6</option>
+        </select>
+        <select id="filter-read-status" onchange="renderFilteredReadingLogs()" style="margin-bottom: 0; padding: 10px; font-size: 0.95em; background: rgba(0,0,0,0.3);">
+          <option value="all">📌 ทุกสถานะ</option>
+          <option value="รอตรวจ">⏳ รอตรวจ</option>
+          <option value="ตรวจแล้ว">✅ ตรวจแล้ว</option>
+          <option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option>
+        </select>
+      </div>
       <div class="status-text" id="reading-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #facc15; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #fef08a;">กำลังดึงข้อมูล...</div></div>
-      <div id="reading-list" class="stats-grid-container"></div>
+      <div id="reading-list"></div>
     </div>
 
     <div id="reading-tab-3" class="tab-content">
+      <!-- Filter Bar -->
+      <div class="stats-header-bar" style="max-width: 750px; margin: 0 auto 16px auto;">
+        <h3 class="stats-header-title">🏆 อันดับสูงสุด นักอ่านยอดเยี่ยม</h3>
+        <div class="stats-class-tabs" id="reading-stats-class-tabs">
+          <button class="stats-tab-btn active" onclick="filterReadingStatsTab('all')">🏆 รวมทั้งหมด</button>
+          <button class="stats-tab-btn" onclick="filterReadingStatsTab('ป.1')">ป.1</button>
+          <button class="stats-tab-btn" onclick="filterReadingStatsTab('ป.2')">ป.2</button>
+          <button class="stats-tab-btn" onclick="filterReadingStatsTab('ป.3')">ป.3</button>
+          <button class="stats-tab-btn" onclick="filterReadingStatsTab('ป.4')">ป.4</button>
+          <button class="stats-tab-btn" onclick="filterReadingStatsTab('ป.5')">ป.5</button>
+          <button class="stats-tab-btn" onclick="filterReadingStatsTab('ป.6')">ป.6</button>
+        </div>
+      </div>
+
       <div class="status-text" id="reading-stats-status" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"><div class="spinner" style="border-top-color: #facc15; width: 35px; height: 35px; border-width: 3px;"></div><div style="margin-top: 10px; color: #fef08a;">กำลังประมวลผลอันดับ...</div></div>
-      <div class="stats-card full-width" style="margin: 0 auto;"><h3 style="color: #facc15; justify-content: center; font-size: 1.5em; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">🏆 อันดับสูงสุด นักอ่านยอดเยี่ยม</h3><div id="reading-top5-list"></div></div>
+
+      <div class="stats-spectacular-grid" id="reading-stats-grid" style="display: none;">
+        <!-- LEFT COLUMN: PODIUM TOP 3 -->
+        <div class="stats-left-col">
+          <div style="font-size: 0.95em; font-weight: 800; color: #facc15; text-align: center; margin-bottom: 8px; font-family: 'Noto Sans Thai', sans-serif;">🥇 3 อันดับนักอ่านสูงสุด</div>
+          <div class="podium-wrapper" style="margin: 0; padding: 10px 0 0 0;">
+            <div class="podium-container" id="reading-podium-container"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: RANKS 4-10 SCROLLABLE LIST -->
+        <div class="stats-right-col">
+          <div style="font-size: 0.95em; font-weight: 800; color: #cbd5e1; text-align: center; margin-bottom: 8px; font-family: 'Noto Sans Thai', sans-serif;">📊 อันดับ 4 - 10</div>
+          <div class="stats-scroll-area" id="reading-top4-10-list"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2726,74 +2771,351 @@ console.log(payload);
       const statusDiv = document.getElementById('reading-status'), listDiv = document.getElementById('reading-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
       try { allReadingLogs = await gasGet('getReadingLogs'); statusDiv.style.display = 'none'; renderFilteredReadingLogs(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
     }
-    function renderFilteredReadingLogs() { const listDiv = document.getElementById('reading-list'), filterClass = document.getElementById('filter-read-class').value, filterStatus = document.getElementById('filter-read-status').value; let filteredData = allReadingLogs; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.status === filterStatus); if (filteredData.length === 0) { listDiv.innerHTML = '<div class="stats-card" style="text-align: center; color: #94a3b8; grid-column: 1 / -1;">ไม่พบข้อมูล</div>'; return; } let html = ''; filteredData.forEach(item => { let statusColor = '#facc15'; if(item.status === 'ตรวจแล้ว') statusColor = '#34d399'; else if(item.status === 'กลับไปแก้ไข') statusColor = '#ef4444'; let starHtml = ''; for(let i=1; i<=5; i++) { starHtml += (i <= item.rating) ? '★' : '<span class="empty">☆</span>'; } const safeSynopsis = (item.synopsis||'').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>"); const safeTitle = (item.bookTitle||'').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;"); html += `<div class="stats-card" style="border-left: 4px solid ${statusColor};"><div class="c-title" style="font-size: 1.4em;">📖 ${item.bookTitle}</div><div class="c-sub" style="font-size: 1.15em;">👤 ${item.name} (${item.className})</div><div class="c-desc">📅 วันที่ส่ง: <span class="c-val">${formatThaiDate(item.date)}</span></div><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><div class="display-stars">${starHtml}</div><button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}')" class="btn-c-read">อ่านเนื้อเรื่อง</button></div><div class="c-divider"><div style="font-weight: 600; color: ${statusColor}; background: ${statusColor}15; padding: 4px 10px; border-radius: 20px; font-size: 0.9em;">● ${item.status}</div><div style="display: flex; gap: 8px;">${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReading(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-c-edit-hw">✏️ แก้ไขงาน</button>` : ''}<button onclick="changeReadingStatus(${item.rowIdx})" class="btn-c-action">ครูตรวจ</button></div></div></div>`; }); listDiv.innerHTML = html; }
+    function renderFilteredReadingLogs() {
+      const container = document.getElementById('reading-list');
+      const filterContainer = document.getElementById('read-filter-container');
+      const filterClassEl = document.getElementById('filter-read-class');
+      const filterStatusEl = document.getElementById('filter-read-status');
+      
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const isLight = document.body.classList.contains('light-mode');
+      
+      // Text contrast colors for light/dark modes
+      const titleColor = isLight ? '#0f172a' : '#f8fafc';
+      const labelColor = isLight ? '#334155' : '#cbd5e1';
+      const nameColor = isLight ? '#0f172a' : '#38bdf8';
+      const cardBg = isLight ? '#ffffff' : '#16213e';
+
+      // Hide filter dropdowns in Student Mode, show in Teacher Mode
+      if (filterContainer) {
+        filterContainer.style.display = isTeacher ? 'flex' : 'none';
+      }
+
+      const filterClass = filterClassEl ? filterClassEl.value : 'all';
+      const filterStatus = filterStatusEl ? filterStatusEl.value : 'all';
+
+      let filteredData = allReadingLogs;
+
+      // In Student Mode: ONLY show reading logs submitted by current student!
+      if (!isTeacher && currentLoggedInUser && currentLoggedInUser.name) {
+        filteredData = filteredData.filter(item => item.name === currentLoggedInUser.name);
+      } else if (isTeacher) {
+        if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass);
+        if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.status === filterStatus);
+      }
+
+      if (filteredData.length === 0) {
+        container.innerHTML = '<div class="stats-card c-empty">ไม่พบรายการบันทึกรักการอ่าน</div>';
+        return;
+      }
+
+      let html = '';
+      container.style.display = 'block';
+
+      filteredData.forEach(item => {
+        let statusColor = '#facc15';
+        if (item.status === 'ตรวจแล้ว') statusColor = '#10b981';
+        else if (item.status === 'กลับไปแก้ไข') statusColor = '#ef4444';
+
+        let starHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          starHtml += (i <= item.rating) ? '★' : '<span class="empty" style="opacity:0.3;">☆</span>';
+        }
+
+        const safeSynopsis = (item.synopsis || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>");
+        const safeTitle = (item.bookTitle || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
+        html += `
+        <div class="stats-card" style="background: ${cardBg}; border-left: 5px solid ${statusColor}; box-shadow: 0 4px 14px ${statusColor}25; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; gap: 12px; margin-bottom: 10px; border-radius: 14px;">
+          <!-- ฝั่งซ้าย: ชื่อเรื่อง + ชื่อผู้ส่ง -->
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1.5; min-width: 0;">
+            <div style="font-size: 1.4em; flex-shrink: 0;">📖</div>
+            <div style="text-align: left; overflow: hidden;">
+              <div style="font-weight: 800; font-size: 1.05em; color: ${titleColor}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.bookTitle}</div>
+              <div style="font-size: 0.85em; color: ${labelColor};">ผู้ส่ง: <b style="color: ${nameColor};">${item.name}</b> (${item.className})</div>
+            </div>
+          </div>
+
+          <!-- ตรงกลาง: ดาวความสนุก & วันที่ส่ง -->
+          <div style="flex: 1.1; text-align: center; font-size: 0.85em; color: ${labelColor}; display: flex; flex-direction: column; align-items: center; gap: 2px; white-space: nowrap; flex-shrink: 0;">
+            <div class="display-stars" style="font-size: 1em; letter-spacing: 1px;">${starHtml}</div>
+            <div style="font-size: 0.8em;">วันที่ส่ง: <b style="color: ${isLight ? '#0284c7' : '#bae6fd'};">${formatThaiDate(item.date)}</b></div>
+          </div>
+
+          <!-- ฝั่งขวา: ป้ายสถานะ & ปุ่มดำเนินการ -->
+          <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+            <div style="font-weight: 700; color: ${statusColor}; background: ${statusColor}18; border: 1px solid ${statusColor}40; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; white-space: nowrap;">● ${item.status}</div>
+            
+            ${isTeacher ? `
+              <button onclick="teacherAIAnalyzeReadingLog(${item.rowIdx})" title="🤖 AI ช่วยวิเคราะห์" class="btn-action" style="padding: 6px 12px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">🤖 AI ตรวจ</button>
+              <button onclick="editStudentReading(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 12px; font-size: 0.88em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไข</button>
+              <button onclick="changeReadingStatus(${item.rowIdx})" class="btn-action" style="padding: 6px 12px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #facc15, #f59e0b); color: #1e293b; border-radius: 50px; font-weight: 700; white-space: nowrap;">✅ ตรวจแล้ว</button>
+            ` : `
+              <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}')" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
+              ${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReadingWithAuth(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไขงาน</button>` : ''}
+            `}
+          </div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) {
+      if (currentLoggedInUser && currentLoggedInUser.isTeacher) {
+        editStudentReading(rowIdx, cls, name, title, synopsis, rating);
+        return;
+      }
+      Swal.fire({
+        title: '🔒 ยืนยันตัวตน',
+        text: 'กรุณากรอกรหัสผ่าน 1221 เพื่อแก้ไขงาน',
+        input: 'password',
+        inputPlaceholder: 'รหัสผ่าน 1221',
+        showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก',
+        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981',
+        preConfirm: (pwd) => { if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return pwd === '1221'; }
+      }).then((res) => {
+        if (res.isConfirmed) editStudentReading(rowIdx, cls, name, title, synopsis, rating);
+      });
+    }
+
+    async function teacherAIAnalyzeReadingLog(rowIdx) {
+      const item = allReadingLogs.find(i => i.rowIdx === rowIdx);
+      if (!item) return;
+
+      Swal.fire({
+        title: '🤖 AI กำลังตรวจ...',
+        html: '⏳ กำลังตรวจเรื่องย่อและเตรียมข้อเสนอแนะ...',
+        background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const apiKey = localStorage.getItem('geminiApiKey') || '';
+      let aiCorrectedText = item.synopsis;
+      let analysisSummary = '';
+
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `คุณคือครูภาษาไทยผู้เชี่ยวชาญ ข้อความเรื่องย่อของนักเรียนคือ:\n"${item.synopsis}"\n\nโปรดตรวจคำผิดและส่งคืนข้อความที่แก้ไขสะกดถูกต้องแล้วทั้งหมด พร้อมสรุปคำผิดสั้นๆ 1-2 ประโยค`
+                }]
+              }]
+            })
+          });
+          const data = await res.json();
+          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            analysisSummary = data.candidates[0].content.parts[0].text;
+          }
+        } catch(e) {}
+      }
+
+      if (!analysisSummary) {
+        const dict = { "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย", "ศรีษะ": "ศีรษะ" };
+        let found = [];
+        for (const [w, c] of Object.entries(dict)) {
+          if (item.synopsis.includes(w)) {
+            found.push(`❌ ${w} -> ✅ ${c}`);
+            aiCorrectedText = aiCorrectedText.split(w).join(c);
+          }
+        }
+        analysisSummary = found.length > 0 ? found.join('<br>') : '✅ ไม่พบคำสะกดผิดในคลังคำพื้นฐาน';
+      }
+
+      const formattedHtml = analysisSummary.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706;">$1</b>').replace(/\n/g, '<br>');
+
+      Swal.fire({
+        title: `🤖 ผลวิเคราะห์สำหรับ: ${item.bookTitle}`,
+        html: `
+          <div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 0.95em; line-height: 1.7; margin-bottom: 16px; border: 2px solid #cbd5e1;">
+            <b>เนื้อเรื่องย่อปัจจุบัน:</b><br>
+            <div style="background:#fff; padding:10px; border-radius:8px; margin: 6px 0 12px 0; border: 1px solid #e2e8f0;">${item.synopsis}</div>
+            <b>ผลตรวจ AI:</b><br>
+            ${formattedHtml}
+          </div>
+          <div style="font-size: 0.9em; font-weight: 700; color: #0f172a; margin-bottom: 12px;">คุณครูต้องการดำเนินการอย่างไร?</div>
+        `,
+        width: '740px',
+        background: '#ffffff', color: '#0f172a',
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: '✅ แก้ + ตรวจแล้ว',
+        denyButtonText: '✨ แก้ให้เลย',
+        cancelButtonText: '❌ ส่งกลับไปแก้ไข',
+        confirmButtonColor: '#10b981',
+        denyButtonColor: '#3b82f6',
+        cancelButtonColor: '#ef4444',
+        customClass: { popup: 'light-override-popup' }
+      }).then(async (res) => {
+        if (res.isConfirmed) {
+          // ✅ แก้ + ตรวจแล้ว
+          Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
+          try {
+            await gasPost({ action: 'editReadingLog', rowIdx: item.rowIdx, className: item.className, name: item.name, bookTitle: item.bookTitle, synopsis: aiCorrectedText, rating: item.rating });
+            await gasPost({ action: 'updateReadingStatus', rowIdx: item.rowIdx, status: 'ตรวจแล้ว' });
+            Swal.fire({ icon: 'success', title: 'แก้ + ตรวจเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+            fetchReadingLogs();
+          } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
+        } else if (res.isDenied) {
+          // ✨ แก้ให้เลย
+          Swal.fire({ title: '⏳ กำลังแก้ไขเนื้อหา...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
+          try {
+            await gasPost({ action: 'editReadingLog', rowIdx: item.rowIdx, className: item.className, name: item.name, bookTitle: item.bookTitle, synopsis: aiCorrectedText, rating: item.rating });
+            Swal.fire({ icon: 'success', title: 'แก้ไขเนื้อหาเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+            fetchReadingLogs();
+          } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
+        } else if (res.dismiss === Swal.DismissReason.cancel) {
+          // ❌ ส่งกลับไปแก้ไข
+          Swal.fire({ title: '⏳ กำลังส่งกลับ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
+          try {
+            await gasPost({ action: 'updateReadingStatus', rowIdx: item.rowIdx, status: 'กลับไปแก้ไข' });
+            Swal.fire({ icon: 'success', title: 'ส่งกลับไปแก้ไขเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+            fetchReadingLogs();
+          } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
+        }
+      });
+    }
+
     function showSynopsisModal(title, text) { 
       const plainText = text.replace(/<br\s*[\/]?>/gi, "\n");
       Swal.fire({ 
         title: title, 
         html: `
-          <div class="modal-content-box" style="text-align: left; max-height: 40vh; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; font-size: 0.95em; line-height: 1.6; margin-bottom: 15px;">${text}</div>
-          <button onclick="analyzeSpellingWithAI(decodeURIComponent('${encodeURIComponent(plainText)}'))" class="btn-action btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); margin-bottom: 0;">🤖 ให้ AI ช่วยวิเคราะห์คำผิดเรื่องนี้</button>
+          <div class="modal-content-box" style="text-align: left; max-height: 45vh; overflow-y: auto; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 1em; line-height: 1.7; margin-bottom: 15px; border: 1.5px solid #cbd5e1;">${text}</div>
+          <button onclick="analyzeSpellingWithAI(decodeURIComponent('${encodeURIComponent(plainText)}'))" class="btn-action btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); margin-bottom: 0; width: 100%; border-radius: 50px; font-weight: 700;">🤖 ให้ AI ตรวจคำผิดเรื่องนี้</button>
         `, 
-        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#facc15', confirmButtonText: 'ปิด', customClass: { popup: 'light-override-popup' } 
+        background: '#ffffff', color: '#0f172a', confirmButtonColor: '#facc15', confirmButtonText: 'ปิด', customClass: { popup: 'light-override-popup' } 
       }); 
     }
-    async function changeReadingStatus(rowIdx) { 
-      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
-      Swal.fire({ 
-        title: isTeacher ? '👨‍🏫 ครูตรวจงาน' : '🔒 ครูตรวจงาน', 
-        html: `
-          ${isTeacher ? '' : '<input type="password" id="swal-read-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;">'}
-          <select id="swal-read-status" class="swal2-select" style="margin-top: 0;">
-            <option value="ตรวจแล้ว">✅ ตรวจแล้ว</option>
-            <option value="รอตรวจ">⏳ รอตรวจ</option>
-            <option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option>
-          </select>
-        `, 
-        focusConfirm: false, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', showCancelButton: true, cancelButtonColor: '#ef4444', 
-        preConfirm: () => { 
-          if (!isTeacher) {
-            const pwd = document.getElementById('swal-read-pwd').value; 
-            if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); 
-          }
-          return document.getElementById('swal-read-status').value; 
-        } 
-      }).then(async (result) => { 
-        if (result.isConfirmed) { 
-          Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); 
-          try { 
-            await gasPost({ action: 'updateReadingStatus', rowIdx: rowIdx, status: result.value }); 
-            Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
-            fetchReadingLogs(); 
-          } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปเดตได้' }); } 
-        } 
-      }); 
-    }
-    
+
+    let allReadingStatsData = null;
+
     async function fetchReadingStats() {
-      const statusDiv = document.getElementById('reading-stats-status'), listDiv = document.getElementById('reading-top5-list');
-      if (!statusDiv || !listDiv) return;
+      const statusDiv = document.getElementById('reading-stats-status');
+      const gridDiv = document.getElementById('reading-stats-grid');
+      if (!statusDiv || !gridDiv) return;
       statusDiv.style.display = 'flex';
-      listDiv.innerHTML = '';
+      gridDiv.style.display = 'none';
       try {
-        const data = await gasGet('getReadingStats');
+        allReadingStatsData = await gasGet('getReadingStats');
         statusDiv.style.display = 'none';
-        listDiv.innerHTML = '';
-        if (data && data.overall) {
-          data.overall.forEach((s, i) => {
-            listDiv.innerHTML += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> ${s.name}</div><div class="stat-count">${s.count} เรื่อง</div></div>`;
-          });
-        }
-        if (data && data.byClass) {
-          Object.keys(data.byClass).sort().forEach(cls => {
-            listDiv.innerHTML += `<br><h3 style="color:#38bdf8">📚 ${cls}</h3>`;
-            data.byClass[cls].forEach((s, i) => {
-              listDiv.innerHTML += `<div class="stat-row"><div><span class="rank-badge">${i+1}</span> ${s.name}</div><div class="stat-count">${s.count} เรื่อง</div></div>`;
-            });
-          });
-        }
+        gridDiv.style.display = 'grid';
+        filterReadingStatsTab('all');
       } catch (e) {
-        statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>';
+        statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลอันดับล้มเหลว</div>';
+      }
+    }
+
+    function filterReadingStatsTab(cls) {
+      // Update tab active UI
+      const container = document.getElementById('reading-stats-class-tabs');
+      if (container) {
+        container.querySelectorAll('.stats-tab-btn').forEach(btn => {
+          if (btn.innerText.includes(cls === 'all' ? 'รวมทั้งหมด' : cls)) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      if (!allReadingStatsData) return;
+
+      let list = [];
+      if (cls === 'all' && allReadingStatsData.overall) {
+        list = allReadingStatsData.overall;
+      } else if (allReadingStatsData.byClass && allReadingStatsData.byClass[cls]) {
+        list = allReadingStatsData.byClass[cls];
+      }
+
+      renderReadingPodiumAndList(list);
+    }
+
+    function renderReadingPodiumAndList(list) {
+      const podiumDiv = document.getElementById('reading-podium-container');
+      const top4_10Div = document.getElementById('reading-top4-10-list');
+      if (!podiumDiv || !top4_10Div) return;
+
+      podiumDiv.innerHTML = '';
+      top4_10Div.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        podiumDiv.innerHTML = '<div class="c-empty">ไม่พบข้อมูลอันดับ</div>';
+        return;
+      }
+
+      const top1 = list[0] || null;
+      const top2 = list[1] || null;
+      const top3 = list[2] || null;
+
+      // Podium HTML structure (2, 1, 3)
+      let podiumHtml = '';
+
+      // Rank 2 (Left)
+      if (top2) {
+        podiumHtml += `
+          <div class="podium-column">
+            <div class="podium-card rank-2">
+              <div class="podium-avatar">${getStudentAvatarHtml(top2.name)}</div>
+              <div class="podium-name">${top2.name}</div>
+              <div class="podium-count">${top2.count} เรื่อง</div>
+            </div>
+            <div class="podium-base">2</div>
+          </div>`;
+      } else {
+        podiumHtml += `<div class="podium-column"><div class="podium-card rank-2" style="opacity:0.3; justify-content:center;">-</div><div class="podium-base">2</div></div>`;
+      }
+
+      // Rank 1 (Center)
+      if (top1) {
+        podiumHtml += `
+          <div class="podium-column">
+            <div class="podium-card rank-1">
+              <div class="podium-crown">👑</div>
+              <div class="podium-avatar">${getStudentAvatarHtml(top1.name)}</div>
+              <div class="podium-name">${top1.name}</div>
+              <div class="podium-count">${top1.count} เรื่อง</div>
+            </div>
+            <div class="podium-base">1</div>
+          </div>`;
+      }
+
+      // Rank 3 (Right)
+      if (top3) {
+        podiumHtml += `
+          <div class="podium-column">
+            <div class="podium-card rank-3">
+              <div class="podium-avatar">${getStudentAvatarHtml(top3.name)}</div>
+              <div class="podium-name">${top3.name}</div>
+              <div class="podium-count">${top3.count} เรื่อง</div>
+            </div>
+            <div class="podium-base">3</div>
+          </div>`;
+      } else {
+        podiumHtml += `<div class="podium-column"><div class="podium-card rank-3" style="opacity:0.3; justify-content:center;">-</div><div class="podium-base">3</div></div>`;
+      }
+
+      podiumDiv.innerHTML = podiumHtml;
+
+      // Ranks 4-10
+      const rest = list.slice(3, 10);
+      if (rest.length === 0) {
+        top4_10Div.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">ไม่มีอันดับเพิ่มเติม</div>';
+      } else {
+        rest.forEach((s, idx) => {
+          top4_10Div.innerHTML += `
+            <div class="stat-row" style="margin-bottom: 8px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="rank-badge">${idx + 4}</span> 
+                <span>${getStudentAvatarHtml(s.name)} ${s.name}</span>
+              </div>
+              <div class="stat-count">${s.count} เรื่อง</div>
+            </div>`;
+        });
       }
     }
 
