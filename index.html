@@ -645,6 +645,102 @@ body.light-mode .highlight-overlay {
       100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.7; }
     }
 
+    /* Stats Header & Class Tabs Row */
+    .stats-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+    .stats-header-title {
+      font-size: 1.3em;
+      font-weight: 800;
+      color: #facc15;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stats-class-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .stats-tab-btn {
+      padding: 6px 14px;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #cbd5e1;
+      font-size: 0.88em;
+      font-weight: 700;
+      font-family: 'Noto Sans Thai', 'Prompt', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .stats-tab-btn:hover {
+      background: rgba(250, 204, 21, 0.15);
+      border-color: #facc15;
+      color: #fef08a;
+      transform: translateY(-1px);
+    }
+    .stats-tab-btn.active {
+      background: linear-gradient(135deg, #facc15, #f59e0b);
+      border-color: #facc15;
+      color: #0f172a;
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.4);
+    }
+
+    /* 2-Column Grid Layout (Left: Top 3 Podium, Right: Ranks 4-10 Scrollable) */
+    .stats-spectacular-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .stats-spectacular-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stats-col-title {
+      font-size: 1.05em;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    .stats-scroll-area {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .stats-scroll-area::-webkit-scrollbar {
+      width: 6px;
+    }
+    .stats-scroll-area::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+    .stats-scroll-area::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.4);
+      border-radius: 10px;
+    }
+    .stats-scroll-area::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.7);
+    }
+
     /* White Stat Cards (Ranks 4-10 and By Class) */
     .white-stat-card {
       background: #ffffff;
@@ -1303,8 +1399,34 @@ body.light-mode .highlight-overlay {
     <div class="top-bar"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📊 สถิติการใช้งาน</div><div class="spacer"></div></div>
     <div class="status-text" id="stats-status" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0;"><div class="spinner" style="border-top-color: #38bdf8; width: 45px; height: 45px; border-width: 4px;"></div><div style="margin-top: 15px; color: #bae6fd; font-size: 1.1em; font-weight: 600;">กำลังดาวน์โหลดข้อมูล...</div></div>
     <div id="stats-content" style="width: 100%; display: none;">
-      <div class="stats-card" style="max-width: 1000px; margin: 0 auto 20px auto;"><h3>🏆 เข้าใช้ห้องสมุดมากที่สุด (รวมทั้งหมด)</h3><div id="stats-overall"></div></div>
-      <div id="stats-by-class" class="stats-grid-container"></div>
+      <div class="stats-card full-width" style="max-width: 1000px; margin: 0 auto 20px auto; padding: 20px;">
+        <div class="stats-header-bar">
+          <div class="stats-header-title">🏆 เข้าใช้ห้องสมุดมากที่สุด</div>
+          <div class="stats-class-tabs" id="stats-class-tabs">
+            <button class="stats-tab-btn active" id="stats-tab-all" onclick="switchStatsClassTab('all')">🏆 รวมทั้งหมด</button>
+            <button class="stats-tab-btn" id="stats-tab-ป1" onclick="switchStatsClassTab('ป.1')">ป.1</button>
+            <button class="stats-tab-btn" id="stats-tab-ป2" onclick="switchStatsClassTab('ป.2')">ป.2</button>
+            <button class="stats-tab-btn" id="stats-tab-ป3" onclick="switchStatsClassTab('ป.3')">ป.3</button>
+            <button class="stats-tab-btn" id="stats-tab-ป4" onclick="switchStatsClassTab('ป.4')">ป.4</button>
+            <button class="stats-tab-btn" id="stats-tab-ป5" onclick="switchStatsClassTab('ป.5')">ป.5</button>
+            <button class="stats-tab-btn" id="stats-tab-ป6" onclick="switchStatsClassTab('ป.6')">ป.6</button>
+          </div>
+        </div>
+
+        <div class="stats-spectacular-grid">
+          <!-- ฝั่งซ้าย: 3 อันดับแรก (Podium) -->
+          <div class="stats-left-col">
+            <h4 class="stats-col-title">🥇 3 อันดับสูงสุด</h4>
+            <div id="stats-left-podium"></div>
+          </div>
+
+          <!-- ฝั่งขวา: อันดับที่ 4 - 10 (Scrollbar) -->
+          <div class="stats-right-col">
+            <h4 class="stats-col-title">🏆 อันดับที่ 4 - 10</h4>
+            <div id="stats-right-ranks" class="stats-scroll-area"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2017,6 +2139,9 @@ console.log(payload);
     }
 
     // --- STATS ---
+    let rawStatsData = null;
+    let currentStatsFilter = 'all';
+
     async function fetchStats() { 
       const statusDiv = document.getElementById('stats-status'); 
       if (statusDiv) statusDiv.style.display = 'flex'; 
@@ -2024,128 +2149,127 @@ console.log(payload);
       if (contentDiv) contentDiv.style.display = 'none'; 
       
       try { 
-        const data = await gasGet('getStats'); 
-        const overallDiv = document.getElementById('stats-overall'); 
-        overallDiv.innerHTML = ''; 
-        
-        if (!data || !data.overall || data.overall.length === 0) {
-          overallDiv.innerHTML = '<div class="c-empty">ยังไม่มีข้อมูลสถิติ</div>';
-        } else {
-          // --- 1. RENDER PODIUM (Rank 1-3) ---
-          const top3 = data.overall.slice(0, 3);
-          const rank1 = top3[0] || null;
-          const rank2 = top3[1] || null;
-          const rank3 = top3[2] || null;
-
-          let html = `
-          <div class="podium-wrapper">
-            <!-- Particle Confetti Elements -->
-            <span class="confetti-particle p-star p1">★</span>
-            <span class="confetti-particle p-circle p2">●</span>
-            <span class="confetti-particle p-square p3">■</span>
-            <span class="confetti-particle p-plus p4">+</span>
-            <span class="confetti-particle p-star p5">★</span>
-            <span class="confetti-particle p-circle p6">●</span>
-            <span class="confetti-particle p-square p7">■</span>
-            <span class="confetti-particle p-plus p8">+</span>
-
-            <div class="podium-container">
-              <!-- RANK 2 (Left) -->
-              <div class="podium-column">
-                ${rank2 ? `
-                  <div class="podium-card rank-2">
-                    <div class="podium-crown">🥈</div>
-                    <div class="podium-avatar">${getStudentAvatarHtml(rank2.name)}</div>
-                    <div class="podium-name">${rank2.name}</div>
-                    <div class="podium-badge">📍 ${rank2.cls}</div>
-                    <div class="podium-count">${rank2.count}</div>
-                  </div>
-                  <div class="podium-base">2</div>
-                ` : '<div style="visibility:hidden"></div>'}
-              </div>
-
-              <!-- RANK 1 (Center) -->
-              <div class="podium-column">
-                ${rank1 ? `
-                  <div class="podium-card rank-1">
-                    <div class="podium-crown">👑</div>
-                    <div class="podium-avatar">${getStudentAvatarHtml(rank1.name)}</div>
-                    <div class="podium-name">${rank1.name}</div>
-                    <div class="podium-badge">★ ผู้ชนะ ★</div>
-                    <div style="font-size:0.8em; opacity:0.9; margin-bottom:4px;">📍 ${rank1.cls}</div>
-                    <div class="podium-count">${rank1.count}</div>
-                  </div>
-                  <div class="podium-base">1</div>
-                ` : '<div style="visibility:hidden"></div>'}
-              </div>
-
-              <!-- RANK 3 (Right) -->
-              <div class="podium-column">
-                ${rank3 ? `
-                  <div class="podium-card rank-3">
-                    <div class="podium-crown">🥉</div>
-                    <div class="podium-avatar">${getStudentAvatarHtml(rank3.name)}</div>
-                    <div class="podium-name">${rank3.name}</div>
-                    <div class="podium-badge">📍 ${rank3.cls}</div>
-                    <div class="podium-count">${rank3.count}</div>
-                  </div>
-                  <div class="podium-base">3</div>
-                ` : '<div style="visibility:hidden"></div>'}
-              </div>
-            </div>
-          </div>
-          `;
-
-          // --- 2. RENDER RANK 4 - 10 (White Cards) ---
-          const rest = data.overall.slice(3, 10);
-          if (rest.length > 0) {
-            html += `<h4 style="margin: 30px 0 15px 0; color: #94a3b8; font-size: 1.15em; text-align: left;">🏆 อันดับอื่นๆ (4 - 10)</h4>`;
-            rest.forEach((s, idx) => {
-              const rankNum = idx + 4;
-              html += `
-              <div class="white-stat-card">
-                <div class="white-rank-num">${rankNum}</div>
-                <div class="white-avatar">${getStudentAvatarHtml(s.name)}</div>
-                <div class="white-info">
-                  <div class="white-name">${s.name}</div>
-                  <div class="white-sub">ชั้น ${s.cls}</div>
-                </div>
-                <div class="white-count">${s.count} <span style="font-size:0.65em; font-weight:normal; color:#64748b;">ครั้ง</span></div>
-              </div>`;
-            });
-          }
-
-          overallDiv.innerHTML = html;
-        }
-
-        // --- 3. RENDER BY CLASS (White Cards) ---
-        const byClassDiv = document.getElementById('stats-by-class'); 
-        byClassDiv.innerHTML = ''; 
-        const classes = ['ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6']; 
-        classes.forEach(cls => { 
-          if(data.byClass && data.byClass[cls] && data.byClass[cls].length > 0) { 
-            let html = `<div class="stats-card" style="background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); padding: 18px;"><h3 style="color:#38bdf8; font-size:1.15em; margin-bottom:15px;">📍 ยอดฮิต ชั้น ${cls}</h3>`; 
-            data.byClass[cls].forEach((s, i) => { 
-              html += `
-              <div class="white-stat-card" style="margin-bottom: 8px;">
-                <div class="white-rank-num" style="width: 36px; height: 36px; font-size: 1.05em; margin-right: 10px;">${i+1}</div>
-                <div class="white-avatar" style="width: 34px; height: 34px; font-size: 1.1em; margin-right: 10px;">${getStudentAvatarHtml(s.name)}</div>
-                <div class="white-info">
-                  <div class="white-name" style="font-size: 0.98em;">${s.name}</div>
-                </div>
-                <div class="white-count" style="font-size: 1.2em;">${s.count} <span style="font-size:0.65em; font-weight:normal; color:#64748b;">ครั้ง</span></div>
-              </div>`; 
-            }); 
-            html += `</div>`; 
-            byClassDiv.innerHTML += html; 
-          } 
-        }); 
+        rawStatsData = await gasGet('getStats');
+        currentStatsFilter = 'all';
+        renderStatsView();
 
         if (statusDiv) statusDiv.style.display = 'none'; 
         if (contentDiv) contentDiv.style.display = 'block'; 
       } catch (e) { 
         if (statusDiv) statusDiv.innerHTML = '<div class="c-empty">❌ ดาวน์โหลดข้อมูลล้มเหลว</div>'; 
       } 
+    }
+
+    function switchStatsClassTab(filterClass) {
+      currentStatsFilter = filterClass;
+      document.querySelectorAll('.stats-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeId = 'stats-tab-' + (filterClass === 'all' ? 'all' : filterClass.replace('.', ''));
+      const activeBtn = document.getElementById(activeId);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderStatsView();
+    }
+
+    function renderStatsView() {
+      if (!rawStatsData) return;
+      
+      let list = [];
+      if (currentStatsFilter === 'all') {
+        list = rawStatsData.overall || [];
+      } else {
+        list = (rawStatsData.byClass && rawStatsData.byClass[currentStatsFilter]) ? rawStatsData.byClass[currentStatsFilter] : [];
+      }
+
+      const podiumArea = document.getElementById('stats-left-podium');
+      const ranksArea = document.getElementById('stats-right-ranks');
+
+      if (!list || list.length === 0) {
+        podiumArea.innerHTML = '<div class="c-empty">ยังไม่มีข้อมูลสถิติ</div>';
+        ranksArea.innerHTML = '<div class="c-empty">ยังไม่มีข้อมูลสถิติในชั้นนี้</div>';
+        return;
+      }
+
+      // 1. Render Left Column: Top 3 Compact Podium
+      const top3 = list.slice(0, 3);
+      const rank1 = top3[0] || null;
+      const rank2 = top3[1] || null;
+      const rank3 = top3[2] || null;
+
+      let podiumHtml = `
+      <div class="podium-wrapper" style="margin-top: 0; padding-top: 10px;">
+        <span class="confetti-particle p-star p1">★</span>
+        <span class="confetti-particle p-circle p2">●</span>
+        <span class="confetti-particle p-square p3">■</span>
+        <span class="confetti-particle p-plus p4">+</span>
+
+        <div class="podium-container" style="gap: 8px;">
+          <!-- RANK 2 (Left) -->
+          <div class="podium-column">
+            ${rank2 ? `
+              <div class="podium-card rank-2" style="padding: 10px 4px;">
+                <div class="podium-crown" style="font-size: 1.2em;">🥈</div>
+                <div class="podium-avatar" style="width: 44px; height: 44px; font-size: 1.4em;">${getStudentAvatarHtml(rank2.name)}</div>
+                <div class="podium-name" style="font-size: 0.9em; max-width: 90px;">${rank2.name}</div>
+                <div class="podium-badge" style="font-size: 0.72em; padding: 2px 6px;">📍 ${rank2.cls || currentStatsFilter}</div>
+                <div class="podium-count" style="font-size: 1.4em;">${rank2.count}</div>
+              </div>
+              <div class="podium-base" style="font-size: 1.2em; padding: 4px;">2</div>
+            ` : '<div style="visibility:hidden"></div>'}
+          </div>
+
+          <!-- RANK 1 (Center) -->
+          <div class="podium-column">
+            ${rank1 ? `
+              <div class="podium-card rank-1" style="padding: 12px 4px;">
+                <div class="podium-crown" style="font-size: 1.4em;">👑</div>
+                <div class="podium-avatar" style="width: 50px; height: 50px; font-size: 1.6em;">${getStudentAvatarHtml(rank1.name)}</div>
+                <div class="podium-name" style="font-size: 0.98em; max-width: 100px;">${rank1.name}</div>
+                <div class="podium-badge" style="font-size: 0.72em; padding: 2px 6px;">★ ที่ 1 ★</div>
+                <div style="font-size:0.75em; opacity:0.9; margin-bottom:2px;">📍 ${rank1.cls || currentStatsFilter}</div>
+                <div class="podium-count" style="font-size: 1.6em;">${rank1.count}</div>
+              </div>
+              <div class="podium-base" style="font-size: 1.4em; padding: 6px;">1</div>
+            ` : '<div style="visibility:hidden"></div>'}
+          </div>
+
+          <!-- RANK 3 (Right) -->
+          <div class="podium-column">
+            ${rank3 ? `
+              <div class="podium-card rank-3" style="padding: 10px 4px;">
+                <div class="podium-crown" style="font-size: 1.2em;">🥉</div>
+                <div class="podium-avatar" style="width: 44px; height: 44px; font-size: 1.4em;">${getStudentAvatarHtml(rank3.name)}</div>
+                <div class="podium-name" style="font-size: 0.9em; max-width: 90px;">${rank3.name}</div>
+                <div class="podium-badge" style="font-size: 0.72em; padding: 2px 6px;">📍 ${rank3.cls || currentStatsFilter}</div>
+                <div class="podium-count" style="font-size: 1.4em;">${rank3.count}</div>
+              </div>
+              <div class="podium-base" style="font-size: 1.2em; padding: 4px;">3</div>
+            ` : '<div style="visibility:hidden"></div>'}
+          </div>
+        </div>
+      </div>
+      `;
+      podiumArea.innerHTML = podiumHtml;
+
+      // 2. Render Right Column: Ranks 4 to 10 (Scrollable List)
+      const rest = list.slice(3, 10);
+      if (rest.length === 0) {
+        ranksArea.innerHTML = '<div class="c-empty">ไม่มีอันดับเพิ่มเติมในชั้นนี้</div>';
+      } else {
+        let ranksHtml = '';
+        rest.forEach((s, idx) => {
+          const rankNum = idx + 4;
+          ranksHtml += `
+          <div class="white-stat-card">
+            <div class="white-rank-num">${rankNum}</div>
+            <div class="white-avatar">${getStudentAvatarHtml(s.name)}</div>
+            <div class="white-info">
+              <div class="white-name">${s.name}</div>
+              <div class="white-sub">ชั้น ${s.cls || currentStatsFilter}</div>
+            </div>
+            <div class="white-count">${s.count} <span style="font-size:0.65em; font-weight:normal; color:#64748b;">ครั้ง</span></div>
+          </div>`;
+        });
+        ranksArea.innerHTML = ranksHtml;
+      }
     }
 
     // --- FACE SCAN ---
