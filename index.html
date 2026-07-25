@@ -256,9 +256,9 @@ body:not(.dark-mode) textarea,
     .tab-content { width: 100%; display: none; animation: fadeIn 0.3s ease; }
     .tab-content.active { display: block; }
 
-    .star-rating { display: flex; flex-direction: row-reverse; justify-content: center; gap: 8px; font-size: 40px; cursor: pointer; margin-bottom: 20px; }
-    .star-rating span { color: #475569; transition: color 0.2s; }
-    .star-rating span:hover, .star-rating span:hover ~ span, .star-rating span.active { color: #facc15; }
+    .star-rating { display: flex; flex-direction: row-reverse; justify-content: center; gap: 6px; font-size: 34px; cursor: pointer; margin-bottom: 0; }
+    .star-rating span { color: #475569; transition: all 0.25s ease; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); display: inline-block; }
+    .star-rating span:hover, .star-rating span:hover ~ span, .star-rating span.active { color: #facc15; text-shadow: 0 0 16px #facc15, 0 0 30px #f59e0b; transform: scale(1.18); }
     .display-stars { color: #facc15; font-size: 1.2em; letter-spacing: 2px;}
     .display-stars.empty { color: #475569; }
 
@@ -1425,18 +1425,70 @@ body.light-mode .highlight-overlay {
     <div class="tab-group"><div class="tab-btn active" id="tab-btn-1" onclick="switchReadingTab(1)">📝 ส่งบันทึก</div><div class="tab-btn" id="tab-btn-2" onclick="switchReadingTab(2)">📚 รักการอ่าน</div><div class="tab-btn" id="tab-btn-3" onclick="switchReadingTab(3)">🏆 อันดับสูงสุด</div></div>
     
     <div id="reading-tab-1" class="tab-content active">
-      <div class="form-section full-width font-18-input">
+      <div class="form-section full-width font-18-input" style="padding: 24px; max-width: 100%;">
         <div class="loading-overlay" id="reading-loading" style="border-radius: 18px;"><div class="spinner"></div></div>
         <input type="hidden" id="read-row-idx" value="">
-        <label>เลือกระดับชั้น</label><select id="read-class" onchange="fetchStudentsForReading()"><option value="">-- เลือกชั้นเรียน --</option><option value="ป.1">ชั้น ป.1</option><option value="ป.2">ชั้น ป.2</option><option value="ป.3">ชั้น ป.3</option><option value="ป.4">ชั้น ป.4</option><option value="ป.5">ชั้น ป.5</option><option value="ป.6">ชั้น ป.6</option></select>
-        <label>เลือกชื่อนักเรียน</label><select id="read-name" disabled><option value="">-- กรุณาเลือกชื่อ --</option></select>
-        <label>ชื่อเรื่องที่อ่าน</label><input type="text" id="read-title" placeholder="เช่น หนูน้อยหมวกแดง" spellcheck="true" lang="th">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;"><label style="margin-bottom: 0;">เรื่องย่อ / ข้อคิดที่ได้</label><button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" style="background: linear-gradient(135deg, #10b981, #059669); border: none; color: white; padding: 5px 14px; border-radius: 14px; cursor: pointer; font-family: 'Sarabun'; font-size: 0.88em; font-weight: 600; box-shadow: 0 4px 12px rgba(16,185,129,0.3); transition: 0.2s;">🤖 ให้ AI ตรวจคำผิด</button></div>
-        <div class="textarea-container"><div id="highlight-overlay" class="highlight-overlay"></div><textarea id="read-synopsis" placeholder="พิมพ์เรื่องย่อที่อ่าน หรือข้อคิดที่ได้รับ..." spellcheck="false" oninput="updateWordCount()" onscroll="syncScroll(this)"></textarea></div>
-        <div style="text-align: right; color: #bae6fd; font-size: 0.95em; font-weight: 600; margin-bottom: 16px; margin-top: 5px;">พิมพ์ไปแล้ว: <span id="word-count-display">0</span> คำ</div>
-        <label style="text-align: center; margin-top: 10px;">คะแนนความสนุก</label>
-        <div class="star-rating" id="read-stars"><span data-val="5" onclick="setReadingStar(5)">★</span><span data-val="4" onclick="setReadingStar(4)">★</span><span data-val="3" onclick="setReadingStar(3)">★</span><span data-val="2" onclick="setReadingStar(2)">★</span><span data-val="1" onclick="setReadingStar(1)">★</span></div>
-        <button id="btn-read-submit" class="btn-action btn-warning" onclick="submitReadingLog()" style="margin-top: 10px; color: #1e293b;">✅ ส่งงาน</button>
+        
+        <!-- แถวที่ 1: เลือกระดับชั้น (ซ้าย) + เลือกชื่อนักเรียน (ขวา) อยู่ในบรรทัดเดียวกัน -->
+        <div style="display: flex; gap: 16px; margin-bottom: 14px;">
+          <div style="flex: 1;">
+            <label>เลือกระดับชั้น</label>
+            <select id="read-class" onchange="fetchStudentsForReading()" style="margin-bottom: 0;">
+              <option value="">-- เลือกชั้นเรียน --</option>
+              <option value="ป.1">ชั้น ป.1</option>
+              <option value="ป.2">ชั้น ป.2</option>
+              <option value="ป.3">ชั้น ป.3</option>
+              <option value="ป.4">ชั้น ป.4</option>
+              <option value="ป.5">ชั้น ป.5</option>
+              <option value="ป.6">ชั้น ป.6</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label>เลือกชื่อนักเรียน</label>
+            <select id="read-name" disabled style="margin-bottom: 0;">
+              <option value="">-- กรุณาเลือกชื่อ --</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- แถวที่ 2: สัดส่วน 80 : 20 (ชื่อเรื่อง 80% : คะแนนความสนุก 20%) -->
+        <div style="display: flex; gap: 16px; margin-bottom: 14px; align-items: flex-end;">
+          <div style="flex: 4;">
+            <label>ชื่อเรื่องที่อ่าน</label>
+            <input type="text" id="read-title" placeholder="ระบุชื่อเรื่องที่อ่าน" spellcheck="true" lang="th" style="margin-bottom: 0;">
+          </div>
+          <div style="flex: 1; min-width: 160px; text-align: center;">
+            <label style="margin-bottom: 4px; text-align: center;">คะแนนความสนุก</label>
+            <div class="star-rating" id="read-stars" style="margin-bottom: 0; justify-content: center; font-size: 32px;">
+              <span data-val="5" onclick="setReadingStar(5)">★</span>
+              <span data-val="4" onclick="setReadingStar(4)">★</span>
+              <span data-val="3" onclick="setReadingStar(3)">★</span>
+              <span data-val="2" onclick="setReadingStar(2)">★</span>
+              <span data-val="1" onclick="setReadingStar(1)">★</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- แถวที่ 3: เรื่องย่อ / ข้อคิดที่ได้ -->
+        <div style="margin-bottom: 14px;">
+          <label style="margin-bottom: 6px;">เรื่องย่อ / ข้อคิดที่ได้</label>
+          <div class="textarea-container">
+            <div id="highlight-overlay" class="highlight-overlay"></div>
+            <textarea id="read-synopsis" placeholder="พิมพ์เรื่องย่อที่อ่าน หรือข้อคิดที่ได้รับ..." spellcheck="false" oninput="updateWordCount()" onscroll="syncScroll(this)"></textarea>
+          </div>
+        </div>
+
+        <!-- แถวที่ 4: นับคำ + ปุ่ม AI ตรวจคำผิด + ปุ่มส่งบันทึก -->
+        <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+          <div style="color: #bae6fd; font-size: 0.95em; font-weight: 700;">
+            พิมพ์ไปแล้ว: <span id="word-count-display" style="color: #facc15; font-weight: 800; font-size: 1.1em;">0</span> คำ
+          </div>
+          
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" style="background: linear-gradient(135deg, #10b981, #059669); border: none; color: white; padding: 10px 18px; border-radius: 50px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-size: 0.95em; font-weight: 700; box-shadow: 0 4px 12px rgba(16,185,129,0.35); transition: 0.2s;">🤖 ให้ AI ตรวจคำผิด</button>
+            <button id="btn-read-submit" class="btn-action btn-warning" onclick="submitReadingLog()" style="margin: 0; padding: 10px 24px; font-size: 0.95em; font-weight: 700; color: #1e293b; background: linear-gradient(135deg, #facc15, #f59e0b); border-radius: 50px;">📝 ส่งบันทึก</button>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -2570,8 +2622,8 @@ console.log(payload);
       const apiKey = localStorage.getItem('geminiApiKey') || '';
       
       Swal.fire({
-        title: '🤖 AI กำลังตรวจภาษาไทย...',
-        html: 'กำลังวิเคราะห์คำผิด การสะกดคำ และสรุปข้อคิดอย่างละเอียดยิบ...',
+        title: '🤖 AI กำลังตรวจ...',
+        html: '⏳ กำลังตรวจ...',
         background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
@@ -2596,11 +2648,13 @@ console.log(payload);
           const data = await res.json();
           if (data.candidates && data.candidates[0] && data.candidates[0].content) {
             const aiText = data.candidates[0].content.parts[0].text;
-            const formattedHtml = aiText.replace(/\*\*(.*?)\*\*/g, '<b style="color:#facc15;">$1</b>').replace(/\n/g, '<br>');
+            const formattedHtml = aiText.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706; font-size:1.05em;">$1</b>').replace(/\n/g, '<br>');
             return Swal.fire({
               title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
-              html: `<div style="text-align: left; background: rgba(0,0,0,0.25); padding: 16px; border-radius: 12px; font-size: 0.95em; line-height: 1.8; max-height: 55vh; overflow-y: auto;">${formattedHtml}</div>`,
-              background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง'
+              html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${formattedHtml}</div>`,
+              width: '740px',
+              background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
+              customClass: { popup: 'light-override-popup' }
             });
           }
         } catch (e) {
