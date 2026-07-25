@@ -2811,12 +2811,10 @@ console.log(payload);
             <div style="font-weight: 700; color: ${statusColor}; background: ${statusColor}18; border: 1px solid ${statusColor}40; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; white-space: nowrap;">● ${item.status}</div>
             
             ${isTeacher ? `
-              <button onclick="teacherAIAnalyzeReadingLog(${item.rowIdx})" title="🤖 AI ช่วยวิเคราะห์" class="btn-action" style="padding: 6px 14px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">🤖 AI ตรวจ</button>
-              <button onclick="editStudentReading(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 14px; font-size: 0.88em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไข</button>
+              <button onclick="teacherAIAnalyzeReadingLog(${item.rowIdx})" title="🤖 AI ช่วยวิเคราะห์" class="btn-action" style="padding: 6px 16px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">🤖 AI ตรวจ</button>
             ` : `
-              <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}', ${item.rowIdx}, '${item.className}', '${item.name}', ${item.rating})" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
-              <button onclick="analyzeSpellingWithAI(decodeURIComponent('${encodeURIComponent((item.synopsis||'').replace(/<br>/g, '\n'))}'))" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">🤖 AI ตรวจ</button>
-              ${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReadingWithAuth(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 14px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไขงาน</button>` : ''}
+              <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}', ${item.rowIdx}, '${item.className}', '${item.name}', ${item.rating})" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
+              ${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReadingWithAuth(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไขงาน</button>` : ''}
             `}
           </div>
         </div>`;
@@ -2872,14 +2870,19 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           });
 
           const data = await res.json();
+          if (!res.ok) {
+            if (res.status === 429) {
+              showToast('API Key ติดโควต้าชั่วคราว สลับใช้คลังคำในระบบ', 'info');
+              return checkThaiSpellingFallback(text);
+            }
+          }
           if (data.candidates && data.candidates[0] && data.candidates[0].content) {
             const aiText = data.candidates[0].content.parts[0].text;
             const formattedHtml = aiText.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706; font-size:1.05em;">$1</b>').replace(/\n/g, '<br>');
             return Swal.fire({
               title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
               html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${formattedHtml}</div>`,
-              width: '95%',
-              maxWidth: '920px',
+              width: '80%',
               background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
               customClass: { popup: 'light-override-popup' }
             });
@@ -2914,7 +2917,6 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           title: '🔍 ผลตรวจคำผิด (คลังคำในระบบ)',
           html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 0.95em; line-height: 1.8; border: 1px solid #cbd5e1;">${foundMistakes.join('<br>')}${apiKeyNote}</div>`,
           width: '95%',
-          maxWidth: '920px',
           background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: '✨ แก้ไขให้อัตโนมัติ', showCancelButton: true, cancelButtonText: 'ปิด', cancelButtonColor: '#64748b',
           customClass: { popup: 'light-override-popup' }
         }).then((result) => {
@@ -2934,7 +2936,6 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           title: 'เยี่ยมมาก!',
           html: `<div style="color: #0f172a;">ไม่พบคำผิดจากคลังคำพื้นฐานครับ (เขียนได้เก่งมาก!)</div>${apiKeyNote}`,
           width: '95%',
-          maxWidth: '920px',
           background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981',
           customClass: { popup: 'light-override-popup' }
         });
@@ -3001,9 +3002,8 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           </div>
           <div style="font-size: 0.9em; font-weight: 700; color: #0f172a; margin-bottom: 12px;">คุณครูต้องการดำเนินการอย่างไร?</div>
         `,
-        width: '95%',
-              maxWidth: '920px',
-              background: '#ffffff', color: '#0f172a',
+        width: '80%',
+        background: '#ffffff', color: '#0f172a',
         showCancelButton: true,
         showDenyButton: true,
         confirmButtonText: '✅ แก้ + ตรวจแล้ว',
