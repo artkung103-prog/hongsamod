@@ -1618,11 +1618,128 @@ body.light-mode .highlight-overlay {
       }
     }
 
-    function loginStudent(name, cls) {
-      currentLoggedInUser = { name, cls };
+    // --- SWEETALERT2 LOGIN MODAL (นักเรียน / ครู) ---
+    function openLoginModal() {
+      Swal.fire({
+        title: '🔑 ลงชื่อเข้าใช้งานระบบ',
+        html: `
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px;">
+            <button id="swal-tab-btn-student" onclick="switchSwalTab('student')" class="tab-btn active" style="flex: 1; border: none; font-size: 0.95em; padding: 10px 12px; margin: 0; color: #facc15; background: rgba(250, 204, 21, 0.2); border-radius: 8px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-weight: 700;">👤 นักเรียน</button>
+            <button id="swal-tab-btn-teacher" onclick="switchSwalTab('teacher')" class="tab-btn" style="flex: 1; border: none; font-size: 0.95em; padding: 10px 12px; margin: 0; color: #94a3b8; background: transparent; border-radius: 8px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-weight: 700;">👨‍🏫 คุณครู</button>
+          </div>
+
+          <!-- TAB 1: STUDENT LOGIN -->
+          <div id="swal-tab-student" style="display: block; text-align: left;">
+            <label style="display: block; font-size: 0.85em; color: #cbd5e1; margin-bottom: 4px; font-weight: 600;">เลือกระดับชั้น</label>
+            <select id="swal-student-class" onchange="fetchStudentsForSwalModal()" class="swal2-select" style="width: 100% !important; max-width: 100% !important; margin: 0 0 12px 0 !important; font-size: 15px !important; padding: 10px 14px !important;">
+              <option value="">-- เลือกชั้นเรียน --</option>
+              <option value="ป.1">ชั้น ป.1</option>
+              <option value="ป.2">ชั้น ป.2</option>
+              <option value="ป.3">ชั้น ป.3</option>
+              <option value="ป.4">ชั้น ป.4</option>
+              <option value="ป.5">ชั้น ป.5</option>
+              <option value="ป.6">ชั้น ป.6</option>
+            </select>
+            
+            <label style="display: block; font-size: 0.85em; color: #cbd5e1; margin-bottom: 4px; font-weight: 600;">เลือกชื่อนักเรียน</label>
+            <select id="swal-student-name" disabled class="swal2-select" style="width: 100% !important; max-width: 100% !important; margin: 0 0 16px 0 !important; font-size: 15px !important; padding: 10px 14px !important;">
+              <option value="">-- กรุณาเลือกชั้นก่อน --</option>
+            </select>
+
+            <button onclick="submitSwalStudentLogin()" class="btn-action btn-primary" style="margin-bottom: 0; width: 100%; border-radius: 50px; font-size: 16px;">✅ เข้าใช้ห้องสมุด</button>
+          </div>
+
+          <!-- TAB 2: TEACHER LOGIN -->
+          <div id="swal-tab-teacher" style="display: none; text-align: left;">
+            <label style="display: block; font-size: 0.85em; color: #cbd5e1; margin-bottom: 4px; font-weight: 600;">รหัสผ่านครู</label>
+            <input type="password" id="swal-teacher-password" placeholder="กรอกรหัสผ่านครู" class="swal2-input" style="width: 100% !important; max-width: 100% !important; margin: 0 0 16px 0 !important; font-size: 16px !important; padding: 12px 16px !important; text-align: center; letter-spacing: 2px;">
+            <button onclick="submitSwalTeacherLogin()" class="btn-action btn-secondary" style="margin-bottom: 0; width: 100%; border-radius: 50px; background: linear-gradient(135deg, #a855f7, #7e22ce); font-size: 16px;">👨‍🏫 เข้าใช้โหมดครู</button>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        background: document.body.classList.contains('light-mode') ? '#ffffff' : '#16213e',
+        color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0',
+        customClass: { popup: 'light-override-popup' }
+      });
+    }
+
+    function switchSwalTab(tab) {
+      const btnStudent = document.getElementById('swal-tab-btn-student');
+      const btnTeacher = document.getElementById('swal-tab-btn-teacher');
+      const tabStudent = document.getElementById('swal-tab-student');
+      const tabTeacher = document.getElementById('swal-tab-teacher');
+      if (!btnStudent || !btnTeacher || !tabStudent || !tabTeacher) return;
+
+      if (tab === 'student') {
+        btnStudent.style.background = 'rgba(250, 204, 21, 0.2)';
+        btnStudent.style.color = '#facc15';
+        btnTeacher.style.background = 'transparent';
+        btnTeacher.style.color = '#94a3b8';
+        tabStudent.style.display = 'block';
+        tabTeacher.style.display = 'none';
+      } else {
+        btnTeacher.style.background = 'rgba(168, 85, 247, 0.2)';
+        btnTeacher.style.color = '#c084fc';
+        btnStudent.style.background = 'transparent';
+        btnStudent.style.color = '#94a3b8';
+        tabStudent.style.display = 'none';
+        tabTeacher.style.display = 'block';
+      }
+    }
+
+    async function fetchStudentsForSwalModal() {
+      const cls = document.getElementById('swal-student-class').value;
+      const nameSelect = document.getElementById('swal-student-name');
+      if (!nameSelect) return;
+      nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>';
+      nameSelect.disabled = true;
+      if (!cls) return;
+      
+      try {
+        const students = await gasGet('getStudents', { class: cls });
+        if (Array.isArray(students) && students.length > 0) {
+          students.forEach(s => {
+            nameSelect.innerHTML += `<option value="${s}">${s}</option>`;
+          });
+          nameSelect.disabled = false;
+        } else {
+          nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>';
+        }
+      } catch (e) {
+        showToast('ล้มเหลวในการดึงรายชื่อ', 'error');
+      }
+    }
+
+    function submitSwalStudentLogin() {
+      const cls = document.getElementById('swal-student-class').value;
+      const name = document.getElementById('swal-student-name').value;
+      if (!cls || !name) return showToast('กรุณาเลือกชั้นและชื่อนักเรียน', 'warning');
+      
+      loginStudent(name, cls, false);
+    }
+
+    function submitSwalTeacherLogin() {
+      const pwd = document.getElementById('swal-teacher-password').value;
+      if (pwd !== '1221') {
+        return showToast('❌ รหัสผ่านครูไม่ถูกต้อง!', 'error');
+      }
+      loginStudent('ครูวัชรวิทย์ แสนเรียน', 'คุณครู', true);
+    }
+
+    function loginStudent(name, cls, isTeacher = false) {
+      currentLoggedInUser = { name, cls, isTeacher };
       sessionStorage.setItem('wasLoggedIn', 'true');
       updateLoginUI();
-      Swal.fire({ icon: 'success', title: 'ยินดีต้อนรับ', text: name, timer: 1500, showConfirmButton: false, background: document.body.classList.contains('light-mode')?'#fff':'#16213e', color: document.body.classList.contains('light-mode')?'#1e293b':'#e2e8f0' });
+      Swal.fire({ 
+        icon: 'success', 
+        title: isTeacher ? '👨‍🏫 ยินดีต้อนรับคุณครู' : 'ยินดีต้อนรับ', 
+        text: name, 
+        timer: 1500, 
+        showConfirmButton: false, 
+        background: document.body.classList.contains('light-mode')?'#fff':'#16213e', 
+        color: document.body.classList.contains('light-mode')?'#1e293b':'#e2e8f0' 
+      });
       setTimeout(() => executeNav('menu'), 1000);
     }
 
@@ -1680,6 +1797,10 @@ body.light-mode .highlight-overlay {
 
     // --- NAVIGATION ---
     function nav(pageId) {
+      if (pageId === 'manual') {
+        openLoginModal();
+        return;
+      }
       if (pageId === 'config') {
         Swal.fire({ title: '🔒 ยืนยันตัวตน', text: 'กรุณาใส่รหัสผ่าน', input: 'password', inputPlaceholder: 'รหัสผ่าน', inputAttributes: { autocapitalize: 'off', autocorrect: 'off', style: 'text-align: center; letter-spacing: 2px; font-size: 1.2em;' }, showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#6366f1', cancelButtonColor: '#ef4444', preConfirm: (pwd) => { if (pwd !== '1221') { Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); } return pwd === '1221'; } }).then((result) => { if (result.isConfirmed) executeNav('config'); }); return; 
       }
@@ -2037,14 +2158,14 @@ console.log(payload);
     function viewHomeworkFile(url) { let embedUrl = url; if (url.includes('drive.google.com') && url.includes('/view')) { embedUrl = url.replace('/view?usp=sharing', '/preview').replace('/view', '/preview'); } Swal.fire({ title: '📄 ตรวจงานนักเรียน', html: `<iframe src="${embedUrl}" style="width: 100%; height: 60vh; border: none; border-radius: 8px; background: white;"></iframe>`, width: '90%', background: document.body.classList.contains('light-mode') ? '#fff' : '#16213e', color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0', showCloseButton: true, showConfirmButton: false }); }
     
     async function changeHomeworkStatus(rowIdx, currentScore) { 
-      // ดึงคะแนนเดิมมาแสดงในช่อง (ถ้ามี)
       let defScore = (currentScore && currentScore !== '-' && !currentScore.startsWith('http')) ? currentScore : '';
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
       
       Swal.fire({ 
-        title: '🔒 ครูตรวจงาน', 
+        title: isTeacher ? '👨‍🏫 ครูตรวจงานนักเรียน' : '🔒 ครูตรวจงาน', 
         html: `
           <input type="number" id="swal-hw-score" class="swal2-input" placeholder="คะแนนที่ได้ (ถ้ามี)" value="${defScore}" style="text-align: center; font-size: 1.2em; margin-bottom: 10px;">
-          <input type="password" id="swal-hw-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;">
+          ${isTeacher ? '' : '<input type="password" id="swal-hw-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;">'}
           <select id="swal-hw-status" class="swal2-select" style="margin-top: 0;">
             <option value="ตรวจแล้ว">✅ ตรวจแล้ว</option>
             <option value="รอตรวจ">⏳ รอตรวจ</option>
@@ -2053,9 +2174,11 @@ console.log(payload);
         focusConfirm: false, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', showCancelButton: true, cancelButtonColor: '#ef4444', 
         preConfirm: () => { 
           const score = document.getElementById('swal-hw-score').value;
-          const pwd = document.getElementById('swal-hw-pwd').value; 
+          if (!isTeacher) {
+            const pwd = document.getElementById('swal-hw-pwd').value; 
+            if (pwd !== '1221') { Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return false; } 
+          }
           const stat = document.getElementById('swal-hw-status').value; 
-          if (pwd !== '1221') { Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return false; } 
           return { status: stat, score: score }; 
         } 
       }).then(async (result) => { 
@@ -2130,7 +2253,22 @@ console.log(payload);
       try { allBorrows = await gasGet('getBorrows'); statusDiv.style.display = 'none'; renderFilteredBorrows(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
     }
     function renderFilteredBorrows() { const container = document.getElementById('borrow-list'), filterClass = document.getElementById('filter-borrow-class').value, filterStatus = document.getElementById('filter-borrow-status').value, today = new Date(); today.setHours(0,0,0,0); let processedData = allBorrows.map(item => { let derivedStatus = item.status; if (item.status !== 'คืนเรียบร้อย') { let returnDateObj = new Date(); if (item.returnDate && item.returnDate.includes('-')) { const parts = item.returnDate.split('-'); returnDateObj = new Date(parts[0], parts[1] - 1, parts[2]); } else { returnDateObj = new Date(item.returnDate); } returnDateObj.setHours(0,0,0,0); if (today > returnDateObj) derivedStatus = 'เกินกำหนด'; else derivedStatus = 'กำลังยืม'; } return { ...item, derivedStatus: derivedStatus }; }); let filteredData = processedData; if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass); if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.derivedStatus === filterStatus); if (filteredData.length === 0) { container.innerHTML = '<div class="stats-card c-empty">ไม่พบข้อมูล</div>'; return; } container.innerHTML = ''; filteredData.forEach(item => { let statusColor = '', actionText = ''; if (item.derivedStatus === 'คืนเรียบร้อย') { statusColor = '#34d399'; actionText = '✅ คืนเรียบร้อย'; } else if (item.derivedStatus === 'เกินกำหนด') { statusColor = '#ef4444'; actionText = '❌ เกินกำหนด'; } else { statusColor = '#f59e0b'; actionText = '⏳ กำลังยืม'; } const card = `<div class="stats-card" style="border-left: 4px solid ${statusColor};"><div class="c-title" style="font-size: 1.1em;">📖 ${item.bookName}</div><div class="c-desc">ผู้ยืม: ${item.name} (${item.className})</div><div class="c-box"><div><span class="c-label">วันที่ยืม:</span> <br><span class="c-val-b1">${formatThaiDate(item.borrowDate)}</span></div><div style="text-align: right;"><span class="c-label">กำหนดคืน:</span> <br><span class="c-val-b2">${formatThaiDate(item.returnDate)}</span></div></div><div class="c-divider"><div style="font-weight: 600; color: ${statusColor}; background: ${statusColor}15; padding: 4px 10px; border-radius: 20px; font-size: 0.85em;">${actionText}</div>${item.derivedStatus !== 'คืนเรียบร้อย' ? `<button onclick="changeBorrowStatus(${item.rowIdx})" class="btn-c-status">เปลี่ยนสถานะ</button>` : `<span class="c-label" style="font-size: 0.85em;">✅ ปิดรายการแล้ว</span>`}</div></div>`; container.innerHTML += card; }); }
-    function changeBorrowStatus(rowIdx) { Swal.fire({ title: '🔒 ยืนยันการคืนหนังสือ', text: 'กรุณากรอกรหัสผ่านเพื่อยืนยันว่านักเรียนนำหนังสือมาคืนแล้ว', input: 'password', inputPlaceholder: 'รหัสผ่าน', inputAttributes: { autocapitalize: 'off', autocorrect: 'off', style: 'text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;' }, showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', preConfirm: (pwd) => { if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return pwd === '1221'; } }).then((result) => { if (result.isConfirmed) updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย'); }); }
+    function changeBorrowStatus(rowIdx) { 
+      if (currentLoggedInUser && currentLoggedInUser.isTeacher) {
+        updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย');
+        return;
+      }
+      Swal.fire({ 
+        title: '🔒 ยืนยันการคืนหนังสือ', 
+        text: 'กรุณากรอกรหัสผ่านเพื่อยืนยันว่านักเรียนนำหนังสือมาคืนแล้ว', 
+        input: 'password', 
+        inputPlaceholder: 'รหัสผ่าน', 
+        inputAttributes: { autocapitalize: 'off', autocorrect: 'off', style: 'text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;' }, 
+        showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', 
+        background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', 
+        preConfirm: (pwd) => { if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return pwd === '1221'; } 
+      }).then((result) => { if (result.isConfirmed) updateBorrowStatusAPI(rowIdx, 'คืนเรียบร้อย'); }); 
+    }
     async function updateBorrowStatusAPI(rowIdx, newStatus) { Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'updateBorrowStatus', rowIdx: rowIdx, status: newStatus }); Swal.fire({ icon: 'success', title: 'อัปเดตสถานะเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); fetchBorrows(); } catch(e) { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถอัปเดตได้' }); } }
 
     // --- READING LOGS ---
@@ -2276,7 +2414,37 @@ console.log(payload);
         background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#facc15', confirmButtonText: 'ปิด', customClass: { popup: 'light-override-popup' } 
       }); 
     }
-    async function changeReadingStatus(rowIdx) { Swal.fire({ title: '🔒 ครูตรวจงาน', html: `<input type="password" id="swal-read-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;"><select id="swal-read-status" class="swal2-select" style="margin-top: 0;"><option value="ตรวจแล้ว">✅ ตรวจแล้ว</option><option value="รอตรวจ">⏳ รอตรวจ</option><option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option></select>`, focusConfirm: false, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', showCancelButton: true, cancelButtonColor: '#ef4444', preConfirm: () => { const pwd = document.getElementById('swal-read-pwd').value; const stat = document.getElementById('swal-read-status').value; if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); return stat; } }).then(async (result) => { if (result.isConfirmed) { Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'updateReadingStatus', rowIdx: rowIdx, status: result.value }); Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); fetchReadingLogs(); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปเดตได้' }); } } }); }
+    async function changeReadingStatus(rowIdx) { 
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      Swal.fire({ 
+        title: isTeacher ? '👨‍🏫 ครูตรวจงาน' : '🔒 ครูตรวจงาน', 
+        html: `
+          ${isTeacher ? '' : '<input type="password" id="swal-read-pwd" class="swal2-input" placeholder="รหัสผ่าน" style="text-align: center; letter-spacing: 2px; font-size: 1.2em; margin-bottom: 10px;">'}
+          <select id="swal-read-status" class="swal2-select" style="margin-top: 0;">
+            <option value="ตรวจแล้ว">✅ ตรวจแล้ว</option>
+            <option value="รอตรวจ">⏳ รอตรวจ</option>
+            <option value="กลับไปแก้ไข">❌ กลับไปแก้ไข</option>
+          </select>
+        `, 
+        focusConfirm: false, background: '#16213e', color: '#e2e8f0', confirmButtonColor: '#10b981', showCancelButton: true, cancelButtonColor: '#ef4444', 
+        preConfirm: () => { 
+          if (!isTeacher) {
+            const pwd = document.getElementById('swal-read-pwd').value; 
+            if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง!'); 
+          }
+          return document.getElementById('swal-read-status').value; 
+        } 
+      }).then(async (result) => { 
+        if (result.isConfirmed) { 
+          Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); 
+          try { 
+            await gasPost({ action: 'updateReadingStatus', rowIdx: rowIdx, status: result.value }); 
+            Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
+            fetchReadingLogs(); 
+          } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปเดตได้' }); } 
+        } 
+      }); 
+    }
     
     async function fetchReadingStats() {
       const statusDiv = document.getElementById('reading-stats-status'), listDiv = document.getElementById('reading-top5-list');
@@ -2308,6 +2476,9 @@ console.log(payload);
     function getStudentAvatarHtml(name) {
       if (!name) return '🧑';
       const clean = name.trim();
+      if (clean.includes('ครู') || (currentLoggedInUser && currentLoggedInUser.isTeacher && currentLoggedInUser.name === clean)) {
+        return '👨‍🏫';
+      }
       if (clean.startsWith('เด็กชาย') || clean.startsWith('ด.ช.') || clean.startsWith('นาย')) {
         return '👦';
       }
