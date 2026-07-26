@@ -2898,7 +2898,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     }
 
     async function callGeminiAPI(apiKey, promptText) {
-      const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+      const models = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
       let lastStatus = null;
       let lastErrorMessage = '';
 
@@ -2924,8 +2924,15 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
               lastErrorMessage = data.error.message;
             }
             console.warn(`Gemini model ${model} returned status ${res.status}`, data);
-            if (res.status === 429) {
-              return { success: false, status: 429, message: lastErrorMessage || 'ติดโควต้าชั่วคราว (Rate Limit Exceeded)' };
+            
+            // If Invalid Key (400/403), stop loop immediately
+            if (res.status === 400 || res.status === 403) {
+              return { success: false, status: res.status, message: lastErrorMessage };
+            }
+            
+            // If limit: 0 for this specific model, skip and try next model
+            if (res.status === 429 && lastErrorMessage.includes('limit: 0')) {
+              continue;
             }
           }
         } catch (e) {
