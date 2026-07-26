@@ -1670,7 +1670,11 @@ body.light-mode .highlight-overlay {
     <div class="form-section" style="margin-top: 20px;">
       <h3 style="color: #38bdf8; margin-bottom: 5px; font-size: 1.1em;">🤖 ตั้งค่า Gemini AI API Key (ฟรี 100%)</h3>
       <p style="font-size: 0.8em; color: #94a3b8; margin-bottom: 10px;">*(ระบุเพื่อใช้งาน AI ตรวจคำผิดภาษาไทยและวิเคราะห์เรื่องย่อแบบละเอียดฟรี)*</p>
-      <label>Google Gemini API Key</label><input type="password" id="gemini-api-key-input" placeholder="วาง API Key ที่นี่ (เช่น AIzaSy...)">
+      <label>Google Gemini API Key</label>
+      <div style="position: relative; display: flex; align-items: center;">
+        <input type="password" id="gemini-api-key-input" placeholder="วาง API Key ที่นี่ (เช่น AIzaSy...)" style="padding-right: 45px; width: 100%;">
+        <button type="button" onclick="toggleShowGeminiKey()" id="btn-toggle-key" style="position: absolute; right: 10px; background: none; border: none; font-size: 1.2em; cursor: pointer; color: #94a3b8; padding: 5px;" title="แสดง/ซ่อน API Key">👁️</button>
+      </div>
       <div style="display: flex; gap: 10px; margin-top: 10px;">
         <button class="btn-action btn-primary" onclick="saveGeminiKey()" style="background: linear-gradient(135deg, #38bdf8, #0284c7); flex: 1; margin: 0;">💾 บันทึก API Key</button>
         <button class="btn-action" onclick="testGeminiKey()" style="background: linear-gradient(135deg, #10b981, #059669); color: white; flex: 1; margin: 0;">🧪 ทดสอบ API Key</button>
@@ -2440,6 +2444,18 @@ console.log(payload);
       overlay.style.display = 'none'; 
     }
 
+    function toggleShowGeminiKey() {
+      const input = document.getElementById('gemini-api-key-input');
+      const btn = document.getElementById('btn-toggle-key');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerText = '🙈';
+      } else {
+        input.type = 'password';
+        btn.innerText = '👁️';
+      }
+    }
+
     function saveGeminiKey() {
       const key = document.getElementById('gemini-api-key-input').value.trim();
       if (!key) {
@@ -2454,9 +2470,11 @@ console.log(payload);
       const key = document.getElementById('gemini-api-key-input').value.trim();
       if (!key) return Swal.fire('โปรดกรอก Key', 'กรุณากรอก Gemini API Key ก่อนทดสอบครับ', 'warning');
       
+      const maskedKey = key.length > 10 ? (key.substring(0, 7) + '...' + key.substring(key.length - 4) + ` (${key.length} ตัวอักษร)`) : key;
+
       Swal.fire({
         title: '🧪 กำลังทดสอบ Gemini API Key...',
-        html: '⏳ กำลังส่งคำขอทดสอบไปยัง Google AI Server...',
+        html: `⏳ กำลังส่งคำขอทดสอบไปยัง Google AI Server...<br><small style="color:#94a3b8;">Key: <b>${maskedKey}</b></small>`,
         background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
@@ -2469,8 +2487,9 @@ console.log(payload);
           icon: 'success',
           title: '🎉 เชื่อมต่อ Gemini API สำเร็จ!',
           html: `<div style="text-align:left; background:#f8fafc; color:#0f172a; padding:15px; border-radius:10px; border:1px solid #cbd5e1;">
-            <b>โมเดลที่ใช้งานได้:</b> ${result.modelUsed}<br>
-            <b>ผลการตอบกลับจาก AI:</b> ${result.text}
+            <b>🔑 API Key:</b> <code>${maskedKey}</code><br>
+            <b>🤖 โมเดลที่ใช้งานได้:</b> ${result.modelUsed}<br>
+            <b>💬 ผลการตอบกลับจาก AI:</b> ${result.text}
           </div>`,
           background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981'
         });
