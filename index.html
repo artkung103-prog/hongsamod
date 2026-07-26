@@ -2917,7 +2917,8 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     }
 
     async function callGeminiAPI(apiKey, promptText) {
-      const models = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash'];
+      // โมเดลล่าสุดที่รองรับ Free Tier (กรกฎาคม 2026)
+      const models = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'];
       let primaryError = null;
 
       for (const model of models) {
