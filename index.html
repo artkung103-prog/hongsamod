@@ -2833,6 +2833,28 @@ console.log(payload);
       } 
     }
 
+    function updateWordCount() {
+      const textarea = document.getElementById('read-synopsis');
+      const display = document.getElementById('word-count-display');
+      if (!textarea || !display) return;
+      const text = textarea.value.trim();
+      if (!text) {
+        display.innerText = '0';
+        return;
+      }
+      // นับจำนวนคำโดยแบ่งตามช่องว่าง หรือความยาวคำภาษาไทย
+      const words = text.split(/\s+/).filter(w => w.length > 0);
+      display.innerText = words.length;
+    }
+
+    function syncScroll(element) {
+      const overlay = document.getElementById('highlight-overlay');
+      if (overlay) {
+        overlay.scrollTop = element.scrollTop;
+        overlay.scrollLeft = element.scrollLeft;
+      }
+    }
+
     async function fetchReadingLogs() { 
       const statusDiv = document.getElementById('reading-status'), listDiv = document.getElementById('reading-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
       try { allReadingLogs = await gasGet('getReadingLogs'); statusDiv.style.display = 'none'; renderFilteredReadingLogs(); } catch (e) { statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลล้มเหลว</div>'; } 
