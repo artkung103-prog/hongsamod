@@ -326,7 +326,11 @@ body:not(.dark-mode) textarea,
     body.light-mode label { color: #475569; }
     body.light-mode .date-picker-input { background: rgba(236, 72, 153, 0.05) !important; border-color: rgba(236, 72, 153, 0.3) !important; color: #db2777 !important; }
     body.light-mode .back-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #475569; } body.light-mode .back-btn:hover { background: rgba(0,0,0,0.1); color: #0f172a; }
-    body.light-mode .tab-group { background: rgba(0,0,0,0.05); } body.light-mode .tab-btn { color: #64748b; }
+    body.light-mode .tab-group { background: rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.1); }
+    body.light-mode .tab-btn { color: #374151; font-weight: 700; }
+    body.light-mode .tab-btn.active { background: linear-gradient(135deg, #ff5722, #ea580c) !important; color: #ffffff !important; font-weight: 800 !important; box-shadow: 0 4px 14px rgba(255,87,34,0.4) !important; }
+    body.light-mode .tab-hw .tab-btn.active { background: linear-gradient(135deg, #6366f1, #4338ca) !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(99,102,241,0.4) !important; }
+    body.light-mode .tab-data .tab-btn.active { background: linear-gradient(135deg, #ec4899, #be185d) !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(236,72,153,0.4) !important; }
     body.light-mode .video-wrapper { background: #fff; border-color: rgba(99,102,241,0.3); } body.light-mode .status-text { color: #475569; } body.light-mode .stat-count { background: rgba(0,0,0,0.05); color: #475569; }
     body.light-mode .profile-img { background: rgba(0,0,0,0.05); color: #94a3b8; } body.light-mode .profile-info { color: #64748b; }
     body.light-mode .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-color: rgba(0,0,0,0.1) !important; box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important; }
@@ -695,6 +699,36 @@ body.light-mode .highlight-overlay {
       border-color: #facc15;
       color: #0f172a;
       box-shadow: 0 4px 14px rgba(250, 204, 21, 0.4);
+    }
+
+    /* ✅ Light Mode overrides สำหรับ Stats Header & Tab Buttons */
+    body.light-mode .stats-header-bar {
+      border-bottom: 2px solid rgba(255, 87, 34, 0.2);
+    }
+    body.light-mode .stats-header-title {
+      color: #c2410c;
+    }
+    body.light-mode .stats-col-title {
+      color: #0369a1;
+    }
+    body.light-mode .stats-tab-btn {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      color: #374151;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    body.light-mode .stats-tab-btn:hover {
+      background: #fff3e0;
+      border-color: #ff5722;
+      color: #c2410c;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255,87,34,0.2);
+    }
+    body.light-mode .stats-tab-btn.active {
+      background: linear-gradient(135deg, #ff5722, #ea580c);
+      border-color: #ff5722;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(255, 87, 34, 0.45);
     }
 
     /* 2-Column Grid Layout (Left: Top 3 Podium, Right: Ranks 4-10 Scrollable) */
