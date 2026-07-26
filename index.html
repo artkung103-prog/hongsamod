@@ -2499,7 +2499,7 @@ console.log(payload);
         if (result.status === 400 || result.status === 403) {
           errDesc = 'API Key ไม่ถูกต้อง หรือคัดลอกมาไม่ครบ';
         } else if (result.status === 429) {
-          errDesc = 'API Key ติดโควต้ารายวัน (1,500 ครั้ง/วัน) หรือส่งคำขอเกิน 15 ครั้ง/นาที';
+          errDesc = 'API Key ติดโควต้า Free Tier หรือโปรเจกต์ไม่มี Quota เหลือ กรุณารอหรือสร้าง Key ใหม่';
         } else if (result.status === 404) {
           errDesc = 'ไม่พบโมเดลที่เรียกใช้งาน';
         }
@@ -2943,7 +2943,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
               message: (data && data.error && data.error.message) ? data.error.message : `HTTP ${res.status}`
             };
             
-            // บันทึก Error ของโมเดลหลัก (gemini-1.5-flash) ไว้
+            // บันทึก Error ของโมเดลหลัก (gemini-3.6-flash) ไว้
             if (!primaryError) {
               primaryError = errObj;
             }
@@ -2963,7 +2963,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         }
       }
 
-      // หากทุกโมเดลล้มเหลว ให้ส่งคืน Error ที่แท้จริงของโมเดลหลัก (gemini-1.5-flash)
+      // หากทุกโมเดลล้มเหลว ให้ส่งคืน Error ที่แท้จริงของโมเดลหลัก (gemini-3.6-flash)
       return { 
         success: false, 
         status: primaryError ? primaryError.status : 500, 
