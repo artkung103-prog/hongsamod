@@ -2920,7 +2920,7 @@ console.log(payload);
             <div style="font-weight: 700; color: ${statusColor}; background: ${statusColor}18; border: 1px solid ${statusColor}40; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; white-space: nowrap;">● ${item.status}</div>
             
             ${isTeacher ? `
-              <button onclick="teacherAIAnalyzeReadingLog(${item.rowIdx})" title="🤖 AI ช่วยวิเคราะห์" class="btn-action" style="padding: 6px 16px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">🤖 AI ตรวจ</button>
+              <button onclick="teacherReadSynopsis('${safeTitle}', '${safeSynopsis}', ${item.rowIdx})" title="📖 อ่านเนื้อหา" class="btn-action" style="padding: 6px 16px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #38bdf8, #0284c7); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 อ่านเนื้อหา</button>
             ` : `
               <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}', ${item.rowIdx}, '${item.className}', '${item.name}', ${item.rating})" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
               ${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReadingWithAuth(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไขงาน</button>` : ''}
@@ -3110,7 +3110,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       let analysisSummary = '';
 
       if (apiKey) {
-        const prompt = `คุณคือครูภาษาไทยผู้เชี่ยวชาญ ข้อความเรื่องย่อของนักเรียนคือ:\n"${item.synopsis}"\n\nโปรดตรวจคำผิดและส่งคืนข้อความที่แก้ไขสะกดถูกต้องแล้วทั้งหมด พร้อมสรุปคำผิดสั้นๆ 1-2 ประโยค`;
+        const prompt = `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียนประถม ข้อความเรื่องย่อของนักเรียนคือ:\n"${item.synopsis}"\n\nโปรดตรวจสอบคำผิดและวิเคราะห์โดยตอบรูปแบบนี้:\n1. ❌ **คำที่สะกดผิด**: (ถ้ามี ระบุคำที่ผิด -> คำที่ถูกต้อง เช่น สังเกตุ ❌ -> สังเกต ✅)\n2. 💡 **คำแนะนำภาษาไทย**: (ข้อคิดเห็นหรือคำชมสั้นๆ 1-2 ประโยค)\n3. ✨ **ข้อความที่แก้ไขถูกต้องสมบูรณ์แล้ว**: (ข้อความเดิมที่ได้รับการแก้ไขสะกดผิดเรียบร้อย)`;
         const result = await callGeminiAPI(apiKey, prompt);
         if (result.success) {
           analysisSummary = result.text;
@@ -3184,15 +3184,39 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     }
 
     function showSynopsisModal(title, text) { 
-      const plainText = text.replace(/<br\s*[\/]?>/gi, "\n");
       Swal.fire({ 
         title: title, 
-        html: `
-          <div class="modal-content-box" style="text-align: left; max-height: 45vh; overflow-y: auto; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 1em; line-height: 1.7; margin-bottom: 15px; border: 1.5px solid #cbd5e1;">${text}</div>
-          <button onclick="analyzeSpellingWithAI(decodeURIComponent('${encodeURIComponent(plainText)}'))" class="btn-action btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); margin-bottom: 0; width: 100%; border-radius: 50px; font-weight: 700;">🤖 ให้ AI ตรวจคำผิดเรื่องนี้</button>
-        `, 
-        background: '#ffffff', color: '#0f172a', confirmButtonColor: '#facc15', confirmButtonText: 'ปิด', customClass: { popup: 'light-override-popup' } 
+        html: `<div class="modal-content-box" style="text-align: left; max-height: 50vh; overflow-y: auto; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 1em; line-height: 1.8; border: 1.5px solid #cbd5e1;">${text}</div>`, 
+        width: '80%',
+        background: '#ffffff', color: '#0f172a', confirmButtonColor: '#facc15', confirmButtonText: '✕ ปิด', customClass: { popup: 'light-override-popup' } 
       }); 
+    }
+
+    function teacherReadSynopsis(title, synopsis, rowIdx) {
+      Swal.fire({
+        title: `📖 ${title}`,
+        html: `
+          <div style="text-align:left; background:#f8fafc; color:#0f172a; padding:18px; border-radius:12px; font-size:1em; line-height:1.8; max-height:45vh; overflow-y:auto; border:1.5px solid #cbd5e1; margin-bottom:16px;">${synopsis}</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button onclick="Swal.close(); setTimeout(()=>teacherAIAnalyzeReadingLog(${rowIdx}),150);" style="padding:10px 20px; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(16,185,129,0.4);">🤖 AI ตรวจ</button>
+            <button onclick="Swal.close(); teacherSendBackOnly(${rowIdx});" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">↩️ กลับไปแก้ไข</button>
+            <button onclick="Swal.close();" style="padding:10px 20px; background:#64748b; color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif;">✕ ปิด</button>
+          </div>
+        `,
+        width: '80%',
+        background: '#ffffff', color: '#0f172a',
+        showConfirmButton: false,
+        customClass: { popup: 'light-override-popup' }
+      });
+    }
+
+    async function teacherSendBackOnly(rowIdx) {
+      Swal.fire({ title: '⏳ กำลังส่งกลับ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
+      try {
+        await gasPost({ action: 'updateReadingStatus', rowIdx: rowIdx, status: 'กลับไปแก้ไข' });
+        Swal.fire({ icon: 'success', title: 'ส่งกลับไปแก้ไขเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+        fetchReadingLogs();
+      } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
     }
 
     let allReadingStatsData = null;
@@ -3209,7 +3233,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         gridDiv.style.display = 'grid';
         filterReadingStatsTab('all');
       } catch (e) {
-        statusDiv.innerHTML = '<div class="c-empty">❌ ดึงข้อมูลอันดับล้มเหลว</div>';
+        statusDiv.innerHTML = `<div class="c-empty" style="text-align:center; padding:20px;">❌ ดึงข้อมูลอันดับล้มเหลว<br><small style="color:#94a3b8; font-size:0.85em;">${e && e.message ? e.message : 'กรุณาตรวจสอบการเชื่อมต่อ API'}</small><br><br><button onclick="fetchReadingStats()" style="margin-top:8px; padding:9px 22px; background:linear-gradient(135deg,#facc15,#f59e0b); color:#1e293b; border:none; border-radius:50px; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; font-size:0.95em;">🔄 ลองใหม่</button></div>`;
       }
     }
 
