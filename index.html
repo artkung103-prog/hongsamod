@@ -3243,18 +3243,74 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
 
     let allReadingStatsData = null;
 
+    function computeReadingStatsFromLogs(logs) {
+      if (!Array.isArray(logs) || logs.length === 0) {
+        return { overall: [], byClass: {} };
+      }
+
+      const overallMap = {};
+      const byClassMap = {};
+
+      logs.forEach(item => {
+        const studentName = item.name ? item.name.trim() : '';
+        const className = item.className ? item.className.trim() : '';
+        if (!studentName) return;
+
+        // นับรวมทั้งโรงเรียน
+        overallMap[studentName] = (overallMap[studentName] || 0) + 1;
+
+        // นับแยกตามชั้น
+        if (className) {
+          if (!byClassMap[className]) byClassMap[className] = {};
+          byClassMap[className][studentName] = (byClassMap[className][studentName] || 0) + 1;
+        }
+      });
+
+      const overall = Object.keys(overallMap)
+        .map(name => ({ name: name, count: overallMap[name] }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      const byClass = {};
+      Object.keys(byClassMap).forEach(cls => {
+        byClass[cls] = Object.keys(byClassMap[cls])
+          .map(name => ({ name: name, count: byClassMap[cls][name] }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+      });
+
+      return { overall: overall, byClass: byClass };
+    }
+
     async function fetchReadingStats() {
       const statusDiv = document.getElementById('reading-stats-status');
       const gridDiv = document.getElementById('reading-stats-grid');
       if (!statusDiv || !gridDiv) return;
       statusDiv.style.display = 'flex';
       gridDiv.style.display = 'none';
+
       try {
-        allReadingStatsData = await gasGet('getReadingStats');
+        let stats = null;
+        try {
+          stats = await gasGet('getReadingStats');
+        } catch (err) {
+          console.warn('getReadingStats API failed, falling back to allReadingLogs:', err);
+        }
+
+        // หาก API คืนค่ามาแต่ว่างเปล่า หรือดึง API ล้มเหลว ให้ดึงจาก allReadingLogs แทน
+        if (!stats || !stats.overall || stats.overall.length === 0) {
+          if (!allReadingLogs || allReadingLogs.length === 0) {
+            allReadingLogs = await gasGet('getReadingLogs');
+          }
+          stats = computeReadingStatsFromLogs(allReadingLogs);
+        }
+
+        allReadingStatsData = stats;
         statusDiv.style.display = 'none';
         gridDiv.style.display = 'grid';
         filterReadingStatsTab('all');
       } catch (e) {
+        console.error('fetchReadingStats error:', e);
         statusDiv.innerHTML = `<div class="c-empty" style="text-align:center; padding:20px;">❌ ดึงข้อมูลอันดับล้มเหลว<br><small style="color:#94a3b8; font-size:0.85em;">${e && e.message ? e.message : 'กรุณาตรวจสอบการเชื่อมต่อ API'}</small><br><br><button onclick="fetchReadingStats()" style="margin-top:8px; padding:9px 22px; background:linear-gradient(135deg,#facc15,#f59e0b); color:#1e293b; border:none; border-radius:50px; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; font-size:0.95em;">🔄 ลองใหม่</button></div>`;
       }
     }
