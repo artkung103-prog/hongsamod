@@ -1671,7 +1671,10 @@ body.light-mode .highlight-overlay {
       <h3 style="color: #38bdf8; margin-bottom: 5px; font-size: 1.1em;">🤖 ตั้งค่า Gemini AI API Key (ฟรี 100%)</h3>
       <p style="font-size: 0.8em; color: #94a3b8; margin-bottom: 10px;">*(ระบุเพื่อใช้งาน AI ตรวจคำผิดภาษาไทยและวิเคราะห์เรื่องย่อแบบละเอียดฟรี)*</p>
       <label>Google Gemini API Key</label><input type="password" id="gemini-api-key-input" placeholder="วาง API Key ที่นี่ (เช่น AIzaSy...)">
-      <button class="btn-action btn-primary" onclick="saveGeminiKey()" style="background: linear-gradient(135deg, #38bdf8, #0284c7);">💾 บันทึก API Key</button>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button class="btn-action btn-primary" onclick="saveGeminiKey()" style="background: linear-gradient(135deg, #38bdf8, #0284c7); flex: 1; margin: 0;">💾 บันทึก API Key</button>
+        <button class="btn-action" onclick="testGeminiKey()" style="background: linear-gradient(135deg, #10b981, #059669); color: white; flex: 1; margin: 0;">🧪 ทดสอบ API Key</button>
+      </div>
     </div>
     
     <div class="form-section" style="margin-top: 20px;">
@@ -1930,6 +1933,10 @@ body.light-mode .highlight-overlay {
 
     window.onload = () => {
       document.getElementById('api-url-input').value = API_URL;
+      const savedGeminiKey = localStorage.getItem('geminiApiKey');
+      if (savedGeminiKey && document.getElementById('gemini-api-key-input')) {
+        document.getElementById('gemini-api-key-input').value = savedGeminiKey;
+      }
       updateLoginUI();
       loadModels();
       if (API_URL) {
@@ -2443,6 +2450,49 @@ console.log(payload);
       Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'พร้อมใช้งาน AI ตรวจคำผิดภาษาไทยเรียบร้อยแล้ว', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
     }
 
+    async function testGeminiKey() {
+      const key = document.getElementById('gemini-api-key-input').value.trim();
+      if (!key) return Swal.fire('โปรดกรอก Key', 'กรุณากรอก Gemini API Key ก่อนทดสอบครับ', 'warning');
+      
+      Swal.fire({
+        title: '🧪 กำลังทดสอบ Gemini API Key...',
+        html: '⏳ กำลังส่งคำขอทดสอบไปยัง Google AI Server...',
+        background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const result = await callGeminiAPI(key, 'ตอบคำว่า "ทดสอบสำเร็จ" สั้นๆ');
+
+      if (result.success) {
+        localStorage.setItem('geminiApiKey', key);
+        Swal.fire({
+          icon: 'success',
+          title: '🎉 เชื่อมต่อ Gemini API สำเร็จ!',
+          html: `<div style="text-align:left; background:#f8fafc; color:#0f172a; padding:15px; border-radius:10px; border:1px solid #cbd5e1;">
+            <b>โมเดลที่ใช้งานได้:</b> ${result.modelUsed}<br>
+            <b>ผลการตอบกลับจาก AI:</b> ${result.text}
+          </div>`,
+          background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981'
+        });
+      } else {
+        let errDesc = result.message || 'ไม่สามารถเชื่อมต่อได้';
+        if (result.status === 400 || result.status === 403) {
+          errDesc = 'API Key ไม่ถูกต้อง หรือไม่ได้เปิดใช้งาน Gemini API (Error 400/403)';
+        } else if (result.status === 429) {
+          errDesc = 'API Key ติดโควต้ารายวัน (1,500 ครั้ง/วัน) หรือส่งคำขอเกิน 15 ครั้ง/นาที (Error 429 Rate Limit)';
+        }
+        Swal.fire({
+          icon: 'error',
+          title: '❌ การทดสอบล้มเหลว',
+          html: `<div style="text-align:left; background:#fef2f2; color:#991b1b; padding:15px; border-radius:10px; border:1px solid #fca5a5;">
+            <b>สถานะ (HTTP ${result.status}):</b> ${errDesc}<br><br>
+            <small style="color:#64748b;">*คำแนะนำ: สามารถสร้าง API Key ฟรีอันใหม่ได้ที่ <a href="https://aistudio.google.com/" target="_blank" style="color:#0284c7; text-decoration:underline;">Google AI Studio</a></small>
+          </div>`,
+          background: '#ffffff', color: '#0f172a', confirmButtonColor: '#ef4444'
+        });
+      }
+    }
+
     function toggleSelectAllBorrows(masterChk) {
       const chks = document.querySelectorAll('.borrow-select-chk');
       chks.forEach(c => c.checked = masterChk.checked);
@@ -2841,6 +2891,44 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       });
     }
 
+    async function callGeminiAPI(apiKey, promptText) {
+      const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+      let lastStatus = null;
+      let lastErrorMessage = '';
+
+      for (const model of models) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: promptText }] }]
+            })
+          });
+
+          const data = await res.json().catch(() => null);
+
+          if (res.ok && data) {
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+              return { success: true, text: data.candidates[0].content.parts[0].text, modelUsed: model };
+            }
+          } else {
+            lastStatus = res.status;
+            if (data && data.error && data.error.message) {
+              lastErrorMessage = data.error.message;
+            }
+            console.warn(`Gemini model ${model} returned status ${res.status}`, data);
+            if (res.status === 429) {
+              return { success: false, status: 429, message: lastErrorMessage || 'ติดโควต้าชั่วคราว (Rate Limit Exceeded)' };
+            }
+          }
+        } catch (e) {
+          console.warn(`Gemini model ${model} fetch error`, e);
+        }
+      }
+      return { success: false, status: lastStatus || 500, message: lastErrorMessage };
+    }
+
     async function analyzeSpellingWithAI(text) {
       if (!text || !text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนวิเคราะห์ครับ', 'warning');
       const apiKey = localStorage.getItem('geminiApiKey') || '';
@@ -2853,42 +2941,30 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       });
 
       if (apiKey) {
-        try {
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียนประถม ข้อความเรื่องย่อของนักเรียนคือ:\n"${text}"\n\nโปรดตรวจสอบคำผิดและวิเคราะห์โดยตอบรูปแบบนี้:
+        const prompt = `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียนประถม ข้อความเรื่องย่อของนักเรียนคือ:\n"${text}"\n\nโปรดตรวจสอบคำผิดและวิเคราะห์โดยตอบรูปแบบนี้:
 1. ❌ **คำที่สะกดผิด**: (ถ้ามี ระบุคำที่ผิด -> คำที่ถูกต้อง เช่น สังเกตุ ❌ -> สังเกต ✅)
 2. 💡 **คำแนะนำภาษาไทย**: (ข้อคิดเห็นหรือคำชมสั้นๆ 1-2 ประโยค)
-3. ✨ **ข้อความที่แก้ไขถูกต้องสมบูรณ์แล้ว**: (ข้อความเดิมที่ได้รับการแก้ไขสะกดผิดเรียบร้อย)`
-                }]
-              }]
-            })
-          });
+3. ✨ **ข้อความที่แก้ไขถูกต้องสมบูรณ์แล้ว**: (ข้อความเดิมที่ได้รับการแก้ไขสะกดผิดเรียบร้อย)`;
 
-          const data = await res.json();
-          if (!res.ok) {
-            if (res.status === 429) {
-              showToast('API Key ติดโควต้าชั่วคราว สลับใช้คลังคำในระบบ', 'info');
-              return checkThaiSpellingFallback(text);
-            }
+        const result = await callGeminiAPI(apiKey, prompt);
+
+        if (result.success) {
+          const formattedHtml = result.text.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706; font-size:1.05em;">$1</b>').replace(/\n/g, '<br>');
+          return Swal.fire({
+            title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
+            html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${formattedHtml}</div>`,
+            width: '80%',
+            background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
+            customClass: { popup: 'light-override-popup' }
+          });
+        } else {
+          if (result.status === 429) {
+            showToast('⚠️ API Key ติดโควต้ารายวัน/ต่อนาที สลับใช้คลังคำในระบบ', 'warning');
+          } else if (result.status === 400 || result.status === 403) {
+            showToast('❌ API Key ไม่ถูกต้อง สลับใช้คลังคำในระบบ', 'error');
+          } else {
+            showToast('⚠️ AI ไม่พร้อมใช้งาน สลับใช้คลังคำในระบบ', 'info');
           }
-          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-            const aiText = data.candidates[0].content.parts[0].text;
-            const formattedHtml = aiText.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706; font-size:1.05em;">$1</b>').replace(/\n/g, '<br>');
-            return Swal.fire({
-              title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
-              html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${formattedHtml}</div>`,
-              width: '80%',
-              background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
-              customClass: { popup: 'light-override-popup' }
-            });
-          }
-        } catch (e) {
-          console.warn('Gemini API fetch error, fallback to dict', e);
         }
       }
 
@@ -2958,23 +3034,11 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       let analysisSummary = '';
 
       if (apiKey) {
-        try {
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `คุณคือครูภาษาไทยผู้เชี่ยวชาญ ข้อความเรื่องย่อของนักเรียนคือ:\n"${item.synopsis}"\n\nโปรดตรวจคำผิดและส่งคืนข้อความที่แก้ไขสะกดถูกต้องแล้วทั้งหมด พร้อมสรุปคำผิดสั้นๆ 1-2 ประโยค`
-                }]
-              }]
-            })
-          });
-          const data = await res.json();
-          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-            analysisSummary = data.candidates[0].content.parts[0].text;
-          }
-        } catch(e) {}
+        const prompt = `คุณคือครูภาษาไทยผู้เชี่ยวชาญ ข้อความเรื่องย่อของนักเรียนคือ:\n"${item.synopsis}"\n\nโปรดตรวจคำผิดและส่งคืนข้อความที่แก้ไขสะกดถูกต้องแล้วทั้งหมด พร้อมสรุปคำผิดสั้นๆ 1-2 ประโยค`;
+        const result = await callGeminiAPI(apiKey, prompt);
+        if (result.success) {
+          analysisSummary = result.text;
+        }
       }
 
       if (!analysisSummary) {
