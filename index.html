@@ -2475,18 +2475,24 @@ console.log(payload);
           background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981'
         });
       } else {
-        let errDesc = result.message || 'ไม่สามารถเชื่อมต่อได้';
+        let rawMsg = result.message ? `<div style="margin-top:8px; font-size:0.88em; color:#dc2626; word-break:break-all;"><b>รายละเอียดจาก Google:</b> ${result.message}</div>` : '';
+        let errDesc = 'ไม่สามารถเชื่อมต่อระบบได้';
         if (result.status === 400 || result.status === 403) {
-          errDesc = 'API Key ไม่ถูกต้อง หรือไม่ได้เปิดใช้งาน Gemini API (Error 400/403)';
+          errDesc = 'API Key ไม่ถูกต้อง หรือคัดลอกมาไม่ครบ';
         } else if (result.status === 429) {
-          errDesc = 'API Key ติดโควต้ารายวัน (1,500 ครั้ง/วัน) หรือส่งคำขอเกิน 15 ครั้ง/นาที (Error 429 Rate Limit)';
+          errDesc = 'API Key ติดโควต้ารายวัน (1,500 ครั้ง/วัน) หรือส่งคำขอเกิน 15 ครั้ง/นาที';
+        } else if (result.status === 404) {
+          errDesc = 'ไม่พบโมเดลที่เรียกใช้งาน';
         }
         Swal.fire({
           icon: 'error',
           title: '❌ การทดสอบล้มเหลว',
           html: `<div style="text-align:left; background:#fef2f2; color:#991b1b; padding:15px; border-radius:10px; border:1px solid #fca5a5;">
-            <b>สถานะ (HTTP ${result.status}):</b> ${errDesc}<br><br>
-            <small style="color:#64748b;">*คำแนะนำ: สามารถสร้าง API Key ฟรีอันใหม่ได้ที่ <a href="https://aistudio.google.com/" target="_blank" style="color:#0284c7; text-decoration:underline;">Google AI Studio</a></small>
+            <b>รหัสสถานะ:</b> HTTP ${result.status}<br>
+            <b>สาเหตุ:</b> ${errDesc}
+            ${rawMsg}
+            <hr style="margin:12px 0; border:0; border-top:1px dashed #fca5a5;">
+            <small style="color:#64748b;">💡 <b>ข้อแนะนำ:</b> ตรวจสอบว่าคัดลอก Key มาครบถ้วน (เริ่มด้วย AIzaSy...) หรือลองกดสร้าง Key ใหม่ที่ <a href="https://aistudio.google.com/" target="_blank" style="color:#0284c7; text-decoration:underline;">Google AI Studio</a></small>
           </div>`,
           background: '#ffffff', color: '#0f172a', confirmButtonColor: '#ef4444'
         });
