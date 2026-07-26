@@ -2898,9 +2898,8 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     }
 
     async function callGeminiAPI(apiKey, promptText) {
-      const models = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
-      let lastStatus = null;
-      let lastErrorMessage = '';
+      const models = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash'];
+      let primaryError = null;
 
       for (const model of models) {
         try {
@@ -2919,27 +2918,37 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
               return { success: true, text: data.candidates[0].content.parts[0].text, modelUsed: model };
             }
           } else {
-            lastStatus = res.status;
-            if (data && data.error && data.error.message) {
-              lastErrorMessage = data.error.message;
+            const errObj = {
+              status: res.status,
+              message: (data && data.error && data.error.message) ? data.error.message : `HTTP ${res.status}`
+            };
+            
+            // บันทึก Error ของโมเดลหลัก (gemini-1.5-flash) ไว้
+            if (!primaryError) {
+              primaryError = errObj;
             }
+
             console.warn(`Gemini model ${model} returned status ${res.status}`, data);
             
-            // If Invalid Key (400/403), stop loop immediately
+            // หาก Key ไม่ถูกต้อง (400/403) ให้หยุดวนลูปทันที
             if (res.status === 400 || res.status === 403) {
-              return { success: false, status: res.status, message: lastErrorMessage };
-            }
-            
-            // If limit: 0 for this specific model, skip and try next model
-            if (res.status === 429 && lastErrorMessage.includes('limit: 0')) {
-              continue;
+              return { success: false, status: res.status, message: errObj.message };
             }
           }
         } catch (e) {
           console.warn(`Gemini model ${model} fetch error`, e);
+          if (!primaryError) {
+            primaryError = { status: 500, message: e.toString() };
+          }
         }
       }
-      return { success: false, status: lastStatus || 500, message: lastErrorMessage };
+
+      // หากทุกโมเดลล้มเหลว ให้ส่งคืน Error ที่แท้จริงของโมเดลหลัก (gemini-1.5-flash)
+      return { 
+        success: false, 
+        status: primaryError ? primaryError.status : 500, 
+        message: primaryError ? primaryError.message : 'ไม่สามารถเชื่อมต่อ Gemini API ได้' 
+      };
     }
 
     async function analyzeSpellingWithAI(text) {
