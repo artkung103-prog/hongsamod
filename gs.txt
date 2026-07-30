@@ -185,27 +185,66 @@ function uploadFileToDrive(base64Data, mimeType, fileName) {
 }
 
 function saveConfig(p) {
-  var sheet = getOrCreateSheet('Config');
-  if (sheet.getLastRow() <= 1) {
-    sheet.appendRow(['Target Latitude', p.lat]);
-    sheet.appendRow(['Target Longitude', p.lng]);
-    sheet.appendRow(['Allowed Radius (KM)', p.radius]);
-  } else {
-    sheet.getRange('B2').setValue(p.lat);
-    sheet.getRange('B3').setValue(p.lng);
-    sheet.getRange('B4').setValue(p.radius);
+  var sheet = getOrCreateSheet('Config', ['KeyName', 'KeyValue', 'Description']);
+  var data = sheet.getDataRange().getValues();
+  
+  if (p.keyName || p.keyValue !== undefined || p.geminiApiKey !== undefined || p.apiKey !== undefined) {
+    var keyName = p.keyName || 'GEMINI_API_KEY';
+    var keyValue = (p.keyValue !== undefined) ? p.keyValue : ((p.geminiApiKey !== undefined) ? p.geminiApiKey : (p.apiKey || ''));
+    var found = false;
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0].toString().trim() === keyName) {
+        sheet.getRange(i + 1, 2).setValue(keyValue);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      sheet.appendRow([keyName, keyValue, 'ค่าตั้งค่าระบบ ' + keyName]);
+    }
   }
+  
+  if (p.lat !== undefined && p.lng !== undefined) {
+    var keys = [
+      ['Target Latitude', p.lat],
+      ['Target Longitude', p.lng],
+      ['Allowed Radius (KM)', p.radius]
+    ];
+    keys.forEach(function(item) {
+      var found = false;
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][0].toString().trim() === item[0]) {
+          sheet.getRange(i + 1, 2).setValue(item[1]);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        sheet.appendRow([item[0], item[1], 'ตั้งค่าพิกัด']);
+      }
+    });
+  }
+
+  return { status: "success", message: "บันทึกการตั้งค่าเรียบร้อยแล้ว" };
 }
+
 function testDrive() {
   DriveApp.getRootFolder();
 }
+
 function getConfig() {
-  var sheet = getOrCreateSheet('Config');
-  var config = { lat: 0, lng: 0, radius: 0.5 };
-  if (sheet.getLastRow() >= 4) {
-    config.lat = parseFloat(sheet.getRange('B2').getValue()) || 0;
-    config.lng = parseFloat(sheet.getRange('B3').getValue()) || 0;
-    config.radius = parseFloat(sheet.getRange('B4').getValue()) || 0;
+  var sheet = getOrCreateSheet('Config', ['KeyName', 'KeyValue', 'Description']);
+  var config = { lat: 0, lng: 0, radius: 0.5, GEMINI_API_KEY: '' };
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) {
+      config[data[i][0].toString().trim()] = data[i][1] ? data[i][1].toString().trim() : '';
+    }
+  }
+  if (data.length >= 4 && data[1][0] === 'Target Latitude') {
+    config.lat = parseFloat(data[1][1]) || 0;
+    config.lng = parseFloat(data[2][1]) || 0;
+    config.radius = parseFloat(data[3][1]) || 0;
   }
   return config;
 }

@@ -1739,6 +1739,20 @@ body.light-mode .highlight-overlay {
     let allReadingLogs = [], allHomeworks = [], allBorrows = [], allLinks = [], allStudentData = [];
     let currentLoggedInUser = null;
     let currentScanMode = 'login'; // 'login' หรือ 'continuous'
+    let systemGeminiApiKey = '';
+
+    async function fetchSystemConfig() {
+      try {
+        const cfg = await gasGet('getConfig');
+        if (cfg && cfg.GEMINI_API_KEY) {
+          systemGeminiApiKey = cfg.GEMINI_API_KEY;
+          const inputEl = document.getElementById('gemini-api-key-input');
+          if (inputEl && !inputEl.value) {
+            inputEl.value = systemGeminiApiKey;
+          }
+        }
+      } catch(e) { console.warn('Could not fetch config from GAS', e); }
+    }
 
     // --- CORE FETCH WRAPPERS (ป้องกัน CORS โดยเฉพาะ) ---
     async function gasGet(action, params = {}) {
@@ -1997,6 +2011,7 @@ body.light-mode .highlight-overlay {
       loadModels();
       if (API_URL) {
         loadDashboardData();
+        fetchSystemConfig();
       } else {
         document.getElementById('apiWarning').style.display = 'block';
       }
@@ -2512,10 +2527,14 @@ console.log(payload);
       const key = document.getElementById('gemini-api-key-input').value.trim();
       if (!key) {
         localStorage.removeItem('geminiApiKey');
+        systemGeminiApiKey = '';
+        gasPost({ action: 'saveConfig', keyName: 'GEMINI_API_KEY', keyValue: '' });
         return Swal.fire('ลบเรียบร้อย', 'ยกเลิกการใช้ Gemini API Key แล้ว', 'info');
       }
       localStorage.setItem('geminiApiKey', key);
-      Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'พร้อมใช้งาน AI ตรวจคำผิดภาษาไทยเรียบร้อยแล้ว', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+      systemGeminiApiKey = key;
+      gasPost({ action: 'saveConfig', keyName: 'GEMINI_API_KEY', keyValue: key });
+      Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย!', text: 'พร้อมใช้งาน AI ตรวจคำผิดภาษาไทยเรียบร้อยแล้ว (บันทึกลง Google Sheet เรียบร้อย)', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
     }
 
     async function testGeminiKey() {
@@ -2535,6 +2554,8 @@ console.log(payload);
 
       if (result.success) {
         localStorage.setItem('geminiApiKey', key);
+        systemGeminiApiKey = key;
+        gasPost({ action: 'saveConfig', keyName: 'GEMINI_API_KEY', keyValue: key });
         Swal.fire({
           icon: 'success',
           title: '🎉 เชื่อมต่อ Gemini API สำเร็จ!',
@@ -3060,7 +3081,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
 
     async function analyzeSpellingWithAI(text) {
       if (!text || !text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนวิเคราะห์ครับ', 'warning');
-      const apiKey = localStorage.getItem('geminiApiKey') || '';
+      const apiKey = localStorage.getItem('geminiApiKey') || systemGeminiApiKey || '';
       
       Swal.fire({
         title: '🤖 AI กำลังตรวจ...',
@@ -3337,7 +3358,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         didOpen: () => Swal.showLoading()
       });
 
-      const apiKey = localStorage.getItem('geminiApiKey') || '';
+      const apiKey = localStorage.getItem('geminiApiKey') || systemGeminiApiKey || '';
       let aiCorrectedText = item.synopsis;
       let analysisSummary = '';
 
