@@ -1,0 +1,8 @@
+.agents
+.git
+.system_generated
+*.md
+*.txt
+.clasp.json
+appsscript.json
+รหัส.js
