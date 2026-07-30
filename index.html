@@ -2790,6 +2790,19 @@ console.log(payload);
       updateBatchReturnCount();
     }
 
+    function setReadingStar(val) {
+      currentReadingStar = val;
+      const stars = document.querySelectorAll('#read-stars span');
+      stars.forEach(s => {
+        const starVal = parseInt(s.getAttribute('data-val'));
+        if (starVal <= val) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+    }
+
     async function editStudentReading(rowIdx, cls, name, title, synopsis, rating) { 
       switchReadingTab(1); const overlay = document.getElementById('reading-loading'); overlay.style.display = 'flex'; document.getElementById('read-class').value = cls; const nameSelect = document.getElementById('read-name'); nameSelect.innerHTML = '<option value="">⏳ โหลดรายชื่อ...</option>'; nameSelect.disabled = true; 
       try { 
