@@ -3145,6 +3145,185 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           customClass: { popup: 'light-override-popup' }
         });
       }
+    let dictionaryWords = [];
+
+    async function fetchDictionaryWords() {
+      if (dictionaryWords.length > 0) return dictionaryWords;
+      try {
+        const res = await gasGet('getDictionaryWords');
+        if (Array.isArray(res) && res.length > 0) {
+          dictionaryWords = res;
+          return dictionaryWords;
+        }
+      } catch(e) { console.warn('Fallback to built-in dictionary words', e); }
+      dictionaryWords = [
+        { wrong: "กระทัดรัด", correct: "กะทัดรัด", note: "ไม่มี ร ควบกล้ำ" },
+        { wrong: "กระเพรา", correct: "กะเพรา", note: "กะ (ไม่มี ร), เพรา (มี ร)" },
+        { wrong: "สังเกตุ", correct: "สังเกต", note: "ไม่มี สระอุ" },
+        { wrong: "อนุญาติ", correct: "อนุญาต", note: "ไม่มี สระอิ" },
+        { wrong: "โควต้า", correct: "โควตา", note: "ไม่มีไม้โท" },
+        { wrong: "ซีรี่ย์", correct: "ซีรีส์", note: "ส เสือ เป็นตัวสะกด" },
+        { wrong: "คลินิค", correct: "คลินิก", note: "ก ไก่ เป็นตัวสะกด" },
+        { wrong: "กราฟฟิก", correct: "กราฟิก", note: "ฟ ฟัน ตัวเดียว" },
+        { wrong: "ลิงค์", correct: "ลิงก์", note: "ก ไก่ การันต์" },
+        { wrong: "อลุ่มอล่วย", correct: "อะลุ้มอล่วย", note: "อะ-ลุ้ม-อะ-ล่วย" },
+        { wrong: "ผัดไท", correct: "ผัดไทย", note: "มี ย ยักษ์" },
+        { wrong: "คำนวน", correct: "คำนวณ", note: "ใช้ ณ สะกด" },
+        { wrong: "เซ็นต์ชื่อ", correct: "เซ็นชื่อ", note: "ไม่มี ต การันต์" },
+        { wrong: "เปอร์เซนต์", correct: "เปอร์เซ็นต์", note: "มี ไต่คู้ และ ต การันต์" },
+        { wrong: "โน๊ต", correct: "โน้ต", note: "ใช้ไม้โท" },
+        { wrong: "เค็ก", correct: "เค้ก", note: "ใช้ไม้โท" },
+        { wrong: "แก๊งค์", correct: "แก๊ง", note: "ไม่มี ค การันต์" },
+        { wrong: "เกมส์", correct: "เกม", note: "ไม่มี ส การันต์" },
+        { wrong: "เว็ปไซด์", correct: "เว็บไซต์", note: "ส เสือ และ ต การันต์" },
+        { wrong: "อินเตอร์เน็ต", correct: "อินเทอร์เน็ต", note: "ท ทหาร และ ต การันต์" },
+        { wrong: "อัพเดท", correct: "อัปเดต", note: "ป ปลา และ ต การันต์" },
+        { wrong: "ดิจิตอล", correct: "ดิจิทัล", note: "ท ธง และ ล ลิง" },
+        { wrong: "อีเมล์", correct: "อีเมล", note: "ไม่มี ล การันต์" },
+        { wrong: "แอพพลิเคชั่น", correct: "แอปพลิเคชัน", note: "ป ปลา และ น หนู" },
+        { wrong: "โปรเจค", correct: "โพรเจกต์", note: "หรือ โปรเจกต์" },
+        { wrong: "ฟังก์ชั่น", correct: "ฟังก์ชัน", note: "น หนู เป็นตัวสะกด" },
+        { wrong: "คอนเซ็ปต์", correct: "คอนเซปต์", note: "ไม่มีไม้ไต่คู้" },
+        { wrong: "แฟชชั่น", correct: "แฟชั่น", note: "ช ช้าง ตัวเดียว" },
+        { wrong: "เช็ค", correct: "เช็ก", note: "ก ไก่ สะกด" },
+        { wrong: "บล๊อก", correct: "บล็อก", note: "ใช้ไม้ไต่คู้" },
+        { wrong: "ล็อค", correct: "ล็อก", note: "ก ไก่ สะกด" },
+        { wrong: "คลิ๊ก", correct: "คลิก", note: "ไม่มีไม้ไต่คู้" },
+        { wrong: "สเต็ก", correct: "สเต๊ก", note: "ใช้ไม้ไต่คู้" },
+        { wrong: "บุฟเฟ่ต์", correct: "บุฟเฟต์", note: "ไม่มีไม้เอก" },
+        { wrong: "เสริฟ", correct: "เสิร์ฟ", note: "มี ร การันต์" },
+        { wrong: "แอลกอฮอร์", correct: "แอลกอฮอล์", note: "ใช้ ล การันต์" },
+        { wrong: "พลาสติค", correct: "พลาสติก", note: "ก ไก่ สะกด" },
+        { wrong: "แท๊กซี่", correct: "แท็กซี่", note: "ใช้ไม้ไต่คู้" },
+        { wrong: "ออฟฟิต", correct: "ออฟฟิศ", note: "ศ ศาลา สะกด" },
+        { wrong: "มอเตอร์ไซ", correct: "มอเตอร์ไซค์", note: "มี ค การันต์" },
+        { wrong: "ก็อกน้ำ", correct: "ก๊อกน้ำ", note: "ใช้ไม้ตรี" },
+        { wrong: "บัลลัง", correct: "บัลลังก์", note: "มี ก การันต์" },
+        { wrong: "มนุษย์สัมพันธ์", correct: "มนุษยสัมพันธ์", note: "ไม่มี ์ บน ย ยักษ์" },
+        { wrong: "พิธีพิถัน", correct: "พิถีพิถัน", note: "สระอี อยู่หน้า" },
+        { wrong: "ผลัดวันประกันพัก", correct: "ผัดวันประกันพัก", note: "ผัด (เลื่อนเวลา)" },
+        { wrong: "เกษียร", correct: "เกษียณ", note: "เกษียณ (อายุราชการ)" },
+        { wrong: "หลงไหล", correct: "หลงใหล", note: "สระไอไม้ม้วน" },
+        { wrong: "น้ำใหล", correct: "น้ำไหล", note: "สระไอไม้มลาย" },
+        { wrong: "ลำใย", correct: "ลำไย", note: "สระไอไม้มลาย" },
+        { wrong: "กาละเทศะ", correct: "กาลเทศะ", note: "ไม่มี สระอะ" },
+        { wrong: "ขมักเขม้น", correct: "ขะมักเขม้น", note: "มี สระอะ" },
+        { wrong: "คริสมาสต์", correct: "คริสต์มาส", note: "ต การันต์ อยู่ที่ คริสต์" },
+        { wrong: "บิณฑบาตร", correct: "บิณฑบาต", note: "ไม่มี ร การันต์" },
+        { wrong: "ผาสุข", correct: "ผาสุก", note: "ก ไก่ สะกด" },
+        { wrong: "เกสร", correct: "เกสร", note: "ส เสือ สะกด" },
+        { wrong: "ช็อคโกแลต", correct: "ช็อกโกแลต", note: "ใช้ไม้ไต่คู้" },
+        { wrong: "ไอศครีม", correct: "ไอศกรีม", note: "ก ไก่ สะกด" },
+        { wrong: "ปรากฎ", correct: "ปรากฏ", note: "ใช้ ฏ ฎัก" },
+        { wrong: "กตหมาย", correct: "กฎหมาย", note: "ใช้ ฎ ชฎา" },
+        { wrong: "มงกุฏ", correct: "มงกุฎ", note: "ใช้ ฎ ชฎา" },
+        { wrong: "ศักศรี", correct: "ศักดิ์ศรี", note: "มี ด การันต์" },
+        { wrong: "สิทธิ์มนุษยชน", correct: "สิทธิมนุษยชน", note: "ไม่มี ์ บน ธิ" },
+        { wrong: "ญาต", correct: "ญาติ", note: "มี สระอิ" },
+        { wrong: "สัญชาติญาณ", correct: "สัญชาตญาณ", note: "ไม่มี สระอิ" },
+        { wrong: "อุตสาหกรรม", correct: "อุตสาหกรรม", note: "อุตสาหกรรม" },
+        { wrong: "ปฎิสัมพันธ์", correct: "ปฏิสัมพันธ์", note: "ใช้ ฏ ฎัก" },
+        { wrong: "กฎเกนท์", correct: "กฎเกณฑ์", note: "ใช้ ฑ ฒิ" },
+        { wrong: "อุปสรรค", correct: "อุปสรรค", note: "อุปสรรค" },
+        { wrong: "ทศวรรศ", correct: "ทศวรรษ", note: "ษ ฤๅษี สะกด" },
+        { wrong: "อธิฐาน", correct: "อธิษฐาน", note: "ษ ฤๅษี" },
+        { wrong: "อานิสงค์", correct: "อานิสงส์", note: "ส เสือ การันต์" },
+        { wrong: "สวรรคต", correct: "สวรรคต", note: "สวรรคต" },
+        { wrong: "สังเกตุการณ์", correct: "สังเกตการณ์", note: "สังเกต (ไม่มี สระอุ)" },
+        { wrong: "เบญจเพศ", correct: "เบญจเพส", note: "ส เสือ สะกด" },
+        { wrong: "สมเพช", correct: "สมเพช", note: "ช ช้าง สะกด" },
+        { wrong: "เวทมนต์", correct: "เวทมนตร์", note: "ร ท การันต์" },
+        { wrong: "ปาฏิหารย์", correct: "ปาฏิหาริย์", note: "สระอิ บน ร" },
+        { wrong: "อัศจรรย์", correct: "อัศจรรย์", note: "ย ยักษ์ การันต์" },
+        { wrong: "วิเคราห์", correct: "วิเคราะห์", note: "มี ์" },
+        { wrong: "กระทันหัน", correct: "กะทันหัน", note: "กะ (ไม่มี ร)" },
+        { wrong: "ปราณีต", correct: "ประณีต", note: "ประ (สระอะ)" },
+        { wrong: "กุญแจ", correct: "กุญแจ", note: "ญ หญิง สะกด" },
+        { wrong: "สัญญลักษณ์", correct: "สัญลักษณ์", note: "สัญลักษณ์" }
+      ];
+      return dictionaryWords;
+    }
+
+    async function openScanExplainModal(title, text) {
+      if (!text || text.trim() === '') {
+        Swal.fire({ icon: 'warning', title: 'ไม่พบข้อความ', text: 'กรุณาพิมพ์เรื่องย่อก่อนกดสแกนอธิบายครับ', confirmButtonColor: '#0284c7' });
+        return;
+      }
+
+      Swal.fire({
+        title: '🔍 กำลังสแกนอธิบายคำศัพท์...',
+        background: '#ffffff', color: '#0f172a', allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const words = await fetchDictionaryWords();
+      let foundMatches = [];
+      
+      words.forEach(w => {
+        if (w.wrong && text.includes(w.wrong)) {
+          foundMatches.push(w);
+        }
+      });
+
+      let contentHtml = '';
+      if (foundMatches.length > 0) {
+        contentHtml += `<div style="background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: left;">
+          <h4 style="color: #dc2626; margin: 0 0 8px 0; font-size: 1em; display: flex; align-items: center; gap: 6px;">⚠️ พบคำที่มักเขียนผิด (${foundMatches.length} คำ):</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 0.95em; color: #7f1d1d; line-height: 1.7;">`;
+        foundMatches.forEach(item => {
+          contentHtml += `<li><b style="color: #ef4444; text-decoration: line-through;">${item.wrong}</b> ➔ <b style="color: #16a34a;">${item.correct}</b> <span style="color: #64748b; font-size: 0.85em;">(${item.note || 'คำที่ถูกต้อง'})</span></li>`;
+        });
+        contentHtml += `</ul></div>`;
+      } else {
+        contentHtml += `<div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: center; color: #166534; font-weight: 700;">
+          ✅ ไม่พบคำที่มักเขียนผิดจากคลัง 200 คำในเรื่องย่อนี้
+        </div>`;
+      }
+
+      contentHtml += `
+        <div style="text-align: left; margin-bottom: 12px;">
+          <label style="font-weight: 700; font-size: 0.9em; color: #334155;">🔍 ค้นหาคำศัพท์เพิ่มเติมในคลัง 200 คำ:</label>
+          <input type="text" id="dict-search-input" placeholder="พิมพ์คำที่ต้องการค้นหา..." oninput="filterDictSearch()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 4px; font-family: 'Sarabun', sans-serif;">
+        </div>
+        <div id="dict-search-results" style="max-height: 35vh; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: left; font-size: 0.9em; line-height: 1.7;">
+          <div style="color: #64748b; text-align: center; padding: 10px;">พิมพ์คำค้นหาเพื่อดูคำผิด-คำถูกจากคลังข้อมูล (${words.length} คำ)</div>
+        </div>
+      `;
+
+      Swal.fire({
+        title: `🔍 สแกนอธิบายคำศัพท์: ${title}`,
+        html: contentHtml,
+        width: '80%',
+        background: '#ffffff', color: '#0f172a',
+        showConfirmButton: true,
+        confirmButtonText: '✕ ปิดหน้าต่าง',
+        confirmButtonColor: '#64748b',
+        customClass: { popup: 'light-override-popup' },
+        didOpen: () => {
+          window.filterDictSearch = () => {
+            const query = (document.getElementById('dict-search-input').value || '').trim().toLowerCase();
+            const resDiv = document.getElementById('dict-search-results');
+            if (!query) {
+              resDiv.innerHTML = `<div style="color: #64748b; text-align: center; padding: 10px;">พิมพ์คำค้นหาเพื่อดูคำผิด-คำถูกจากคลังข้อมูล (${words.length} คำ)</div>`;
+              return;
+            }
+            const filtered = words.filter(w => (w.wrong && w.wrong.toLowerCase().includes(query)) || (w.correct && w.correct.toLowerCase().includes(query)) || (w.note && w.note.toLowerCase().includes(query)));
+            if (filtered.length === 0) {
+              resDiv.innerHTML = `<div style="color: #ef4444; text-align: center; padding: 10px;">❌ ไม่พบคำศัพท์ที่ค้นหา</div>`;
+            } else {
+              let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;">';
+              filtered.forEach(w => {
+                html += `<div style="background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                  <span style="color: #ef4444; text-decoration: line-through; font-weight: 700;">${w.wrong}</span> ➔ <span style="color: #16a34a; font-weight: 700;">${w.correct}</span>
+                  <div style="font-size: 0.8em; color: #64748b;">${w.note || ''}</div>
+                </div>`;
+              });
+              html += '</div>';
+              resDiv.innerHTML = html;
+            }
+          };
+        }
+      });
     }
 
     async function teacherAIAnalyzeReadingLog(rowIdx) {
@@ -3194,44 +3373,44 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
             ${formattedHtml}
           </div>
           <div style="font-size: 0.9em; font-weight: 700; color: #0f172a; margin-bottom: 12px;">คุณครูต้องการดำเนินการอย่างไร?</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button id="btn-ai-approve-edit" style="padding:10px 18px; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:50px; font-size:0.92em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(16,185,129,0.4);">✅ แก้ + ตรวจแล้ว</button>
+            <button id="btn-ai-edit-only" style="padding:10px 18px; background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white; border:none; border-radius:50px; font-size:0.92em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(59,130,246,0.4);">✨ แก้ให้เลย</button>
+            <button id="btn-ai-sendback" style="padding:10px 18px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.92em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">❌ ส่งกลับไปแก้ไข</button>
+            <button id="btn-ai-close" style="padding:10px 18px; background:#64748b; color:white; border:none; border-radius:50px; font-size:0.92em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif;">✕ ปิด</button>
+          </div>
         `,
         width: '80%',
         background: '#ffffff', color: '#0f172a',
-        showCancelButton: true,
-        showDenyButton: true,
-        confirmButtonText: '✅ แก้ + ตรวจแล้ว',
-        denyButtonText: '✨ แก้ให้เลย',
-        cancelButtonText: '❌ ส่งกลับไปแก้ไข',
-        confirmButtonColor: '#10b981',
-        denyButtonColor: '#3b82f6',
-        cancelButtonColor: '#ef4444',
-        customClass: { popup: 'light-override-popup' }
-      }).then(async (res) => {
-        if (res.isConfirmed) {
-          // ✅ แก้ + ตรวจแล้ว
-          Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
-          try {
-            await gasPost({ action: 'editReadingLog', rowIdx: item.rowIdx, className: item.className, name: item.name, bookTitle: item.bookTitle, synopsis: aiCorrectedText, rating: item.rating });
-            await gasPost({ action: 'updateReadingStatus', rowIdx: item.rowIdx, status: 'ตรวจแล้ว' });
-            Swal.fire({ icon: 'success', title: 'แก้ + ตรวจเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
-            fetchReadingLogs();
-          } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
-        } else if (res.isDenied) {
-          // ✨ แก้ให้เลย
-          Swal.fire({ title: '⏳ กำลังแก้ไขเนื้อหา...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
-          try {
-            await gasPost({ action: 'editReadingLog', rowIdx: item.rowIdx, className: item.className, name: item.name, bookTitle: item.bookTitle, synopsis: aiCorrectedText, rating: item.rating });
-            Swal.fire({ icon: 'success', title: 'แก้ไขเนื้อหาเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
-            fetchReadingLogs();
-          } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
-        } else if (res.dismiss === Swal.DismissReason.cancel) {
-          // ❌ ส่งกลับไปแก้ไข
-          Swal.fire({ title: '⏳ กำลังส่งกลับ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
-          try {
-            await gasPost({ action: 'updateReadingStatus', rowIdx: item.rowIdx, status: 'กลับไปแก้ไข' });
-            Swal.fire({ icon: 'success', title: 'ส่งกลับไปแก้ไขเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
-            fetchReadingLogs();
-          } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
+        showConfirmButton: false, showCancelButton: false, showDenyButton: false,
+        customClass: { popup: 'light-override-popup' },
+        didOpen: () => {
+          document.getElementById('btn-ai-approve-edit').onclick = async () => {
+            Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
+            try {
+              await gasPost({ action: 'editReadingLog', rowIdx: item.rowIdx, className: item.className, name: item.name, bookTitle: item.bookTitle, synopsis: aiCorrectedText, rating: item.rating });
+              await gasPost({ action: 'updateReadingStatus', rowIdx: item.rowIdx, status: 'ตรวจแล้ว' });
+              Swal.fire({ icon: 'success', title: 'แก้ + ตรวจเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+              fetchReadingLogs();
+            } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
+          };
+          document.getElementById('btn-ai-edit-only').onclick = async () => {
+            Swal.fire({ title: '⏳ กำลังแก้ไขเนื้อหา...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
+            try {
+              await gasPost({ action: 'editReadingLog', rowIdx: item.rowIdx, className: item.className, name: item.name, bookTitle: item.bookTitle, synopsis: aiCorrectedText, rating: item.rating });
+              Swal.fire({ icon: 'success', title: 'แก้ไขเนื้อหาเรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+              fetchReadingLogs();
+            } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
+          };
+          document.getElementById('btn-ai-sendback').onclick = async () => {
+            Swal.fire({ title: '⏳ กำลังส่งกลับ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false });
+            try {
+              await gasPost({ action: 'updateReadingStatus', rowIdx: item.rowIdx, status: 'กลับไปแก้ไข' });
+              Swal.fire({ icon: 'success', title: 'ส่งกลับไปแก้ไขเรียบร้อย', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+              fetchReadingLogs();
+            } catch(e) { Swal.fire('ล้มเหลว', 'ไม่สามารถอัปเดตได้', 'error'); }
+          };
+          document.getElementById('btn-ai-close').onclick = () => Swal.close();
         }
       });
     }
@@ -3241,11 +3420,15 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         <button onclick="Swal.close(); editStudentReadingWithAuth(${rowIdx}, '${cls}', '${name}', '${title.replace(/'/g, "\\'")}', '${text.replace(/'/g, "\\'")}', ${rating});" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">✏️ กลับไปแก้ไข</button>
       ` : '';
 
+      const safeTitle = (title || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      const safeText = (text || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
       Swal.fire({ 
         title: title, 
         html: `
           <div class="modal-content-box" style="text-align: left; max-height: 50vh; overflow-y: auto; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 1em; line-height: 1.8; border: 1.5px solid #cbd5e1; margin-bottom: 16px;">${text}</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button onclick="Swal.close(); setTimeout(()=>openScanExplainModal('${safeTitle}', '${safeText}'),150);" style="padding:10px 20px; background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(139,92,246,0.4);">🔍 สแกนอธิบาย</button>
             ${editBtnHtml}
             <button onclick="Swal.close();" style="padding:10px 20px; background:#64748b; color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif;">✕ ปิด</button>
           </div>
@@ -3256,11 +3439,15 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     }
 
     function teacherReadSynopsis(title, synopsis, rowIdx) {
+      const safeTitle = (title || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      const safeSynopsis = (synopsis || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
       Swal.fire({
         title: `📖 ${title}`,
         html: `
           <div style="text-align:left; background:#f8fafc; color:#0f172a; padding:18px; border-radius:12px; font-size:1em; line-height:1.8; max-height:45vh; overflow-y:auto; border:1.5px solid #cbd5e1; margin-bottom:16px;">${synopsis}</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button onclick="Swal.close(); setTimeout(()=>openScanExplainModal('${safeTitle}', '${safeSynopsis}'),150);" style="padding:10px 20px; background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(139,92,246,0.4);">🔍 สแกนอธิบาย</button>
             <button onclick="Swal.close(); setTimeout(()=>teacherAIAnalyzeReadingLog(${rowIdx}),150);" style="padding:10px 20px; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(16,185,129,0.4);">🤖 AI ตรวจ</button>
             <button onclick="Swal.close(); teacherApproveOnly(${rowIdx});" style="padding:10px 20px; background:linear-gradient(135deg,#0284c7,#0369a1); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(2,132,199,0.4);">✅ ตรวจแล้ว</button>
             <button onclick="Swal.close(); teacherSendBackOnly(${rowIdx});" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">↩️ กลับไปแก้ไข</button>
