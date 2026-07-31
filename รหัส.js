@@ -47,6 +47,7 @@ function setupSystem() {
   getOrCreateSheet('homework', ['วันที่ส่ง', 'ชั้น', 'ชื่อคนที่1', 'ชื่อคนที่2', 'ชื่องาน', 'ลิงก์ไฟล์1', 'ลิงก์ไฟล์2', 'สถานะ']);
   getOrCreateSheet('link', ['วันที่เวลา', 'ชื่อลิ้ง', 'url']);
   getOrCreateSheet('dictionary', ['คำที่เขียนผิด', 'คำที่ถูกต้อง', 'หมวดหมู่/หมายเหตุ']);
+  getOrCreateSheet('Assignments', ['AssignmentID', 'Title', 'Content', 'TargetClass', 'CreatedAt']);
   
   // ชีตสำหรับให้คุณครูนำไปดึงสูตรสถิติต่อ
   getOrCreateSheet('sum', ['สถิติ (รอตั้งค่าสูตร)']);
@@ -87,6 +88,7 @@ function doGet(e) {
     else if (action === 'getHomeworks') data = getHomeworks();
     else if (action === 'getLinks') data = getLinks();
     else if (action === 'getDictionaryWords') data = getDictionaryWords();
+    else if (action === 'getAssignments') data = getAssignments(e.parameter.class);
     else data = { status: "success", message: "API เชื่อมต่อสมบูรณ์พร้อมใช้งาน!" };
 
     return ContentService.createTextOutput(JSON.stringify(data))
@@ -127,6 +129,8 @@ function doPost(e) {
     else if (action === 'updateHomeworkStatus') updateHomeworkStatus(payload);
     else if (action === 'addLink') addLink(payload);
     else if (action === 'deleteLink') deleteLink(payload);
+    else if (action === 'saveAssignment') saveAssignment(payload);
+    else if (action === 'deleteAssignment') deleteAssignment(payload);
     else if (action === 'addStudent') {
       var sheet = getOrCreateSheet('students');
       // เพิ่มลง students คอลัมน์ A=ชั้น, B=ชื่อ
@@ -775,4 +779,55 @@ function populateDictionary200Words() {
   ];
 
   sheet.getRange(2, 1, words.length, 3).setValues(words);
+}
+
+function getAssignments(targetClass) {
+  var sheet = getOrCreateSheet('Assignments', ['AssignmentID', 'Title', 'Content', 'TargetClass', 'CreatedAt']);
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  var result = [];
+  for (var i = 1; i < data.length; i++) {
+    var id = data[i][0];
+    var title = data[i][1];
+    var content = data[i][2];
+    var cls = data[i][3] || 'ทุกชั้น';
+    var createdAt = data[i][4];
+    
+    if (!targetClass || targetClass === 'all' || cls === 'ทุกชั้น' || cls === targetClass) {
+      result.push({
+        id: id,
+        title: title,
+        content: content,
+        targetClass: cls,
+        createdAt: createdAt,
+        rowIdx: i + 1
+      });
+    }
+  }
+  return result.reverse();
+}
+
+function saveAssignment(p) {
+  var sheet = getOrCreateSheet('Assignments', ['AssignmentID', 'Title', 'Content', 'TargetClass', 'CreatedAt']);
+  var id = 'ASN_' + Date.now();
+  sheet.appendRow([id, p.title || '', p.content || '', p.targetClass || 'ทุกชั้น', new Date()]);
+  return { status: 'success', id: id };
+}
+
+function deleteAssignment(p) {
+  var sheet = getOrCreateSheet('Assignments', ['AssignmentID', 'Title', 'Content', 'TargetClass', 'CreatedAt']);
+  if (p.rowIdx && p.rowIdx > 1) {
+    sheet.deleteRow(parseInt(p.rowIdx));
+    return { status: 'success' };
+  }
+  if (p.id) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == p.id) {
+        sheet.deleteRow(i + 1);
+        break;
+      }
+    }
+  }
+  return { status: 'success' };
 }
