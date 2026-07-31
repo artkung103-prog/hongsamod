@@ -1742,35 +1742,6 @@ body.light-mode .highlight-overlay {
       <label>ชื่อ-นามสกุล นักเรียน</label><input type="text" id="new-student-name" placeholder="เช่น ด.ช.สมชาย ใจดี">
       <button id="btn-add-student" class="btn-action btn-secondary" onclick="addStudent()">➕ บันทึกรายชื่อใหม่</button>
     </div>
-    
-    <div class="form-section" style="margin-top: 20px;">
-      <h3 style="color: #818cf8; margin-bottom: 5px; font-size: 1.1em;">📌 สั่งงาน/โจทย์รักการอ่านให้นักเรียนพิมพ์ตาม</h3>
-      <p style="font-size: 0.8em; color: #94a3b8; margin-bottom: 15px;">*(สร้างโจทย์สำหรับให้นักเรียนดูแล้วฝึกพิมพ์ตามในการส่งบันทึกรักการอ่าน)*</p>
-      
-      <label>ชื่องาน / ชื่อเรื่องที่อ่าน</label>
-      <input type="text" id="asn-title-input" placeholder="เช่น นิทานเรื่อง กระต่ายกับเต่า">
-      
-      <label>ชั้นเป้าหมายที่สั่งงาน</label>
-      <select id="asn-target-class">
-        <option value="ทุกชั้น">ทุกชั้นเรียน (ป.1 - ป.6)</option>
-        <option value="ป.1">เฉพาะ ชั้น ป.1</option>
-        <option value="ป.2">เฉพาะ ชั้น ป.2</option>
-        <option value="ป.3">เฉพาะ ชั้น ป.3</option>
-        <option value="ป.4">เฉพาะ ชั้น ป.4</option>
-        <option value="ป.5">เฉพาะ ชั้น ป.5</option>
-        <option value="ป.6">เฉพาะ ชั้น ป.6</option>
-      </select>
-
-      <label>เนื้อเรื่องต้นฉบับ (ให้นักเรียนดูแล้วพิมพ์ตาม)</label>
-      <textarea id="asn-content-input" placeholder="พิมพ์บทความ นิทาน หรือเนื้อเรื่องที่ต้องการให้นักเรียนฝึกพิมพ์ตามที่นี่..." style="width: 100%; height: 140px; padding: 12px; border-radius: 8px; font-family: 'Sarabun', sans-serif; font-size: 16px; margin-bottom: 12px;"></textarea>
-
-      <button id="btn-save-assignment" class="btn-action" onclick="saveTeacherAssignment()" style="background: linear-gradient(135deg, #6366f1, #4338ca); color: white;">📌 บันทึกสร้างโจทย์ใหม่</button>
-
-      <div style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 14px;">
-        <h4 style="color: #cbd5e1; margin-bottom: 10px; font-size: 0.95em;">📋 รายการโจทย์ที่บันทึกไว้ในระบบ:</h4>
-        <div id="teacher-assignments-list" style="font-size: 0.9em; color: #cbd5e1;">⏳ กำลังโหลดข้อมูล...</div>
-      </div>
-    </div>
   </div>
 
   <!-- ==================== JAVASCRIPT ==================== -->
@@ -1855,6 +1826,7 @@ body.light-mode .highlight-overlay {
           </div>
         `;
       }
+      adjustReadingFormForTeacherOrStudent();
     }
 
     // --- SWEETALERT2 LOGIN MODAL (นักเรียน / ครู) ---
@@ -2030,6 +2002,10 @@ body.light-mode .highlight-overlay {
 
     async function applyLoggedInUserToForm(prefix) {
       if (!currentLoggedInUser) return;
+      if (prefix === 'read') {
+        adjustReadingFormForTeacherOrStudent();
+        if (currentLoggedInUser.isTeacher) return;
+      }
       const classEl = document.getElementById(prefix+'-class');
       if(!classEl) return;
       classEl.value = currentLoggedInUser.cls; classEl.disabled = true; 
@@ -2061,7 +2037,6 @@ body.light-mode .highlight-overlay {
       if (API_URL) {
         loadDashboardData();
         fetchSystemConfig();
-        loadTeacherAssignmentsPanel();
       } else {
         document.getElementById('apiWarning').style.display = 'block';
       }
@@ -2605,69 +2580,207 @@ console.log(payload);
       }
     }
 
-    async function loadTeacherAssignmentsPanel() {
-      const container = document.getElementById('teacher-assignments-list');
+    let currentEditingAssignmentRowIdx = null;
+
+    function adjustReadingFormForTeacherOrStudent() {
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const classSelect = document.getElementById('read-class');
+      if (!classSelect) return;
+      
+      const classLabel = classSelect.previousElementSibling;
+      const nameContainer = document.getElementById('read-name').parentElement;
+      const assignmentSelectContainer = document.getElementById('read-assignment-select').parentElement;
+      const starContainer = document.getElementById('read-stars').parentElement;
+      const titleContainer = document.getElementById('read-title').parentElement;
+      const synopsisLabel = document.getElementById('read-synopsis').parentElement.previousElementSibling;
+      const submitBtn = document.getElementById('btn-read-submit');
+      const btnContainer = submitBtn ? submitBtn.parentElement : null;
+      const tabBtn1 = document.getElementById('tab-btn-1');
+
+      if (isTeacher) {
+        if (tabBtn1) tabBtn1.innerText = '📌 สั่งงาน / มอบหมายงาน';
+        if (classLabel) classLabel.innerText = 'ชั้นเป้าหมายที่สั่งงาน';
+        
+        // Ensure "ทุกชั้น" is an option in classSelect
+        if (!classSelect.querySelector('option[value="ทุกชั้น"]')) {
+          const opt = document.createElement('option');
+          opt.value = 'ทุกชั้น';
+          opt.innerText = 'ทุกชั้นเรียน (ป.1 - ป.6)';
+          classSelect.insertBefore(opt, classSelect.firstChild);
+        }
+        if (!classSelect.value) classSelect.value = 'ทุกชั้น';
+        classSelect.disabled = false;
+
+        // Hide student name and assignment select
+        if (nameContainer) nameContainer.style.display = 'none';
+        if (assignmentSelectContainer) assignmentSelectContainer.style.display = 'none';
+        
+        // Hide stars
+        if (starContainer) starContainer.style.display = 'none';
+        if (titleContainer) titleContainer.style.flex = '1';
+
+        if (synopsisLabel) synopsisLabel.innerText = 'เนื้อเรื่องต้นฉบับ (ให้นักเรียนดูแล้วพิมพ์ตาม)';
+
+        // Update buttons
+        if (btnContainer) {
+          btnContainer.innerHTML = `
+            <button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" style="padding: 10px 22px; border-radius: 50px; border: none; color: white; background: linear-gradient(135deg, #10b981, #059669); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(16,185,129,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">🤖 AI ตรวจ</button>
+            <button id="btn-read-submit" onclick="submitTeacherAssignmentFromForm()" style="padding: 10px 22px; border-radius: 50px; border: none; color: white; background: linear-gradient(135deg, #6366f1, #4338ca); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(99,102,241,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">📌 สั่งงาน</button>
+            <button id="btn-read-edit" onclick="editTeacherAssignmentFromForm()" style="display: none; padding: 10px 22px; border-radius: 50px; border: none; color: white; background: linear-gradient(135deg, #facc15, #f59e0b); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(250,204,21,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">✏️ แก้ไขงาน</button>
+          `;
+        }
+
+        // Add assignment list for teachers in Tab 1
+        let listWrapper = document.getElementById('teacher-assignments-wrapper');
+        if (!listWrapper) {
+          listWrapper = document.createElement('div');
+          listWrapper.id = 'teacher-assignments-wrapper';
+          listWrapper.style.cssText = 'margin-top: 24px; border-top: 1.5px solid rgba(255,255,255,0.15); padding-top: 18px; width: 100%;';
+          listWrapper.innerHTML = `
+            <h3 style="color: #818cf8; margin-bottom: 12px; font-size: 1.1em; font-weight: 700; display: flex; align-items: center; gap: 8px;">📋 รายการโจทย์ที่สั่งไว้ในระบบ:</h3>
+            <div id="teacher-assignments-list-read" style="font-size: 0.95em; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px;">⏳ กำลังโหลดข้อมูล...</div>
+          `;
+          const formSec = document.querySelector('#reading-tab-1 .form-section');
+          if (formSec) formSec.appendChild(listWrapper);
+        }
+        loadTeacherAssignmentsListRead();
+      } else {
+        if (tabBtn1) tabBtn1.innerText = '📝 ส่งบันทึก';
+        if (classLabel) classLabel.innerText = 'เลือกระดับชั้น';
+        
+        const allClsOpt = classSelect.querySelector('option[value="ทุกชั้น"]');
+        if (allClsOpt) allClsOpt.remove();
+
+        classSelect.disabled = false;
+
+        if (nameContainer) nameContainer.style.display = 'block';
+        if (assignmentSelectContainer) assignmentSelectContainer.style.display = 'block';
+        
+        if (starContainer) starContainer.style.display = 'block';
+        if (titleContainer) titleContainer.style.flex = '4';
+
+        if (synopsisLabel) synopsisLabel.innerText = 'เรื่องย่อ / ข้อคิดที่ได้';
+
+        if (btnContainer) {
+          btnContainer.innerHTML = `
+            <button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" style="padding: 10px 22px; border-radius: 50px; border: none; color: white; background: linear-gradient(135deg, #10b981, #059669); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(16,185,129,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">🤖 AI ตรวจ</button>
+            <button id="btn-read-submit" onclick="submitReadingLog()" style="padding: 10px 22px; border-radius: 50px; border: none; color: #1e293b; background: linear-gradient(135deg, #facc15, #f59e0b); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(250,204,21,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">📝 ส่งงาน</button>
+          `;
+        }
+
+        const listWrapper = document.getElementById('teacher-assignments-wrapper');
+        if (listWrapper) listWrapper.remove();
+      }
+    }
+
+    async function loadTeacherAssignmentsListRead() {
+      const container = document.getElementById('teacher-assignments-list-read');
       if (!container) return;
-      container.innerHTML = '⏳ กำลังโหลดโจทย์...';
+      container.innerHTML = '⏳ กำลังโหลดรายการโจทย์...';
 
       try {
         const list = await gasGet('getAssignments', { class: 'all' });
         if (Array.isArray(list) && list.length > 0) {
-          teacherAssignments = list;
-          let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+          let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
           list.forEach(item => {
+            const escapedItem = JSON.stringify(item).replace(/"/g, '&quot;');
             html += `
-              <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                <div>
-                  <b style="color: #818cf8; font-size: 1em;">📌 ${item.title}</b> 
-                  <span style="font-size: 0.8em; background: rgba(129,140,248,0.2); color: #c7d2fe; padding: 2px 8px; border-radius: 10px; margin-left: 6px;">${item.targetClass || 'ทุกชั้น'}</span>
-                  <div style="font-size: 0.85em; color: #94a3b8; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.content}</div>
+              <div style="background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px;">
+                <div style="flex: 1; cursor: pointer;" onclick="loadAssignmentToFormForEdit(${escapedItem})">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <b style="color: #818cf8; font-size: 1.05em;">📌 ${item.title}</b>
+                    <span style="font-size: 0.8em; background: rgba(129,140,248,0.25); color: #c7d2fe; padding: 2px 8px; border-radius: 20px; font-weight: 700;">${item.targetClass || 'ทุกชั้น'}</span>
+                  </div>
+                  <div style="font-size: 0.88em; color: #94a3b8; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">${item.content}</div>
+                  <small style="color: #64748b; font-size: 0.8em; display: block; margin-top: 4px;">💡 กดที่นี่เพื่อนำมาแก้ไขในแบบฟอร์มด้านบน</small>
                 </div>
-                <button onclick="deleteTeacherAssignment(${item.rowIdx})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 20px; font-size: 0.8em; cursor: pointer; white-space: nowrap;">🗑️ ลบ</button>
+                <button onclick="deleteTeacherAssignmentRead(${item.rowIdx})" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 20px; font-size: 0.85em; cursor: pointer; white-space: nowrap; font-weight: 700; transition: 0.2s;">🗑️ ลบ</button>
               </div>
             `;
           });
           html += '</div>';
           container.innerHTML = html;
         } else {
-          container.innerHTML = '<div style="color: #94a3b8; font-style: italic;">ยังไม่มีโจทย์ที่สั่งไว้ในระบบ</div>';
+          container.innerHTML = '<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 10px 0;">ยังไม่มีโจทย์ที่สั่งไว้ในระบบ</div>';
         }
       } catch(e) {
-        container.innerHTML = '<div style="color: #ef4444;">ไม่สามารถโหลดรายการโจทย์ได้</div>';
+        container.innerHTML = '<div style="color: #ef4444; text-align: center; padding: 10px 0;">ไม่สามารถโหลดรายการโจทย์ได้</div>';
       }
     }
 
-    async function saveTeacherAssignment() {
-      const title = document.getElementById('asn-title-input').value.trim();
-      const targetClass = document.getElementById('asn-target-class').value;
-      const content = document.getElementById('asn-content-input').value.trim();
-      const btn = document.getElementById('btn-save-assignment');
+    function loadAssignmentToFormForEdit(item) {
+      document.getElementById('read-class').value = item.targetClass || 'ทุกชั้น';
+      document.getElementById('read-title').value = item.title;
+      document.getElementById('read-synopsis').value = item.content;
+      currentEditingAssignmentRowIdx = item.rowIdx;
+
+      const editBtn = document.getElementById('btn-read-edit');
+      if (editBtn) editBtn.style.display = 'inline-flex';
+      
+      syncHighlightOnInput();
+      showToast('📖 โหลดโจทย์เข้ามาเตรียมแก้ไขแล้วครับ', 'info');
+    }
+
+    async function submitTeacherAssignmentFromForm() {
+      const title = document.getElementById('read-title').value.trim();
+      const targetClass = document.getElementById('read-class').value;
+      const content = document.getElementById('read-synopsis').value.trim();
 
       if (!title || !content) return showToast('กรุณากรอกชื่องานและเนื้อเรื่องให้ครบถ้วนครับ', 'warning');
 
-      btn.disabled = true;
-      btn.innerHTML = '⏳ กำลังบันทึก...';
+      Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false });
 
       try {
         await gasPost({ action: 'saveAssignment', title: title, targetClass: targetClass, content: content });
-        showToast('📌 สร้างโจทย์สำเร็จ!', 'success');
-        document.getElementById('asn-title-input').value = '';
-        document.getElementById('asn-content-input').value = '';
-        loadTeacherAssignmentsPanel();
+        Swal.fire({ icon: 'success', title: '📌 สร้างโจทย์สำเร็จ!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+        
+        document.getElementById('read-title').value = '';
+        document.getElementById('read-synopsis').value = '';
+        document.getElementById('highlight-overlay').innerHTML = '';
+        currentEditingAssignmentRowIdx = null;
+        const editBtn = document.getElementById('btn-read-edit');
+        if (editBtn) editBtn.style.display = 'none';
+
+        loadTeacherAssignmentsListRead();
       } catch(e) {
-        showToast('บันทึกล้มเหลว', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '📌 บันทึกสร้างโจทย์ใหม่';
+        Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถสั่งงานได้' });
       }
     }
 
-    async function deleteTeacherAssignment(rowIdx) {
-      if (!confirm('ยืนยันลบโจทย์รายการนี้?')) return;
+    async function editTeacherAssignmentFromForm() {
+      if (!currentEditingAssignmentRowIdx) return showToast('กรุณาเลือกโจทย์ที่ต้องการแก้ไขก่อนครับ', 'warning');
+
+      const title = document.getElementById('read-title').value.trim();
+      const targetClass = document.getElementById('read-class').value;
+      const content = document.getElementById('read-synopsis').value.trim();
+
+      if (!title || !content) return showToast('กรุณากรอกข้อมูลให้ครบถ้วนครับ', 'warning');
+
+      Swal.fire({ title: '⏳ กำลังบันทึกการแก้ไข...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false });
+
+      try {
+        await gasPost({ action: 'saveAssignment', rowIdx: currentEditingAssignmentRowIdx, title: title, targetClass: targetClass, content: content });
+        Swal.fire({ icon: 'success', title: '✏️ แก้ไขโจทย์เรียบร้อย!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false });
+        
+        document.getElementById('read-title').value = '';
+        document.getElementById('read-synopsis').value = '';
+        document.getElementById('highlight-overlay').innerHTML = '';
+        currentEditingAssignmentRowIdx = null;
+        const editBtn = document.getElementById('btn-read-edit');
+        if (editBtn) editBtn.style.display = 'none';
+
+        loadTeacherAssignmentsListRead();
+      } catch(e) {
+        Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถแก้ไขได้' });
+      }
+    }
+
+    async function deleteTeacherAssignmentRead(rowIdx) {
+      if (!confirm('ยืนยันลบโจทย์รายการนี้ออกจากระบบ?')) return;
       try {
         await gasPost({ action: 'deleteAssignment', rowIdx: rowIdx });
         showToast('ลบโจทย์เรียบร้อย', 'info');
-        loadTeacherAssignmentsPanel();
+        loadTeacherAssignmentsListRead();
       } catch(e) { showToast('ลบล้มเหลว', 'error'); }
     }
 
@@ -3245,87 +3358,89 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       
       Swal.fire({
         title: '🤖 AI กำลังตรวจ...',
-        html: '⏳ กำลังตรวจคำผิด การสะกดคำ และสรุปข้อคิดอย่างละเอียด...',
         background: '#16213e', color: '#e2e8f0', allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
 
-      if (apiKey) {
-        const prompt = `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียนประถม ข้อความเรื่องย่อของนักเรียนคือ:\n"${text}"\n\nโปรดตรวจสอบคำผิดและวิเคราะห์โดยตอบรูปแบบนี้:
-1. ❌ **คำที่สะกดผิด**: (ถ้ามี ระบุคำที่ผิด -> คำที่ถูกต้อง เช่น สังเกตุ ❌ -> สังเกต ✅)
-2. 💡 **คำแนะนำภาษาไทย**: (ข้อคิดเห็นหรือคำชมสั้นๆ 1-2 ประโยค)
-3. ✨ **ข้อความที่แก้ไขถูกต้องสมบูรณ์แล้ว**: (ข้อความเดิมที่ได้รับการแก้ไขสะกดผิดเรียบร้อย)`;
+      let wrongWords = [];
+      let correctionsList = [];
+      let feedback = '';
+      let isAiSuccess = false;
 
+      if (apiKey) {
+        const prompt = `คุณคือครูภาษาไทยผู้เชี่ยวชาญด้านการตรวจคำผิดให้นักเรียน ข้อความเรื่องย่อของนักเรียนคือ:\n"${text}"\n\nโปรดวิเคราะห์คำสะกดผิดภาษาไทยในข้อความดังกล่าว แล้วตอบกลับในรูปแบบ JSON เท่านั้น ห้ามมี Markdown block หรือคำอธิบายเพิ่มเติมภายนอก JSON โดยมีโครงสร้างดังนี้:\n{\n  "wrongWords": ["คำผิดที่พบในข้อความ"],\n  "corrections": ["คำผิด -> คำที่ถูก (เช่น สังเกตุ -> สังเกต)"],\n  "feedback": "คำแนะนำสั้นๆ 1 ประโยค"\n}`;
         const result = await callGeminiAPI(apiKey, prompt);
 
         if (result.success) {
-          const formattedHtml = result.text.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d97706; font-size:1.05em;">$1</b>').replace(/\n/g, '<br>');
-          return Swal.fire({
-            title: '🤖 ผลการวิเคราะห์จาก Gemini AI',
-            html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${formattedHtml}</div>`,
-            width: '80%',
-            background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
-            customClass: { popup: 'light-override-popup' }
-          });
-        } else {
-          if (result.status === 429) {
-            showToast('⚠️ API Key ติดโควต้ารายวัน/ต่อนาที สลับใช้คลังคำในระบบ', 'warning');
-          } else if (result.status === 400 || result.status === 403) {
-            showToast('❌ API Key ไม่ถูกต้อง สลับใช้คลังคำในระบบ', 'error');
-          } else {
-            showToast('⚠️ AI ไม่พร้อมใช้งาน สลับใช้คลังคำในระบบ', 'info');
-          }
-        }
-      }
-
-      // Fallback: ใช้คลังคำผิดภาษาไทยในตัว
-      checkThaiSpellingFallback(text);
-    }
-
-    function checkThaiSpellingFallback(text) {
-      const dict = {
-        "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย",
-        "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต",
-        "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก",
-        "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต", "คำนวน": "คำนวณ", "คลินิค": "คลินิก", "เว็ปไซต์": "เว็บไซต์",
-        "กราฟฟิก": "กราฟิก", "ผัดวัน": "ผลัดวัน", "เกมส์": "เกม", "ไอศครีม": "ไอศกรีม", "กังวลใจ": "กังวล"
-      };
-      let foundMistakes = [];
-      for (const [wrong, correct] of Object.entries(dict)) {
-        if (text.includes(wrong)) {
-          foundMistakes.push(`❌ <b>${wrong}</b> → ✅ <b style="color:#10b981;">${correct}</b>`);
-        }
-      }
-      const apiKeyNote = `<div style="font-size: 0.85em; color: #64748b; margin-top: 10px; border-top: 1px solid #cbd5e1; padding-top: 8px;">💡 สดใหม่! สามารถใส่ Gemini API Key ในหน้า ⚙️ ตั้งค่าระบบ เพื่อใช้งาน AI วิเคราะห์แบบละเอียด 100% ฟรีได้ครับ</div>`;
-      
-      if (foundMistakes.length > 0) {
-        Swal.fire({
-          title: '🔍 ผลตรวจคำผิด (คลังคำในระบบ)',
-          html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 0.95em; line-height: 1.8; border: 1px solid #cbd5e1;">${foundMistakes.join('<br>')}${apiKeyNote}</div>`,
-          width: '95%',
-          background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: '✨ แก้ไขให้อัตโนมัติ', showCancelButton: true, cancelButtonText: 'ปิด', cancelButtonColor: '#64748b',
-          customClass: { popup: 'light-override-popup' }
-        }).then((result) => {
-          if (result.isConfirmed) {
-            let newText = text;
-            for (const [wrong, correct] of Object.entries(dict)) {
-              newText = newText.split(wrong).join(correct);
+          try {
+            let cleanJsonText = result.text.trim();
+            if (cleanJsonText.startsWith('```')) {
+              cleanJsonText = cleanJsonText.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
             }
-            const synopsisEl = document.getElementById('read-synopsis');
-            if (synopsisEl) { synopsisEl.value = newText; updateWordCount(); }
-            Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย!', background: '#ffffff', color: '#0f172a', timer: 1500, showConfirmButton: false, customClass: { popup: 'light-override-popup' } });
+            const data = JSON.parse(cleanJsonText);
+            if (Array.isArray(data.wrongWords)) wrongWords = data.wrongWords;
+            if (Array.isArray(data.corrections)) correctionsList = data.corrections;
+            if (data.feedback) feedback = data.feedback;
+            isAiSuccess = true;
+          } catch(e) {
+            console.error('Failed to parse Gemini JSON', e, result.text);
           }
-        });
-      } else {
-        Swal.fire({
-          icon: 'success',
-          title: 'เยี่ยมมาก!',
-          html: `<div style="color: #0f172a;">ไม่พบคำผิดจากคลังคำพื้นฐานครับ (เขียนได้เก่งมาก!)</div>${apiKeyNote}`,
-          width: '95%',
-          background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981',
-          customClass: { popup: 'light-override-popup' }
-        });
+        }
       }
+
+      // Fallback to local dict dictionary if AI failed
+      if (!isAiSuccess) {
+        const dict = {
+          "นะค่ะ": "นะคะ", "โอกาศ": "โอกาส", "อนุญาติ": "อนุญาต", "สังเกตุ": "สังเกต", "กฏหมาย": "กฎหมาย",
+          "ศรีษะ": "ศีรษะ", "ผูกพันธ์": "ผูกพัน", "อณุญาติ": "อนุญาต", "ลายเซ็นต์": "ลายเซ็น", "อัฟเดต": "อัปเดต",
+          "อัพเดท": "อัปเดต", "อินเตอร์เน็ต": "อินเทอร์เน็ต", "คลิ๊ก": "คลิก", "ไลค์": "ไลก์", "มุขตลก": "มุกตลก",
+          "รสชาด": "รสชาติ", "ซัพพอร์ต": "ซัปพอร์ต", "คำนวน": "คำนวณ", "คลินิค": "คลินิก", "เว็ปไซต์": "เว็บไซต์",
+          "กราฟฟิก": "กราฟิก", "ผัดวัน": "ผลัดวัน", "เกมส์": "เกม", "ไอศครีม": "ไอศกรีม", "กังวลใจ": "กังวล"
+        };
+        for (const [wrong, correct] of Object.entries(dict)) {
+          if (text.includes(wrong)) {
+            wrongWords.push(wrong);
+            correctionsList.push(`${wrong} -> ${correct}`);
+          }
+        }
+        feedback = 'ตรวจเช็คคำสะกดผิดด้วยคลังคำพื้นฐานในระบบสำเร็จ';
+      }
+
+      // Highlight misspelled words with wavy red underline in the textarea highlight overlay
+      const overlay = document.getElementById('highlight-overlay');
+      if (overlay) {
+        if (wrongWords.length > 0) {
+          let escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          const escapedWrong = wrongWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+          const uniqueWrong = [...new Set(escapedWrong)].filter(w => w.length > 0);
+          if (uniqueWrong.length > 0) {
+            const regex = new RegExp(`(${uniqueWrong.join('|')})`, 'g');
+            overlay.innerHTML = escapedText.replace(regex, '<span class="error">$1</span>') + '\n';
+            syncScroll(document.getElementById('read-synopsis'));
+          } else {
+            overlay.innerHTML = escapedText + '\n';
+          }
+        } else {
+          overlay.innerHTML = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + '\n';
+        }
+      }
+
+      let resultHtml = '';
+      if (correctionsList.length > 0) {
+        resultHtml = `<b>❌ พบคำสะกดผิดสะสม:</b><br>` + correctionsList.map(c => `• <span style="color:#ef4444; font-weight:700;">${c}</span>`).join('<br>');
+      } else {
+        resultHtml = `✨ <b style="color:#10b981;">ไม่พบคำสะกดผิด เขียนเก่งมากครับ!</b>`;
+      }
+      resultHtml += `<br><br>💡 <b>คำแนะนำ/คำติชม:</b><br>${feedback}`;
+
+      Swal.fire({
+        title: '🤖 ผลการวิเคราะห์คำสะกดผิด',
+        html: `<div style="text-align: left; background: #f8fafc; color: #0f172a; padding: 20px; border-radius: 14px; font-size: 1em; line-height: 1.8; max-height: 60vh; overflow-y: auto; border: 2px solid #cbd5e1;">${resultHtml}</div>
+               <div style="font-size: 0.88em; color: #64748b; text-align: center; margin-top: 10px;">🔴 คำสะกดผิดจะถูกทำขีดเส้นใต้สีแดงหยักไว้ในแบบฟอร์มด้านหลัง</div>`,
+        width: '80%',
+        background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981', confirmButtonText: 'ตกลง',
+        customClass: { popup: 'light-override-popup' }
+      });
     }
 
     let dictionaryWords = [];
