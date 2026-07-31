@@ -196,7 +196,7 @@ body:not(.dark-mode) textarea,
     .textarea-container { position: relative; width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; margin-bottom: 5px; transition: all 0.3s; }
     .textarea-container:focus-within { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background: rgba(99,102,241,0.06); }
     .highlight-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px !important; font-size: 18px !important; font-family: 'Sarabun', sans-serif; color: transparent; pointer-events: none; z-index: 1; white-space: pre-wrap; word-wrap: break-word; overflow: hidden; line-height: 1.6 !important; }
-    .highlight-overlay span.error { text-decoration: underline wavy #ef4444; text-decoration-thickness: 2px; text-underline-offset: 4px; background: rgba(239,68,68,0.15); border-radius: 4px; }
+    .highlight-overlay span.error { text-decoration: underline wavy #ef4444 !important; text-decoration-thickness: 3px !important; text-underline-offset: 4px !important; background: rgba(239,68,68,0.25) !important; color: #ef4444 !important; font-weight: bold; border-radius: 4px; }
     .font-18-input textarea#read-synopsis { position: relative; z-index: 2; background: transparent !important; border: none !important; box-shadow: none !important; margin-bottom: 0 !important; width: 100%; height: 280px; resize: none; padding: 16px !important; font-size: 18px !important; color: #e2e8f0; line-height: 1.6 !important; }
 
     .date-picker-input { background: rgba(236, 72, 153, 0.1) !important; border: 1px solid rgba(236, 72, 153, 0.4) !important; color: #fbcfe8 !important; cursor: pointer !important; padding-right: 40px !important; margin-bottom: 0 !important; }
@@ -1509,17 +1509,18 @@ body.light-mode .highlight-overlay {
           <label style="margin-bottom: 6px;">เรื่องย่อ / ข้อคิดที่ได้</label>
           <div class="textarea-container">
             <div id="highlight-overlay" class="highlight-overlay"></div>
-            <textarea id="read-synopsis" placeholder="พิมพ์เรื่องย่อที่อ่าน หรือข้อคิดที่ได้รับ..." spellcheck="false" oninput="updateWordCount()" onscroll="syncScroll(this)"></textarea>
+            <textarea id="read-synopsis" placeholder="พิมพ์เรื่องย่อที่อ่าน หรือข้อคิดที่ได้รับ..." spellcheck="false" oninput="syncHighlightOnInput()" onscroll="syncScroll(this)"></textarea>
           </div>
         </div>
 
-        <!-- แถวที่ 4: นับคำ + ปุ่ม AI ตรวจคำผิด (วงกลมเขียว) + ปุ่มส่งบันทึก (วงกลมเหลือง) -->
+        <!-- แถวที่ 4: นับคำ + ปุ่มสแกนคำ (ม่วง) + ปุ่ม AI ตรวจคำผิด (วงกลมเขียว) + ปุ่มส่งบันทึก (วงกลมเหลือง) -->
         <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
           <div style="color: #bae6fd; font-size: 0.95em; font-weight: 700;">
             พิมพ์ไปแล้ว: <span id="word-count-display" style="color: #facc15; font-weight: 800; font-size: 1.1em;">0</span> คำ
           </div>
           
-<div style="display: flex; gap: 12px; align-items: center;">
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button type="button" onclick="scanStudentWords(document.getElementById('read-synopsis').value)" style="padding: 10px 20px; border-radius: 50px; border: none; color: white; background: linear-gradient(135deg, #8b5cf6, #6d28d9); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 16px rgba(139,92,246,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">🔍 สแกนคำ</button>
             <button type="button" onclick="analyzeSpellingWithAI(document.getElementById('read-synopsis').value)" style="padding: 10px 22px; border-radius: 50px; border: none; color: white; background: linear-gradient(135deg, #10b981, #059669); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(16,185,129,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">🤖 AI ตรวจ</button>
             <button id="btn-read-submit" onclick="submitReadingLog()" style="padding: 10px 22px; border-radius: 50px; border: none; color: #1e293b; background: linear-gradient(135deg, #facc15, #f59e0b); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(250,204,21,0.5); transition: 0.2s; white-space: nowrap; height: 45px;">📝 ส่งงาน</button>
           </div>
@@ -3268,6 +3269,106 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       return dictionaryWords;
     }
 
+    let currentScannedMatches = [];
+
+    function syncHighlightOnInput() {
+      updateWordCount();
+      const textarea = document.getElementById('read-synopsis');
+      const overlay = document.getElementById('highlight-overlay');
+      if (!textarea || !overlay) return;
+      const text = textarea.value;
+      if (!text) {
+        overlay.innerHTML = '';
+        return;
+      }
+      if (currentScannedMatches.length > 0) {
+        let escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const wrongList = currentScannedMatches.map(w => w.wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const regex = new RegExp(`(${wrongList.join('|')})`, 'g');
+        overlay.innerHTML = escapedText.replace(regex, '<span class="error">$1</span>') + '\n';
+      }
+    }
+
+    async function scanStudentWords(text) {
+      if (!text || !text.trim()) return showToast('กรุณาพิมพ์เรื่องย่อก่อนสแกนคำครับ', 'warning');
+      
+      Swal.fire({
+        title: '🔍 กำลังสแกนคำผิด...',
+        background: '#ffffff', color: '#0f172a', allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const words = await fetchDictionaryWords();
+      let foundMatches = [];
+      
+      words.forEach(w => {
+        if (w.wrong && text.includes(w.wrong)) {
+          foundMatches.push(w);
+        }
+      });
+
+      currentScannedMatches = foundMatches;
+      const overlay = document.getElementById('highlight-overlay');
+      if (overlay) {
+        if (foundMatches.length > 0) {
+          let escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          const wrongList = foundMatches.map(w => w.wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+          const regex = new RegExp(`(${wrongList.join('|')})`, 'g');
+          overlay.innerHTML = escapedText.replace(regex, '<span class="error">$1</span>') + '\n';
+          syncScroll(document.getElementById('read-synopsis'));
+        } else {
+          overlay.innerHTML = '';
+        }
+      }
+
+      if (foundMatches.length > 0) {
+        let resultListHtml = `<div style="text-align: left; max-height: 40vh; overflow-y: auto; background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+          <h4 style="color: #dc2626; margin: 0 0 10px 0; font-size: 1em; display: flex; align-items: center; gap: 6px;">⚠️ พบคำที่เขียนผิด (${foundMatches.length} คำ):</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 0.95em; color: #7f1d1d; line-height: 1.8;">`;
+        
+        foundMatches.forEach(item => {
+          resultListHtml += `<li><b style="color: #ef4444; text-decoration: line-through;">${item.wrong}</b> ➔ <b style="color: #16a34a;">${item.correct}</b> <span style="color: #64748b; font-size: 0.85em;">(${item.note || 'คำที่ถูกต้อง'})</span></li>`;
+        });
+        resultListHtml += `</ul></div>
+        <div style="font-size: 0.9em; color: #64748b; text-align: center;">🔴 ระบบทำ<b>ขีดเส้นใต้สีแดง</b>ตรงคำผิดในช่องเรื่องย่อแล้วครับ</div>`;
+
+        Swal.fire({
+          title: '🔍 ผลการสแกนคำ',
+          html: resultListHtml,
+          width: '80%',
+          background: '#ffffff', color: '#0f172a',
+          confirmButtonText: '✨ แก้ไขให้อัตโนมัติ',
+          showCancelButton: true,
+          cancelButtonText: 'ปิด',
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#64748b',
+          customClass: { popup: 'light-override-popup' }
+        }).then((res) => {
+          if (res.isConfirmed) {
+            let newText = text;
+            foundMatches.forEach(item => {
+              newText = newText.split(item.wrong).join(item.correct);
+            });
+            const synopsisEl = document.getElementById('read-synopsis');
+            if (synopsisEl) {
+              synopsisEl.value = newText;
+              syncHighlightOnInput();
+              if (overlay) overlay.innerHTML = '';
+            }
+            Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย!', background: '#ffffff', color: '#0f172a', timer: 1500, showConfirmButton: false, customClass: { popup: 'light-override-popup' } });
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'เยี่ยมมาก!',
+          text: 'ไม่พบคำที่เขียนผิดจากคลัง 200 คำในเรื่องย่อนี้ครับ',
+          background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981',
+          customClass: { popup: 'light-override-popup' }
+        });
+      }
+    }
+
     async function openScanExplainModal(title, text) {
       if (!text || text.trim() === '') {
         Swal.fire({ icon: 'warning', title: 'ไม่พบข้อความ', text: 'กรุณาพิมพ์เรื่องย่อก่อนกดสแกนอธิบายครับ', confirmButtonColor: '#0284c7' });
@@ -3439,21 +3540,42 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       });
     }
 
-    function showSynopsisModal(title, text, rowIdx, cls, name, rating, status) {
-      const editBtnHtml = (status === 'กลับไปแก้ไข') ? `
-        <button onclick="Swal.close(); editStudentReadingWithAuth(${rowIdx}, '${cls}', '${name}', '${title.replace(/'/g, "\\'")}', '${text.replace(/'/g, "\\'")}', ${rating});" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">✏️ กลับไปแก้ไข</button>
-      ` : '';
+    function editStudentReadingDirect(rowIdx, cls, name, title, synopsis, rating) {
+      editStudentReading(rowIdx, cls, name, title, synopsis, rating);
+    }
 
+    function teacherApproveWithPassword(rowIdx) {
+      Swal.fire({
+        title: '🔒 ยืนยันตัวตนสำหรับคุณครู',
+        text: 'กรุณากรอกรหัสผ่านเพื่ออนุมัติการตรวจงาน',
+        input: 'password',
+        inputPlaceholder: 'กรอกรหัสผ่านของคุณครู',
+        showCancelButton: true, confirmButtonText: 'อนุมัติงาน', cancelButtonText: 'ยกเลิก',
+        background: '#ffffff', color: '#0f172a', confirmButtonColor: '#10b981',
+        customClass: { popup: 'light-override-popup' },
+        preConfirm: (pwd) => {
+          if (pwd !== '1221') Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง');
+          return pwd === '1221';
+        }
+      }).then((res) => {
+        if (res.isConfirmed) {
+          teacherApproveOnly(rowIdx);
+        }
+      });
+    }
+
+    function showSynopsisModal(title, text, rowIdx, cls, name, rating, status) {
       const safeTitle = (title || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
       const safeText = (text || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      const isApproved = (status === 'ตรวจแล้ว');
 
       Swal.fire({ 
         title: title, 
         html: `
           <div class="modal-content-box" style="text-align: left; max-height: 50vh; overflow-y: auto; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 1em; line-height: 1.8; border: 1.5px solid #cbd5e1; margin-bottom: 16px;">${text}</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button onclick="Swal.close(); setTimeout(()=>openScanExplainModal('${safeTitle}', '${safeText}'),150);" style="padding:10px 20px; background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(139,92,246,0.4);">🔍 สแกนอธิบาย</button>
-            ${editBtnHtml}
+            <button onclick="Swal.close(); editStudentReadingDirect(${rowIdx}, '${cls}', '${name}', '${safeTitle}', '${safeText}', ${rating});" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">✏️ แก้ไข</button>
+            ${!isApproved ? `<button onclick="Swal.close(); teacherApproveWithPassword(${rowIdx});" style="padding:10px 20px; background:linear-gradient(135deg,#0284c7,#0369a1); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(2,132,199,0.4);">🔒 ครูตรวจ</button>` : ''}
             <button onclick="Swal.close();" style="padding:10px 20px; background:#64748b; color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif;">✕ ปิด</button>
           </div>
         `, 
