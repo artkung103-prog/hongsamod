@@ -2209,6 +2209,7 @@ body.light-mode .highlight-overlay {
     
     async function loadModels() { if (modelsLoaded) return; try { const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; await Promise.all([ faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL), faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL), faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL) ]); modelsLoaded = true; } catch (e) { showToast('โหลด AI Model ล้มเหลว', 'error'); } }
     function formatThaiDate(dateString) { if (!dateString) return '-'; try { const d = new Date(dateString); return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); } catch(e) { return dateString; } }
+    function formatThaiDateFull(dateString) { if (!dateString) return '-'; try { const d = new Date(dateString); return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }); } catch(e) { return dateString; } }
   async function getBase64(file) {
 
     return new Promise((resolve, reject) => {
@@ -2478,9 +2479,9 @@ console.log(payload);
       const activeContent = document.getElementById('reading-tab-' + tabIndex);
       if (activeBtn) activeBtn.classList.add('active');
       if (activeContent) activeContent.classList.add('active');
-      if (tabIndex === 1) applyLoggedInUserToForm('read');
-      if (tabIndex === 2) fetchReadingLogs();
-      if (tabIndex === 3) fetchReadingStats();
+      if (tabIndex === 1) { applyLoggedInUserToForm('read'); stopFireworks(); }
+      if (tabIndex === 2) { fetchReadingLogs(); stopFireworks(); }
+      if (tabIndex === 3) { fetchReadingStats(); startFireworks(); }
     }
 
     function switchBorrowTab(tabIndex) { document.querySelectorAll('.tab-borrow .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#page-borrow .tab-content').forEach(content => content.classList.remove('active')); document.getElementById('tab-btn-borrow-' + tabIndex).classList.add('active'); document.getElementById('borrow-tab-' + tabIndex).classList.add('active'); if (tabIndex === 1) { showBorrowForm(); applyLoggedInUserToForm('borrow'); } if (tabIndex === 2) fetchBorrows(); }
@@ -2492,7 +2493,7 @@ console.log(payload);
 
     function showBorrowForm() { 
       const today = new Date();
-      const thaiDate = formatThaiDate(today.toISOString().split('T')[0]);
+      const thaiDate = formatThaiDateFull(today.toISOString().split('T')[0]);
       const rawDate = today.toISOString().split('T')[0]; 
       document.getElementById('borrow-date-display').value = thaiDate; 
       document.getElementById('borrow-date-display').dataset.raw = rawDate; 
@@ -3082,8 +3083,8 @@ console.log(payload);
             </div>
 
             <div style="flex: 1.1; text-align: center; font-size: 0.85em; color: ${labelColor}; display: flex; gap: 14px; justify-content: center; white-space: nowrap; flex-shrink: 0;">
-              <div>ยืม: <b style="color:#0284c7;">${formatThaiDate(item.borrowDate)}</b></div>
-              <div>คืน: <b style="color:#e11d48;">${formatThaiDate(item.returnDate)}</b></div>
+              <div>ยืม: <b style="color:#0284c7;">${formatThaiDateFull(item.borrowDate)}</b></div>
+              <div>คืน: <b style="color:#e11d48;">${formatThaiDateFull(item.returnDate)}</b></div>
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
@@ -3107,8 +3108,8 @@ console.log(payload);
             </div>
 
             <div style="flex: 1.1; text-align: center; font-size: 0.85em; color: ${labelColor}; display: flex; gap: 14px; justify-content: center; white-space: nowrap; flex-shrink: 0;">
-              <div>ยืม: <b style="color:#0284c7;">${formatThaiDate(item.borrowDate)}</b></div>
-              <div>คืน: <b style="color:#e11d48;">${formatThaiDate(item.returnDate)}</b></div>
+              <div>ยืม: <b style="color:#0284c7;">${formatThaiDateFull(item.borrowDate)}</b></div>
+              <div>คืน: <b style="color:#e11d48;">${formatThaiDateFull(item.returnDate)}</b></div>
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
