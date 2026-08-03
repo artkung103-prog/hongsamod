@@ -48,6 +48,10 @@ function setupSystem() {
   getOrCreateSheet('link', ['วันที่เวลา', 'ชื่อลิ้ง', 'url']);
   getOrCreateSheet('dictionary', ['คำที่เขียนผิด', 'คำที่ถูกต้อง', 'หมวดหมู่/หมายเหตุ']);
   getOrCreateSheet('Assignments', ['AssignmentID', 'Title', 'Content', 'TargetClass', 'CreatedAt']);
+  var configSheet = getOrCreateSheet('Config', ['KeyName', 'KeyValue', 'Description']);
+  if (configSheet.getLastRow() <= 1) {
+    configSheet.appendRow(['GAS_API_URL', 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec', 'ลิงก์ระบบหลังบ้าน Web App สำหรับใช้เชื่อมต่อ']);
+  }
   
   // ชีตสำหรับให้คุณครูนำไปดึงสูตรสถิติต่อ
   getOrCreateSheet('sum', ['สถิติ (รอตั้งค่าสูตร)']);

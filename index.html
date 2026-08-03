@@ -1795,11 +1795,27 @@ body.light-mode .highlight-overlay {
     async function fetchSystemConfig() {
       try {
         const cfg = await gasGet('getConfig');
-        if (cfg && cfg.GEMINI_API_KEY) {
-          systemGeminiApiKey = cfg.GEMINI_API_KEY;
-          const inputEl = document.getElementById('gemini-api-key-input');
-          if (inputEl && !inputEl.value) {
-            inputEl.value = systemGeminiApiKey;
+        if (cfg) {
+          if (cfg.GEMINI_API_KEY) {
+            systemGeminiApiKey = cfg.GEMINI_API_KEY;
+            const inputEl = document.getElementById('gemini-api-key-input');
+            if (inputEl && !inputEl.value) {
+              inputEl.value = systemGeminiApiKey;
+            }
+          }
+          if (cfg.GAS_API_URL) {
+            // หากเปิดเป็นไฟล์ในเครื่องคอมพิวเตอร์ (file://) ให้สลับมารับลิงก์ตรงจากชีตทันทีเพื่อไม่ให้เด็กหรือครูต้องกดตั้งค่าทุกเครื่อง
+            if (!window.location.protocol.startsWith('http')) {
+              API_URL = cfg.GAS_API_URL;
+            }
+            // แสดงลิงก์ระบบของ Google Apps Script จริงที่ดึงมาจากชีตในกล่องหน้าตั้งค่า
+            const gasInputEl = document.getElementById('api-url-input');
+            if (gasInputEl) {
+              const savedUrl = localStorage.getItem('gasApiUrl');
+              if (!savedUrl) {
+                gasInputEl.value = cfg.GAS_API_URL;
+              }
+            }
           }
         }
       } catch(e) { console.warn('Could not fetch config from GAS', e); }
