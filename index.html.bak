@@ -1770,7 +1770,9 @@ body.light-mode .highlight-overlay {
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
     // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น (Default)
-    const MY_GAS_URL = 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec';
+    const MY_GAS_URL = (window.location.protocol.startsWith('http')) 
+      ? window.location.origin + '/api' 
+      : 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec';
     
     // 2. ให้ระบบเช็คว่ามีการตั้งค่า URL ใหม่ในหน้า "ตั้งค่าระบบ" หรือไม่ 
     let API_URL = localStorage.getItem('gasApiUrl') || MY_GAS_URL;
@@ -3164,6 +3166,8 @@ console.log(payload);
       Swal.fire({ title: '⏳ กำลังส่งงาน...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); 
       try { 
         await gasPost(payload); 
+        allReadingStatsData = null;
+        allReadingLogs = null;
         Swal.fire({ icon: 'success', title: rowIdx ? 'แก้ไขงานสำเร็จ!' : 'ส่งบันทึกสำเร็จ!', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
         document.getElementById('read-class').value = ''; 
         document.getElementById('read-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; 
@@ -3939,6 +3943,14 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       const statusDiv = document.getElementById('reading-stats-status');
       const gridDiv = document.getElementById('reading-stats-grid');
       if (!statusDiv || !gridDiv) return;
+
+      if (allReadingStatsData) {
+        statusDiv.style.display = 'none';
+        gridDiv.style.display = 'grid';
+        filterReadingStatsTab('all');
+        return;
+      }
+
       statusDiv.style.display = 'flex';
       gridDiv.style.display = 'none';
 
