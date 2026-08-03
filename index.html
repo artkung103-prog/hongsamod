@@ -1774,6 +1774,12 @@ body.light-mode .highlight-overlay {
       ? window.location.origin + '/api' 
       : 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec';
     
+    // เคลียร์ค่าเก่ายกเลิกการชี้ตรงไป Google ในระบบจำเครื่อง เพื่อให้สลับมาใช้ Proxy ผ่าน Cloudflare โดยอัตโนมัติ
+    let savedApiUrl = localStorage.getItem('gasApiUrl');
+    if (savedApiUrl && savedApiUrl.includes('script.google.com')) {
+      localStorage.removeItem('gasApiUrl');
+    }
+    
     // 2. ให้ระบบเช็คว่ามีการตั้งค่า URL ใหม่ในหน้า "ตั้งค่าระบบ" หรือไม่ 
     let API_URL = localStorage.getItem('gasApiUrl') || MY_GAS_URL;
 
