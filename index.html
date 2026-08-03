@@ -1819,25 +1819,50 @@ body.light-mode .highlight-overlay {
       } catch(e) { console.warn('Could not fetch config from GAS', e); }
     }
 
-    // --- CORE FETCH WRAPPERS (ป้องกัน CORS โดยเฉพาะ) ---
-    async function gasGet(action, params = {}) {
+    // --- CORE FETCH WRAPPERS ---
+    async function gasGet(action, params = {}, _retry = 0) {
       if (!API_URL) throw new Error('No API URL');
       let url = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
       url += '?action=' + action;
       for (let k in params) url += `&${k}=${encodeURIComponent(params[k])}`;
       url += '&t=' + Date.now(); // ป้องกัน Cache
-      
-      const res = await fetch(url, { method: 'GET', redirect: 'follow' });
-      if (!res.ok) throw new Error('Network Issue');
-      return await res.json();
+
+      try {
+        const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+        // Retry on 404 (Cloudflare edge not ready) or 5xx (GAS cold start/timeout)
+        if ((res.status === 404 || res.status >= 500) && _retry < 3) {
+          await new Promise(r => setTimeout(r, 1500 * (_retry + 1)));
+          return gasGet(action, params, _retry + 1);
+        }
+        if (!res.ok) throw new Error('Network Issue: ' + res.status);
+        return await res.json();
+      } catch (err) {
+        if (_retry < 3) {
+          await new Promise(r => setTimeout(r, 1500 * (_retry + 1)));
+          return gasGet(action, params, _retry + 1);
+        }
+        throw err;
+      }
     }
 
-    async function gasPost(payload) {
+    async function gasPost(payload, _retry = 0) {
       if (!API_URL) throw new Error('No API URL');
       const url = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
-      const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow' });
-      if (!res.ok) throw new Error('Network Issue');
-      return await res.json();
+      try {
+        const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow' });
+        if ((res.status === 404 || res.status >= 500) && _retry < 2) {
+          await new Promise(r => setTimeout(r, 1500 * (_retry + 1)));
+          return gasPost(payload, _retry + 1);
+        }
+        if (!res.ok) throw new Error('Network Issue: ' + res.status);
+        return await res.json();
+      } catch (err) {
+        if (_retry < 2) {
+          await new Promise(r => setTimeout(r, 1500 * (_retry + 1)));
+          return gasPost(payload, _retry + 1);
+        }
+        throw err;
+      }
     }
 
     // --- UI LOGIN STATE ---
