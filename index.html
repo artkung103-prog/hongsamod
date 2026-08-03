@@ -1807,15 +1807,13 @@ body.light-mode .highlight-overlay {
             // หากเปิดเป็นไฟล์ในเครื่องคอมพิวเตอร์ (file://) ให้สลับมารับลิงก์ตรงจากชีตทันทีเพื่อไม่ให้เด็กหรือครูต้องกดตั้งค่าทุกเครื่อง
             if (!window.location.protocol.startsWith('http')) {
               API_URL = cfg.GAS_API_URL;
-            }
-            // แสดงลิงก์ระบบของ Google Apps Script จริงที่ดึงมาจากชีตในกล่องหน้าตั้งค่า
-            const gasInputEl = document.getElementById('api-url-input');
-            if (gasInputEl) {
-              const savedUrl = localStorage.getItem('gasApiUrl');
-              if (!savedUrl) {
+              // บนไฟล์ปิดในเครื่องให้แสดง GAS URL ตรงในกล่องตั้งค่า
+              const gasInputEl = document.getElementById('api-url-input');
+              if (gasInputEl && !localStorage.getItem('gasApiUrl')) {
                 gasInputEl.value = cfg.GAS_API_URL;
               }
             }
+            // บน Cloudflare (http/https) ไม่ต้องเปลี่ยน input field เพราะ API_URL = /api อยู่แล้ว
           }
         }
       } catch(e) { console.warn('Could not fetch config from GAS', e); }
@@ -4535,7 +4533,9 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     
     function saveConfig() { 
       const url = document.getElementById('api-url-input').value.trim(); 
-      if (!url.includes('/exec')) return Swal.fire('URL ไม่ถูกต้อง', 'ต้องเป็น URL ที่ลงท้ายด้วย /exec', 'warning');
+      const isValidGasUrl = url.includes('/exec');
+      const isValidProxyUrl = url.includes('/api');
+      if (!isValidGasUrl && !isValidProxyUrl) return Swal.fire('URL ไม่ถูกต้อง', 'ต้องเป็น URL ที่ลงท้ายด้วย /exec (Google Apps Script) หรือ /api (Cloudflare Proxy)', 'warning');
       localStorage.setItem('gasApiUrl', url); API_URL = url; 
       Swal.fire({ title: '⏳ กำลังทดสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       loadDashboardData().then(() => {
