@@ -218,6 +218,17 @@ body:not(.dark-mode) textarea,
     .btn-glow-green:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(16, 185, 129, 0.95) !important; }
     .btn-glow-red { background: linear-gradient(135deg, #ef4444, #dc2626) !important; color: white !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.7) !important; transition: all 0.3s ease !important; }
     .btn-glow-red:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(239, 68, 68, 0.95) !important; }
+    @keyframes trash-wiggle {
+      0% { transform: rotate(0deg); }
+      20% { transform: rotate(-12deg); }
+      40% { transform: rotate(12deg); }
+      60% { transform: rotate(-10deg); }
+      80% { transform: rotate(10deg); }
+      100% { transform: rotate(0deg); }
+    }
+    .btn-glow-red:hover svg {
+      animation: trash-wiggle 0.5s ease-in-out infinite;
+    }
     .btn-action:disabled { background: rgba(255,255,255,0.1); color: #64748b; cursor: not-allowed; box-shadow: none; transform: none;}
 
     .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
@@ -2177,7 +2188,7 @@ body.light-mode .highlight-overlay {
       if (pageId === 'reading') switchReadingTab(1); 
       if (pageId === 'homework') switchHomeworkTab(1); 
       if (pageId === 'links') switchLinkTab(1); 
-      if (pageId === 'studentdata') switchDataTab(1);
+      if (pageId === 'studentdata') switchDataTab(2);
     }
 
     // --- TOOLS ---
@@ -2280,7 +2291,7 @@ body.light-mode .highlight-overlay {
     }
     function renderLinks() { 
       const listDiv = document.getElementById('links-list'); if (allLinks.length === 0) { listDiv.innerHTML = '<div class="stats-card c-empty">ยังไม่มีลิงก์ในระบบ</div>'; return; } 
-      let html = ''; allLinks.forEach(item => { html += `<div class="stats-card" style="border-left: 4px solid #10b981; display: flex; justify-content: space-between; align-items: center; padding: 15px;"><div style="flex: 1; overflow: hidden; margin-right: 10px;"><a href="${item.url}" target="_blank" class="c-link-title">🔗 ${item.title || 'ไปที่เว็บไซต์'}</a></div><button onclick="deleteLink(${item.rowIdx})" class="btn-glow-red" style="width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;">🗑️</button></div>`; }); listDiv.innerHTML = html; 
+      let html = ''; allLinks.forEach(item => { html += `<div class="dash-card stats-card neon-card card-green" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-radius: 14px; margin-bottom: 12px; transform: none; min-height: auto;"><div style="flex: 1; overflow: hidden; margin-right: 10px; text-align: left;"><a href="${item.url}" target="_blank" class="c-link-title" style="font-weight: 800; font-size: 1.05em; color: #10b981; text-decoration: none; display: flex; align-items: center; gap: 8px;"><span>🔗</span> <span>${item.title || 'ไปที่เว็บไซต์'}</span></a></div><button onclick="deleteLink(${item.rowIdx})" class="btn-glow-red" style="width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;" title="ลบลิงก์"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></div>`; }); listDiv.innerHTML = html; 
     }
     async function submitLink() { 
       const title = document.getElementById('link-title').value.trim(), url = document.getElementById('link-url').value.trim(); if (!url) return showToast('กรุณากรอก URL', 'warning'); let finalUrl = url; if (!/^https?:\/\//i.test(finalUrl)) finalUrl = 'http://' + finalUrl; 
