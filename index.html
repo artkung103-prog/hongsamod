@@ -214,6 +214,10 @@ body:not(.dark-mode) textarea,
     .btn-info:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(56,189,248,0.5); }
     .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
     .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-glow-green { background: linear-gradient(135deg, #10b981, #059669) !important; color: white !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.7) !important; transition: all 0.3s ease !important; }
+    .btn-glow-green:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(16, 185, 129, 0.95) !important; }
+    .btn-glow-red { background: linear-gradient(135deg, #ef4444, #dc2626) !important; color: white !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.7) !important; transition: all 0.3s ease !important; }
+    .btn-glow-red:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(239, 68, 68, 0.95) !important; }
     .btn-action:disabled { background: rgba(255,255,255,0.1); color: #64748b; cursor: not-allowed; box-shadow: none; transform: none;}
 
     .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
@@ -1292,7 +1296,7 @@ body.light-mode .highlight-overlay {
       <div class="form-section full-width font-18-input">
         <label>ชื่อเว็บ / รายละเอียด</label><input type="text" id="link-title" placeholder="เช่น เว็บรวมใบงานคณิตศาสตร์">
         <label>URL (ลิงก์)</label><input type="url" id="link-url" placeholder="https://...">
-        <button class="btn-action btn-primary" onclick="submitLink()" style="background: linear-gradient(135deg, #10b981, #047857); margin-bottom: 0;">➕ เพิ่มลิงก์</button>
+        <button class="btn-action btn-glow-green" onclick="submitLink()" style="margin-bottom: 0;">➕ เพิ่มลิงก์</button>
       </div>
     </div>
   </div>
@@ -2276,7 +2280,7 @@ body.light-mode .highlight-overlay {
     }
     function renderLinks() { 
       const listDiv = document.getElementById('links-list'); if (allLinks.length === 0) { listDiv.innerHTML = '<div class="stats-card c-empty">ยังไม่มีลิงก์ในระบบ</div>'; return; } 
-      let html = ''; allLinks.forEach(item => { html += `<div class="stats-card" style="border-left: 4px solid #10b981; display: flex; justify-content: space-between; align-items: center; padding: 15px;"><div style="flex: 1; overflow: hidden; margin-right: 10px;"><a href="${item.url}" target="_blank" class="c-link-title">🔗 ${item.title || 'ไปที่เว็บไซต์'}</a></div><button onclick="deleteLink(${item.rowIdx})" class="btn-c-del" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex: none;">🗑️</button></div>`; }); listDiv.innerHTML = html; 
+      let html = ''; allLinks.forEach(item => { html += `<div class="stats-card" style="border-left: 4px solid #10b981; display: flex; justify-content: space-between; align-items: center; padding: 15px;"><div style="flex: 1; overflow: hidden; margin-right: 10px;"><a href="${item.url}" target="_blank" class="c-link-title">🔗 ${item.title || 'ไปที่เว็บไซต์'}</a></div><button onclick="deleteLink(${item.rowIdx})" class="btn-glow-red" style="width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;">🗑️</button></div>`; }); listDiv.innerHTML = html; 
     }
     async function submitLink() { 
       const title = document.getElementById('link-title').value.trim(), url = document.getElementById('link-url').value.trim(); if (!url) return showToast('กรุณากรอก URL', 'warning'); let finalUrl = url; if (!/^https?:\/\//i.test(finalUrl)) finalUrl = 'http://' + finalUrl; 

@@ -558,7 +558,10 @@ function addLink(p) {
 }
 
 function deleteLink(p) { 
-  getOrCreateSheet('link').getRange(parseInt(p.rowIdx), 1, 1, 3).clearContent(); 
+  var sheet = getOrCreateSheet('link');
+  if (p.rowIdx && parseInt(p.rowIdx) > 1) {
+    sheet.deleteRow(parseInt(p.rowIdx));
+  }
 }
 
 // --- Dictionary (คลังคำมักเขียนผิด 200 คำ) ---
