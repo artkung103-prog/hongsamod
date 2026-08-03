@@ -1,6 +1,10 @@
 .agents/
 .git/
 .system_generated/
+.wrangler/
+_worker.js
+_worker.js.bak
+wrangler.jsonc
 *.md
 *.txt
 .clasp.json
