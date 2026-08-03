@@ -1,6 +1,9 @@
 .agents
 .git
 .system_generated
+.wrangler
+_worker.js
+wrangler.jsonc
 *.md
 *.txt
 .clasp.json
