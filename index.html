@@ -1880,10 +1880,20 @@ body.light-mode .highlight-overlay {
       return allStudentsCache;
     }
 
-    // ดึงรายชื่อจาก cache แทน fetch ใหม่ทุกครั้ง
+    // ดึงรายชื่อจาก cache แทน fetch ใหม่ทุกครั้ง (มีระบบสำรองดึงสดหากแคชไม่ทำงาน)
     async function getStudentsFromCache(cls) {
       const cache = await preloadAllStudents();
-      return (cache && cache[cls]) ? cache[cls] : [];
+      if (cache && cache[cls] && cache[cls].length > 0) {
+        return cache[cls];
+      }
+      // สำรอง (Fallback): หากดึงจากแคชแล้วว่างเปล่า ให้เรียกดึงสดจาก GAS ทันที
+      console.warn('Cache empty or failed for class, falling back to direct fetch:', cls);
+      try {
+        return await gasGet('getStudents', { class: cls });
+      } catch (err) {
+        console.error('Fallback fetch failed:', err);
+        return [];
+      }
     }
 
     // --- UI LOGIN STATE ---

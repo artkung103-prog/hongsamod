@@ -70,7 +70,19 @@ export default {
       }
     }
 
-    // Serve static assets
-    return env.ASSETS.fetch(request);
+    // Serve static assets with no-cache headers for HTML files to prevent stale caching
+    const response = await env.ASSETS.fetch(request);
+    const newHeaders = new Headers(response.headers);
+    
+    // หากเป็นหน้าหลัก หรือไฟล์ HTML ให้บังคับให้เบราว์เซอร์ตรวจสอบไฟล์ใหม่เสมอ (no-cache)
+    if (url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname === '') {
+      newHeaders.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    });
   },
 };
