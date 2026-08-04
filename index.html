@@ -1772,12 +1772,18 @@ body.light-mode .highlight-overlay {
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น — ใช้ MY_GAS_URL เสมอเพื่อให้แน่ใจว่าชี้ Deployment ล่าสุด
-    const MY_GAS_URL = 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec';
+    // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น (Default) - สลับตามสถานะการรัน (Cloudflare Proxy หรือ Direct GAS Link)
+    const MY_GAS_URL = (window.location.protocol.startsWith('http')) 
+      ? window.location.origin + '/api' 
+      : 'https://script.google.com/macros/s/AKfycbxbhikalZXE6zvqHzKUNY_RikNsCBkDo0aV5Y0XmmnoGswVMpWh_Dk9xwdMJ6QL-vy3jw/exec';
     
-    // 2. Force update localStorage ให้ชี้ URL ใหม่เสมอ (ป้องกัน URL เก่าค้างใน localStorage บล็อกการทำงาน)
-    localStorage.setItem('gasApiUrl', MY_GAS_URL);
-    let API_URL = MY_GAS_URL;
+    // 2. ให้ระบบเช็คและเคลียร์ค่าเก่าที่หมดอายุหรือชี้ไปที่ deployment เดิมออกจาก localStorage
+    const savedUrl = localStorage.getItem('gasApiUrl');
+    if (savedUrl && !savedUrl.includes('/api') && !savedUrl.includes('AKfycbxbhikalZXE6zvqHzKUNY_RikNsCBkDo0aV5Y0XmmnoGswVMpWh_Dk9xwdMJ6QL-vy3jw')) {
+      localStorage.removeItem('gasApiUrl');
+    }
+
+    let API_URL = localStorage.getItem('gasApiUrl') || MY_GAS_URL;
 
     const MATCH_THRESHOLD = 0.45;
     let knownFaces = [], modelsLoaded = false, streamActive = null, scanInterval = null;

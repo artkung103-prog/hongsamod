@@ -17,7 +17,7 @@ export default {
 
     // Check if it is an API request
     if (url.pathname === '/api') {
-      const GAS_URL = 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec';
+      const GAS_URL = 'https://script.google.com/macros/s/AKfycbxbhikalZXE6zvqHzKUNY_RikNsCBkDo0aV5Y0XmmnoGswVMpWh_Dk9xwdMJ6QL-vy3jw/exec';
 
       const targetUrl = new URL(GAS_URL);
       url.searchParams.forEach((value, key) => {
