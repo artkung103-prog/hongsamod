@@ -268,8 +268,50 @@ function logAttendance(p) {
   var d = new Date();
   var dateStr = Utilities.formatDate(d, "Asia/Bangkok", "dd/MM/yyyy");
   var timeStr = Utilities.formatDate(d, "Asia/Bangkok", "HH:mm:ss");
+  
+  // ป้องกันการลงชื่อซ้ำภายใน 60 นาที ในระดับ Server-side
+  var data = sheet.getDataRange().getValues();
+  if (data.length > 1) {
+    var nowMs = d.getTime();
+    var oneHourMs = 60 * 60 * 1000;
+    for (var i = data.length - 1; i >= 1; i--) {
+      var rowName = data[i][0];
+      var rowDate = data[i][2];
+      var rowTime = data[i][3];
+      if (rowName === p.name) {
+        var formattedDate = rowDate instanceof Date ? Utilities.formatDate(rowDate, "Asia/Bangkok", "dd/MM/yyyy") : String(rowDate);
+        if (formattedDate === dateStr) {
+          var formattedTime = rowTime instanceof Date ? Utilities.formatDate(rowTime, "Asia/Bangkok", "HH:mm:ss") : String(rowTime);
+          var rowTimestamp = parseAttendanceTime(formattedDate, formattedTime);
+          if (rowTimestamp && (nowMs - rowTimestamp.getTime() < oneHourMs)) {
+            return { status: "success", message: "มีการลงชื่อซ้ำภายใน 1 ชั่วโมงแล้ว" };
+          }
+        }
+      }
+    }
+  }
+
   // Attendance: A=ชื่อ, B=ชั้น, C=วันที่, D=เวลา
   sheet.appendRow([p.name, p.className, dateStr, timeStr]);
+  return { status: "success", message: "บันทึกสำเร็จ" };
+}
+
+function parseAttendanceTime(dStr, tStr) {
+  try {
+    var dp = dStr.split('/');
+    var tp = tStr.split(':');
+    if (dp.length === 3 && tp.length >= 2) {
+      return new Date(
+        parseInt(dp[2], 10),
+        parseInt(dp[1], 10) - 1,
+        parseInt(dp[0], 10),
+        parseInt(tp[0], 10),
+        parseInt(tp[1], 10),
+        tp[2] ? parseInt(tp[2], 10) : 0
+      );
+    }
+  } catch (e) {}
+  return null;
 }
 
 function getStats() {

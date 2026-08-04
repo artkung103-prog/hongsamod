@@ -1999,11 +1999,12 @@ body.light-mode .highlight-overlay {
       }
     }
 
-    function submitSwalStudentLogin() {
+    async function submitSwalStudentLogin() {
       const cls = document.getElementById('swal-student-class').value;
       const name = document.getElementById('swal-student-name').value;
       if (!cls || !name) return showToast('กรุณาเลือกชั้นและชื่อนักเรียน', 'warning');
       
+      await recordAttendanceWithCooldown(name, cls, true);
       loginStudent(name, cls, false);
     }
 
@@ -4370,40 +4371,42 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       }, 600); 
     }
     
-    async function handleSuccessfulScan(name, cls) { 
-      const now = Date.now(), oneHour = 60 * 60 * 1000; 
-      for(let key in recentScans) { if(now - recentScans[key] > oneHour) delete recentScans[key]; } 
-      
-      if (recentScans[name] && (now - recentScans[name] < oneHour)) {
-        Swal.fire({
-          icon: 'info',
-          title: '✅ สแกนแล้ว',
-          text: `${name} เข้าสู่ระบบไปแล้ว\n(ป้องกันการบันทึกซ้ำใน 1 ชั่วโมง)`,
-          timer: 2000,
-          showConfirmButton: false,
-          background: document.body.classList.contains('light-mode') ? '#fff' : '#16213e',
-          color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0'
-        });
-
-        if(currentScanMode === 'login') {
-          stopScanning();
-          loginStudent(name, cls); 
-        }
-        return; 
+    async function recordAttendanceWithCooldown(name, cls, showModalIfCooldown = true) {
+      const now = Date.now(), oneHour = 60 * 60 * 1000;
+      for (let key in recentScans) {
+        if (now - recentScans[key] > oneHour) delete recentScans[key];
       }
-      
-      showToast(`⏳ กำลังบันทึก ${name}...`, 'info'); 
-      recentScans[name] = now; localStorage.setItem('recentScans', JSON.stringify(recentScans)); 
-      
-      try { 
-        await gasPost({ action: 'logAttendance', name: name, className: cls }); 
-        
-        if (currentScanMode === 'login') {
-          showToast(`✅ บันทึกเข้า Attendance สำเร็จ!`, 'success'); 
-          stopScanning();
-          loginStudent(name, cls); 
-        } else {
-          // โหมดต่อเนื่อง ให้สแกนต่อได้เลย
+      localStorage.setItem('recentScans', JSON.stringify(recentScans));
+
+      if (recentScans[name] && (now - recentScans[name] < oneHour)) {
+        if (showModalIfCooldown) {
+          showToast(`ℹ️ ${name} เข้าระบบแล้ว (ข้ามบันทึกซ้ำใน 1 ชม.)`, 'info');
+        }
+        return { isRecorded: false, isCooldown: true };
+      }
+
+      showToast(`⏳ กำลังบันทึก ${name} ลงชีต...`, 'info');
+
+      try {
+        const res = await gasPost({ action: 'logAttendance', name: name, className: cls });
+        recentScans[name] = now;
+        localStorage.setItem('recentScans', JSON.stringify(recentScans));
+        showToast(`✅ บันทึกเข้า Attendance สำเร็จ!`, 'success');
+        return { isRecorded: true, isCooldown: false, res: res };
+      } catch (e) {
+        showToast(`❌ บันทึก ${name} ไม่สำเร็จ`, 'error');
+        return { isRecorded: false, isCooldown: false, error: e };
+      }
+    }
+
+    async function handleSuccessfulScan(name, cls) { 
+      const res = await recordAttendanceWithCooldown(name, cls, true);
+      if (currentScanMode === 'login') {
+        stopScanning();
+        loginStudent(name, cls); 
+      } else {
+        // โหมดต่อเนื่อง
+        if (res.isRecorded) {
           Swal.fire({
             icon: 'success',
             title: '✅ เช็คชื่อสำเร็จ',
@@ -4413,10 +4416,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
             backdrop: `rgba(16,185,129,0.2)`
           });
         }
-      } catch (e) { 
-        showToast(`❌ บันทึก ${name} ไม่สำเร็จ`, 'error'); 
-        delete recentScans[name]; 
-      } 
+      }
     }
 
     // --- MANUAL LOGIN ---
@@ -4433,29 +4433,10 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     async function submitManualLogin() { 
       const name = document.getElementById('manual-name').value, cls = document.getElementById('manual-class').value, btn = document.getElementById('btn-manual-submit'); 
       if (!name) return; 
-      const now = Date.now(), oneHour = 60 * 60 * 1000; 
-      for(let key in recentScans) { if(now - recentScans[key] > oneHour) delete recentScans[key]; } 
-      localStorage.setItem('recentScans', JSON.stringify(recentScans)); 
       
-      if (recentScans[name] && (now - recentScans[name] < oneHour)) {
-        Swal.fire({
-          icon: 'info',
-          title: '✅ เข้าสู่ระบบแล้ว',
-          text: `${name} ทำรายการไปแล้ว\n(ป้องกันการบันทึกซ้ำใน 1 ชั่วโมง)`,
-          timer: 2000,
-          showConfirmButton: false,
-          background: document.body.classList.contains('light-mode') ? '#fff' : '#16213e',
-          color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0'
-        });
-        loginStudent(name, cls);
-        document.getElementById('manual-class').value = ''; document.getElementById('manual-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('manual-name').disabled = true; return;
-      }
-
       btn.disabled = true; const originalText = btn.innerHTML; btn.innerHTML = '⏳ กำลังบันทึก...'; 
       try { 
-        await gasPost({ action: 'logAttendance', name: name, className: cls }); 
-        recentScans[name] = now; localStorage.setItem('recentScans', JSON.stringify(recentScans)); 
-        showToast(`✅ บันทึกเข้า Attendance สำเร็จ!`, 'success'); 
+        await recordAttendanceWithCooldown(name, cls, true);
         loginStudent(name, cls); 
         document.getElementById('manual-class').value = ''; document.getElementById('manual-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('manual-name').disabled = true; 
       } catch (e) { showToast(`❌ บันทึกไม่สำเร็จ`, 'error'); } finally { btn.innerHTML = originalText; btn.disabled = false; } 
