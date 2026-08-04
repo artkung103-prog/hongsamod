@@ -79,6 +79,7 @@ function doGet(e) {
     if (action === 'getDashboardSummary') data = getDashboardSummary();
     else if (action === 'getConfig') data = getConfig();
     else if (action === 'getStudents') data = getStudents(e.parameter.class);
+    else if (action === 'getAllStudents') data = getAllStudents();
     else if (action === 'getKnownFaces') data = getKnownFaces();
     else if (action === 'getStats') data = getStats();
     else if (action === 'getStudentData') data = getStudentData();
@@ -374,6 +375,20 @@ function getStudents(className) {
     }
   }
   return names;
+}
+
+// ดึงรายชื่อนักเรียนทุกชั้นในครั้งเดียว (เพื่อ cache ฝั่ง Frontend)
+function getAllStudents() {
+  var data = getOrCreateSheet('students').getDataRange().getValues();
+  var result = {};
+  for (var i = 1; i < data.length; i++) {
+    var cls = data[i][0], name = data[i][1];
+    if (cls && name) {
+      if (!result[cls]) result[cls] = [];
+      result[cls].push(name);
+    }
+  }
+  return result;
 }
 
 // --- Data (ทำเนียบนักเรียน) ---

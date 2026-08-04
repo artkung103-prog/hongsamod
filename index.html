@@ -1772,11 +1772,12 @@ body.light-mode .highlight-overlay {
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น (Default) — ดึงตรงจาก Google Apps Script เพื่อความเร็วสูงสุด
+    // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น — ใช้ MY_GAS_URL เสมอเพื่อให้แน่ใจว่าชี้ Deployment ล่าสุด
     const MY_GAS_URL = 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec';
     
-    // 2. ให้ระบบเช็คว่ามีการตั้งค่า URL ใหม่ในหน้า "ตั้งค่าระบบ" หรือไม่ 
-    let API_URL = localStorage.getItem('gasApiUrl') || MY_GAS_URL;
+    // 2. Force update localStorage ให้ชี้ URL ใหม่เสมอ (ป้องกัน URL เก่าค้างใน localStorage บล็อกการทำงาน)
+    localStorage.setItem('gasApiUrl', MY_GAS_URL);
+    let API_URL = MY_GAS_URL;
 
     const MATCH_THRESHOLD = 0.45;
     let knownFaces = [], modelsLoaded = false, streamActive = null, scanInterval = null;
@@ -1786,6 +1787,8 @@ body.light-mode .highlight-overlay {
     let currentLoggedInUser = null;
     let currentScanMode = 'login'; // 'login' หรือ 'continuous'
     let systemGeminiApiKey = '';
+    // แคชรายชื่อนักเรียนทุกชั้น (โครงสร้าง: { 'ป.1': [...], 'ป.2': [...], ... })
+    let allStudentsCache = null;
 
     async function fetchSystemConfig() {
       try {
@@ -1857,6 +1860,24 @@ body.light-mode .highlight-overlay {
         }
         throw err;
       }
+    }
+
+    // โหลดรายชื่อทุกชั้นในครั้งเดียว และเก็บไว้ใน cache
+    async function preloadAllStudents(forceRefresh = false) {
+      if (allStudentsCache && !forceRefresh) return allStudentsCache;
+      try {
+        allStudentsCache = await gasGet('getAllStudents');
+      } catch(e) {
+        allStudentsCache = {};
+        console.warn('preloadAllStudents failed:', e);
+      }
+      return allStudentsCache;
+    }
+
+    // ดึงรายชื่อจาก cache แทน fetch ใหม่ทุกครั้ง
+    async function getStudentsFromCache(cls) {
+      const cache = await preloadAllStudents();
+      return (cache && cache[cls]) ? cache[cls] : [];
     }
 
     // --- UI LOGIN STATE ---
@@ -1975,7 +1996,7 @@ body.light-mode .highlight-overlay {
       const nameSelect = document.getElementById('swal-student-name');
       if (!nameSelect) return;
       
-      nameSelect.innerHTML = '<option value="">⏳ กำลังดาวน์โหลดรายชื่อ...</option>';
+      nameSelect.innerHTML = '<option value="">✅ กำลังโหลดรายชื่อจากแคช...</option>';
       nameSelect.disabled = true;
       if (!cls) {
         nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>';
@@ -1983,7 +2004,7 @@ body.light-mode .highlight-overlay {
       }
       
       try {
-        const students = await gasGet('getStudents', { class: cls });
+        const students = await getStudentsFromCache(cls);
         if (Array.isArray(students) && students.length > 0) {
           nameSelect.innerHTML = '<option value="">-- เลือกชื่อนักเรียน --</option>';
           students.forEach(s => {
@@ -2102,6 +2123,7 @@ body.light-mode .highlight-overlay {
       if (API_URL) {
         loadDashboardData();
         fetchSystemConfig();
+        preloadAllStudents(); // โหลดรายชื่อนักเรียนทั้งหมดล่วงหน้า เพื่อให้ dropdown ทุกจุดเร็วทันที
       } else {
         document.getElementById('apiWarning').style.display = 'block';
       }
@@ -2353,7 +2375,7 @@ body.light-mode .highlight-overlay {
       nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; 
       if (!cls) return; overlay.style.display = 'flex'; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
+        const students = await getStudentsFromCache(cls); 
         if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } 
       } catch (e) { showToast('ดึงรายชื่อล้มเหลว', 'error'); } 
       overlay.style.display = 'none'; 
@@ -2413,7 +2435,7 @@ console.log(payload);
     async function editDataForm(rowIdx, cls, name, gender, dob, nick, phone, photoId) { 
       switchDataTab(1); document.getElementById('data-row-idx').value = rowIdx; document.getElementById('data-old-photo').value = photoId; const overlay = document.getElementById('data-loading'); overlay.style.display = 'flex'; document.getElementById('data-class').value = cls; const nameSelect = document.getElementById('data-name'); nameSelect.innerHTML = '<option value="">⏳ โหลด...</option>'; nameSelect.disabled = true; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
+        const students = await getStudentsFromCache(cls); 
         nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; if(Array.isArray(students)) { students.forEach(s => { const isSel = (s === name) ? 'selected' : ''; nameSelect.innerHTML += `<option value="${s}" ${isSel}>${s}</option>`; }); nameSelect.disabled = false; } 
       } catch(e) {} 
       overlay.style.display = 'none'; document.getElementById('data-gender').value = gender; if(dob && dob !== '-') { const dObj = new Date(dob); if(!isNaN(dObj.getTime())) { document.getElementById('data-dob-year').value = (dObj.getFullYear() + 543).toString(); document.getElementById('data-dob-month').value = (dObj.getMonth() + 1).toString().padStart(2, '0'); document.getElementById('data-dob-day').value = dObj.getDate().toString().padStart(2, '0'); } } else { document.getElementById('data-dob-day').value = ''; document.getElementById('data-dob-month').value = ''; document.getElementById('data-dob-year').value = ''; } document.getElementById('data-nickname').value = nick; document.getElementById('data-phone').value = phone; document.getElementById('btn-data-submit').innerHTML = '💾 บันทึกการแก้ไข'; document.getElementById('data-photo-preview').style.display = 'block'; 
@@ -2426,7 +2448,7 @@ console.log(payload);
       const cls = document.getElementById('hw-class').value; const name1 = document.getElementById('hw-name-1'); const name2 = document.getElementById('hw-name-2'); const overlay = document.getElementById('hw-loading'); name1.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; name2.innerHTML = '<option value="">-- ทำคนเดียวไม่ต้องเลือก --</option>'; name1.disabled = true; name2.disabled = true; 
       if (!cls) return; overlay.style.display = 'flex'; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
+        const students = await getStudentsFromCache(cls); 
         if(!Array.isArray(students) || students.length === 0) { name1.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; } else { students.forEach(s => { name1.innerHTML += `<option value="${s}">${s}</option>`; name2.innerHTML += `<option value="${s}">${s}</option>`; }); name1.disabled = false; name2.disabled = false; } 
       } catch (e) { showToast('ดึงรายชื่อล้มเหลว', 'error'); } 
       overlay.style.display = 'none'; 
@@ -2573,11 +2595,11 @@ console.log(payload);
     }
     async function fetchStudentsForBorrow() { 
       const cls = document.getElementById('borrow-class').value, nameSelect = document.getElementById('borrow-name'); nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; 
-      if (!cls) return; Swal.fire({ title: '⏳ กำลังโหลดรายชื่อ...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false, allowOutsideClick: false }); 
+      if (!cls) return; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
-        if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } Swal.close(); 
-      } catch (e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถดึงรายชื่อได้' }); } 
+        const students = await getStudentsFromCache(cls); 
+        if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } 
+      } catch (e) { showToast('ดึงรายชื่อล้มเหลว', 'error'); } 
     }
     async function submitBorrow() { const cls = document.getElementById('borrow-class').value, name = document.getElementById('borrow-name').value, bookName = document.getElementById('borrow-book-name').value.trim(), borrowDateRaw = document.getElementById('borrow-date-display').dataset.raw, returnDateRaw = document.getElementById('borrow-return-date').value; if (!cls || !name || !bookName || !returnDateRaw) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning'); Swal.fire({ title: '⏳ กำลังบันทึก...', background: '#16213e', color: '#e2e8f0', showConfirmButton: false }); try { await gasPost({ action: 'addBorrow', className: cls, name: name, bookName: bookName, borrowDate: borrowDateRaw, returnDate: returnDateRaw }); Swal.fire({ icon: 'success', title: 'ยืมหนังสือสำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); document.getElementById('borrow-class').value = ''; document.getElementById('borrow-name').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('borrow-name').disabled = true; document.getElementById('borrow-book-name').value = ''; setTimeout(() => switchBorrowTab(2), 1000); } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถบันทึกได้' }); } }
     async function fetchStudentsForReading() { 
@@ -2590,7 +2612,7 @@ console.log(payload);
       if (!cls) return; 
       overlay.style.display = 'flex'; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
+        const students = await getStudentsFromCache(cls); 
         if(!Array.isArray(students) || students.length === 0) { 
           nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; 
         } else { 
@@ -3184,7 +3206,7 @@ console.log(payload);
     async function editStudentReading(rowIdx, cls, name, title, synopsis, rating) { 
       switchReadingTab(1); const overlay = document.getElementById('reading-loading'); overlay.style.display = 'flex'; document.getElementById('read-class').value = cls; const nameSelect = document.getElementById('read-name'); nameSelect.innerHTML = '<option value="">⏳ โหลดรายชื่อ...</option>'; nameSelect.disabled = true; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
+        const students = await getStudentsFromCache(cls); 
         nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; if(Array.isArray(students)) { students.forEach(s => { const isSelected = (s === name) ? 'selected' : ''; nameSelect.innerHTML += `<option value="${s}" ${isSelected}>${s}</option>`; }); nameSelect.disabled = false; } 
       } catch(e) {} 
       try {
@@ -4424,7 +4446,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       const cls = document.getElementById('manual-class').value; const nameSelect = document.getElementById('manual-name'); const btn = document.getElementById('btn-manual-submit'); const overlay = document.getElementById('manual-loading'); nameSelect.innerHTML = '<option value="">-- กรุณาเลือกชื่อ --</option>'; nameSelect.disabled = true; btn.disabled = true; 
       if (!cls) return; overlay.style.display = 'flex'; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
+        const students = await getStudentsFromCache(cls); 
         if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; nameSelect.onchange = () => { btn.disabled = !nameSelect.value; }; } 
       } catch (e) { showToast('ดึงรายชื่อล้มเหลว', 'error'); } 
       overlay.style.display = 'none'; 
@@ -4474,7 +4496,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       if (!cls) return; 
       overlay.style.display = 'flex'; 
       try { 
-        const students = await gasGet('getStudents', { class: cls }); 
+        const students = await getStudentsFromCache(cls); 
         if(!Array.isArray(students) || students.length === 0) nameSelect.innerHTML = '<option value="">ไม่พบรายชื่อในระบบ</option>'; else { students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); nameSelect.disabled = false; } 
       } catch (e) { showToast('ล้มเหลว: ' + e.message, 'error'); } 
       overlay.style.display = 'none'; 
@@ -4558,7 +4580,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       });
     }
     
-    async function addStudent() { const cls = document.getElementById('new-student-class').value, name = document.getElementById('new-student-name').value.trim(), btn = document.getElementById('btn-add-student'); if (!name || !API_URL) return showToast('ข้อมูลไม่ครบ', 'warning'); btn.disabled = true; const originalText = btn.innerHTML; btn.innerHTML = '⏳ กำลังบันทึก...'; try { await gasPost({ action: 'addStudent', className: cls, name: name }); showToast(`✅ เพิ่ม ${name} สำเร็จ!`, 'success'); document.getElementById('new-student-name').value = ''; } catch (e) { showToast('❌ เพิ่มรายชื่อล้มเหลว', 'error'); } finally { btn.disabled = false; btn.innerHTML = originalText; } }
+    async function addStudent() { const cls = document.getElementById('new-student-class').value, name = document.getElementById('new-student-name').value.trim(), btn = document.getElementById('btn-add-student'); if (!name || !API_URL) return showToast('ข้อมูลไม่ครบ', 'warning'); btn.disabled = true; const originalText = btn.innerHTML; btn.innerHTML = '⏳ กำลังบันทึก...'; try { await gasPost({ action: 'addStudent', className: cls, name: name }); allStudentsCache = null; preloadAllStudents(true); showToast(`✅ เพิ่ม ${name} สำเร็จ!`, 'success'); document.getElementById('new-student-name').value = ''; } catch (e) { showToast('❌ เพิ่มรายชื่อล้มเหลว', 'error'); } finally { btn.disabled = false; btn.innerHTML = originalText; } }
   </script>
 </body>
 </html>

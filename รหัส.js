@@ -83,6 +83,7 @@ function doGet(e) {
     if (action === 'getDashboardSummary') data = getDashboardSummary();
     else if (action === 'getConfig') data = getConfig();
     else if (action === 'getStudents') data = getStudents(e.parameter.class);
+    else if (action === 'getAllStudents') data = getAllStudents();
     else if (action === 'getKnownFaces') data = getKnownFaces();
     else if (action === 'getStats') data = getStats();
     else if (action === 'getStudentData') data = getStudentData();
@@ -385,6 +386,20 @@ function getStudents(className) {
   return names;
 }
 
+// ดึงรายชื่อนักเรียนทุกชั้นในครั้งเดียว (เพื่อ cache ฝั่ง Frontend)
+function getAllStudents() {
+  var data = getOrCreateSheet('students').getDataRange().getValues();
+  var result = {};
+  for (var i = 1; i < data.length; i++) {
+    var cls = data[i][0], name = data[i][1];
+    if (cls && name) {
+      if (!result[cls]) result[cls] = [];
+      result[cls].push(name);
+    }
+  }
+  return result;
+}
+
 // --- Data (ทำเนียบนักเรียน) ---
 function getStudentData() {
   var data = getOrCreateSheet('data').getDataRange().getValues();
@@ -525,22 +540,8 @@ function getReadingStats() {
       .slice(0, 10);
   });
 
-  // บันทึกอันดับลงชีต number 5 และ number เพื่อการสถิติหลังบ้าน
-  try {
-    const sheetsToUpdate = ['number 5', 'number'];
-    sheetsToUpdate.forEach(sheetName => {
-      const targetSheet = getOrCreateSheet(sheetName, ['อันดับ', 'ชื่อนักเรียน', 'จำนวนเรื่องที่อ่าน']);
-      if (targetSheet.getLastRow() > 1) {
-        targetSheet.getRange(2, 1, targetSheet.getLastRow() - 1, 3).clearContent();
-      }
-      if (overallTop10.length > 0) {
-        const rows = overallTop10.map((s, idx) => [idx + 1, s.name, s.count]);
-        targetSheet.getRange(2, 1, rows.length, 3).setValues(rows);
-      }
-    });
-  } catch(e) {
-    Logger.log('Error writing stats to sheets: ' + e.toString());
-  }
+  // NOTE: ไม่เขียนลงชีตใน getReadingStats เพราะทำให้ช้า
+  // การ sync ลงชีต number 5 / number ควรทำผ่าน trigger แยก
 
   return {
     overall: overallTop10,
