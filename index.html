@@ -356,16 +356,20 @@ body:not(.dark-mode) textarea,
     body.light-mode .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-color: rgba(0,0,0,0.1) !important; box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important; }
     body.light-mode .swal2-title, body.light-mode .swal2-html-container { color: #1e293b !important; } body.light-mode .swal2-input, body.light-mode .swal2-select { background: #f8fafc !important; color: #1e293b !important; border-color: #cbd5e1 !important; } body.light-mode .swal2-input:focus, body.light-mode .swal2-select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important; }
     body.light-mode .display-stars.empty { color: #cbd5e1; }
-    body:not(.light-mode) #read-synopsis,
-body:not(.light-mode) .highlight-overlay {
-    color: #ffffff !important;
-}
+    body:not(.light-mode) #read-synopsis {
+        color: #ffffff !important;
+    }
+    body:not(.light-mode) .highlight-overlay {
+        color: transparent !important;
+    }
 
-/* LIGHT MODE */
-body.light-mode #read-synopsis,
-body.light-mode .highlight-overlay {
-    color: #000000 !important;
-}
+    /* LIGHT MODE */
+    body.light-mode #read-synopsis {
+        color: #000000 !important;
+    }
+    body.light-mode .highlight-overlay {
+        color: transparent !important;
+    }
     /* แก้ไขสีในกล่องข้อมูล (Light Mode Overrides) */
     body.light-mode .c-empty { color: #64748b; }
     body.light-mode .c-title { color: #1e293b; }
