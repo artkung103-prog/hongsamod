@@ -257,6 +257,24 @@ body:not(.dark-mode) textarea,
     body.light-mode .btn-job-type { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #475569; }
     body.light-mode .btn-job-type.active { background: linear-gradient(135deg, #6366f1, #4f46e5) !important; border-color: #6366f1 !important; color: white !important; }
 
+    .assignment-select-highlight {
+      background: rgba(99, 102, 241, 0.15) !important;
+      border-color: #818cf8 !important;
+      color: #e0e7ff !important;
+      font-weight: 700 !important;
+    }
+    body.light-mode .assignment-select-highlight {
+      background: #ffffff !important;
+      border-color: rgba(255, 87, 34, 0.3) !important;
+      color: #1e293b !important;
+    }
+    .word-count-wrapper {
+      color: #bae6fd;
+    }
+    body.light-mode .word-count-wrapper {
+      color: #475569 !important;
+    }
+
     .date-picker-input { background: rgba(236, 72, 153, 0.1) !important; border: 1px solid rgba(236, 72, 153, 0.4) !important; color: #fbcfe8 !important; cursor: pointer !important; padding-right: 40px !important; margin-bottom: 0 !important; }
     .date-picker-input:focus { border-color: #ec4899 !important; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2) !important; }
 
@@ -1712,7 +1730,7 @@ body:not(.dark-mode) textarea,
           </div>
           <div style="flex: 1.5; min-width: 200px;">
             <label>📋 เลือกงานที่คุณครูสั่ง</label>
-            <select id="read-assignment-select" onchange="onAssignmentSelected(this.value)" style="margin-bottom: 0; background: rgba(99, 102, 241, 0.15); border-color: #818cf8; color: #e0e7ff; font-weight: 700;">
+            <select id="read-assignment-select" onchange="onAssignmentSelected(this.value)" class="assignment-select-highlight" style="margin-bottom: 0;">
               <option value="">✍️ พิมพ์เรื่องย่อเอง</option>
             </select>
           </div>
@@ -1768,7 +1786,7 @@ body:not(.dark-mode) textarea,
 
         <!-- แถวที่ 4: นับคำ + ปุ่ม AI ตรวจคำผิด (วงกลมเขียว) + ปุ่มส่งบันทึก (วงกลมเหลือง) -->
         <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-          <div style="color: #bae6fd; font-size: 0.95em; font-weight: 700;">
+          <div class="word-count-wrapper" style="font-size: 0.95em; font-weight: 700;">
             พิมพ์ไปแล้ว: <span id="word-count-display" style="color: #facc15; font-weight: 800; font-size: 1.1em;">0</span> คำ
           </div>
           
@@ -2033,11 +2051,11 @@ body:not(.dark-mode) textarea,
     // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น (Default) - สลับตามสถานะการรัน (Cloudflare Proxy หรือ Direct GAS Link)
     const MY_GAS_URL = (window.location.protocol.startsWith('http')) 
       ? window.location.origin + '/api' 
-      : 'https://script.google.com/macros/s/AKfycbyj-cFLaJCcBDWn72qAwzgpF-vBRlRlsZNRh6GGtXOzgN64ZpiJH6Djs4ZEJhjY2k2OVw/exec';
+      : 'https://script.google.com/macros/s/AKfycbwVtTW0hNOc1vldBty0sl4x9RxL2Mn8ghWKrF4BiPmwsi9JO1Ztoy6ZprkU5vaXXrkFkA/exec';
     
     // 2. ให้ระบบเช็คและเคลียร์ค่าเก่าที่หมดอายุหรือชี้ไปที่ deployment เดิมออกจาก localStorage
     const savedUrl = localStorage.getItem('gasApiUrl');
-    if (savedUrl && !savedUrl.includes('/api') && !savedUrl.includes('AKfycbyj-cFLaJCcBDWn72qAwzgpF-vBRlRlsZNRh6GGtXOzgN64ZpiJH6Djs4ZEJhjY2k2OVw')) {
+    if (savedUrl && !savedUrl.includes('/api') && !savedUrl.includes('AKfycbwVtTW0hNOc1vldBty0sl4x9RxL2Mn8ghWKrF4BiPmwsi9JO1Ztoy6ZprkU5vaXXrkFkA')) {
       localStorage.removeItem('gasApiUrl');
     }
 
@@ -2391,7 +2409,24 @@ body:not(.dark-mode) textarea,
     themeToggle.addEventListener('change', function(e) {
       if (e.target.checked) { document.body.classList.add('light-mode'); localStorage.setItem('theme', 'light'); } 
       else { document.body.classList.remove('light-mode'); localStorage.setItem('theme', 'dark'); }
+      alignJobTypeButtonsHeight();
     });
+
+    function alignJobTypeButtonsHeight() {
+      const selectEl = document.getElementById('read-class');
+      const btn1 = document.getElementById('btn-job-single');
+      const btn2 = document.getElementById('btn-job-group');
+      if (selectEl && btn1 && btn2) {
+        setTimeout(() => {
+          const h = selectEl.offsetHeight;
+          if (h > 0) {
+            btn1.style.setProperty('height', h + 'px', 'important');
+            btn2.style.setProperty('height', h + 'px', 'important');
+          }
+        }, 80);
+      }
+    }
+    window.addEventListener('resize', alignJobTypeButtonsHeight);
 
     window.onload = () => {
       document.getElementById('api-url-input').value = API_URL;
@@ -2408,6 +2443,8 @@ body:not(.dark-mode) textarea,
       } else {
         document.getElementById('apiWarning').style.display = 'block';
       }
+      
+      alignJobTypeButtonsHeight();
       
       // Auto open login modal on page load or refresh if not logged in
       setTimeout(() => {
@@ -2955,7 +2992,7 @@ console.log(payload);
       const activeContent = document.getElementById('reading-tab-' + tabIndex);
       if (activeBtn) activeBtn.classList.add('active');
       if (activeContent) activeContent.classList.add('active');
-      if (tabIndex === 1) { applyLoggedInUserToForm('read'); stopFireworks(); }
+      if (tabIndex === 1) { applyLoggedInUserToForm('read'); alignJobTypeButtonsHeight(); stopFireworks(); }
       if (tabIndex === 2) { fetchReadingLogs(); stopFireworks(); }
       if (tabIndex === 3) { fetchReadingStats(); startFireworks(); }
     }
