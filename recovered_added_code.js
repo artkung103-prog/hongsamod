@@ -1,0 +1,126 @@
+      
+      const submissions = allHomeworks.filter(hw => 
+        isClassInGroup(hw.className, targetClass) && 
+        hw.taskName && 
+        hw.taskName.startsWith(lessonTitlePrefix)
+      );
+      
+      const isLight = document.body.classList.contains('light-mode');
+      const bgSwal = isLight ? '#ffffff' : '#16213e';
+      const colorSwal = isLight ? '#0f172a' : '#e2e8f0';
+      const itemCardBg = isLight ? '#f8fafc' : 'rgba(15,23,42,0.6)';
+      const itemBorder = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.12)';
+      const subTitleColor = isLight ? '#0f172a' : '#f8fafc';
+      const subTextColor = isLight ? '#475569' : '#94a3b8';
+      const selBg = isLight ? '#ffffff' : 'rgba(15,23,42,0.6)';
+      const selColor = isLight ? '#0f172a' : 'white';
+      const badgeBg = isLight ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.18)';
+
+      if (submissions.length === 0) {
+        Swal.fire({
+          title: `📥 ตรวจงาน บทที่ ${lessonNo}`,
+          text: `ยังไม่มีนักเรียนส่งงานในบทเรียนนี้`,
+          icon: 'info',
+          background: bgSwal,
+          color: colorSwal,
+          confirmButtonText: 'ปิด',
+          confirmButtonColor: '#6366f1'
+        });
+        return;
+      }
+      
+      let html = `<div style="max-height: 480px; overflow-y: auto; text-align: left; padding: 4px;">`;
+      submissions.forEach((item) => {
+        const file1Url = getFileUrl(item.file1);
+        const file2Url = getFileUrl(item.file2);
+        
+        let fileButtons = '';
+        if (file1Url) {
+          fileButtons += `<button onclick="viewHomeworkFile('${file1Url}')" class="btn-action" style="padding: 5px 10px; font-size: 0.82em; background: #10b981; color: white; border: none; margin-right: 4px; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap;">📄 ไฟล์ 1</button>`;
+        }
+        if (file2Url) {
+          fileButtons += `<button onclick="viewHomeworkFile('${file2Url}')" class="btn-action" style="padding: 5px 10px; font-size: 0.82em; background: #06b6d4; color: white; border: none; margin-right: 4px; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap;">📄 ไฟล์ 2</button>`;
+        }
+        
+        const isGraded = item.status === 'ตรวจแล้ว' || item.status === 'เรียนแล้ว';
+        const statusColor = isGraded ? '#10b981' : '#f59e0b';
+        const scoreVal = (item.file2 && !file2Url && item.file2 !== '-') ? item.file2 : '';
+        
+        html += `
+          <!-- INDIVIDUAL STRICT SINGLE HORIZONTAL BAR -->
+          <div style="background: ${itemCardBg}; border: 1px solid ${itemBorder}; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex-wrap: nowrap; white-space: nowrap; overflow-x: auto; width: 100%; box-sizing: border-box;">
+            
+            <!-- Col 1: Student Name & Class Badge -->
+            <div style="flex: 1 1 auto; min-width: 170px; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; flex-shrink: 0;">
+              <span style="font-weight: 800; color: ${subTitleColor}; font-size: 0.92em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                👤 ${item.name1} ${item.name2 && item.name2 !== '-' ? 'คู่กับ ' + item.name2 : ''}
+              </span>
+              <span style="font-size: 0.78em; font-weight: 800; color: #3b82f6; background: ${badgeBg}; padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(59,130,246,0.3); white-space: nowrap; flex-shrink: 0;">
+                ${item.className}
+              </span>
+            </div>
+
+            <!-- Col 2: Status Badge -->
+            <div style="font-size: 0.85em; font-weight: 800; color: ${statusColor}; white-space: nowrap; flex-shrink: 0;">
+              ● ${item.status}
+            </div>
+
+            <!-- Col 3: Attached Files -->
+            <div style="display: flex; gap: 4px; flex-shrink: 0; align-items: center; white-space: nowrap;">
+              ${fileButtons || '<span style="font-size: 0.8em; color: #94a3b8; white-space: nowrap;">(ไม่มีไฟล์แนบ)</span>'}
+            </div>
+
+            <!-- Col 4: Score Input & Icon-Only Glowing Buttons -->
+            <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0; white-space: nowrap;">
+              <input type="number" id="inline-score-${item.rowIdx}" value="${scoreVal}" placeholder="คะแนน" style="width: 65px; text-align: center; padding: 0 4px; font-weight: 800; border-radius: 8px; border: 1px solid ${itemBorder}; background: ${selBg}; color: ${selColor}; font-size: 0.88em; height: 36px; box-sizing: border-box;">
+
+              <button onclick="directSaveLessonGrade(${item.rowIdx}, 'ตรวจแล้ว', ${lessonNo})" class="btn-action" style="padding: 0 12px; font-size: 1.05em; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; margin: 0; border-radius: 8px; font-weight: 800; cursor: pointer; white-space: nowrap; height: 36px; box-sizing: border-box; box-shadow: 0 0 12px rgba(16,185,129,0.8); display: inline-flex; align-items: center; justify-content: center;" title="ตรวจแล้ว">💾</button>
+
+              <button onclick="directSaveLessonGrade(${item.rowIdx}, 'รอตรวจ', ${lessonNo})" class="btn-action" style="padding: 0 12px; font-size: 1.05em; background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; margin: 0; border-radius: 8px; font-weight: 800; cursor: pointer; white-space: nowrap; height: 36px; box-sizing: border-box; box-shadow: 0 0 12px rgba(245,158,11,0.5); display: inline-flex; align-items: center; justify-content: center;" title="แก้ไข">🔄</button>
+            </div>
+
+          </div>
+        `;
+      });
+      html += `</div>`;
+      
+      Swal.fire({
+        title: `📥 ตรวจงาน บทที่ ${lessonNo}`,
+        html: html,
+        width: 'min(95vw, 980px)',
+        background: bgSwal,
+        color: colorSwal,
+        confirmButtonText: 'ปิด',
+        confirmButtonColor: '#6366f1'
+      });
+    }
+
+    async function directSaveLessonGrade(rowIdx, newStatus, lessonNo) {
+      const scoreInput = document.getElementById(`inline-score-${rowIdx}`);
+      const scoreVal = scoreInput ? scoreInput.value.trim() : '';
+
+      const isLight = document.body.classList.contains('light-mode');
+      const bgSwal = isLight ? '#ffffff' : '#16213e';
+      const colorSwal = isLight ? '#0f172a' : '#e2e8f0';
+
+      Swal.fire({
+        title: '⏳ กำลังบันทึก...',
+        text: newStatus === 'ตรวจแล้ว' ? 'กำลังบันทึกคะแนน...' : 'กำลังส่งกลับไปแก้ไข...',
+        background: bgSwal,
+        color: colorSwal,
+        allowOutsideClick: false,
+        showConfirmButton: false
+      });
+
+      try {
+        await gasPost({ action: 'updateHomeworkStatus', rowIdx: rowIdx, status: newStatus, score: scoreVal });
+        allHomeworks = await gasGet('getHomeworks');
+        Swal.close();
+        showToast(newStatus === 'ตรวจแล้ว' ? '✅ ตรวจงานสำเร็จ' : '🔄 ส่งกลับไปแก้ไขเรียบร้อย', 'success');
+        showLessonSubmissions(lessonNo, currentSelectedLessonTopic);
+        initLessonsPage();
+      } catch(e) {
+        Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปเดตได้ กรุณาลองใหม่', background: bgSwal, color: colorSwal });
+      }
+    }
+

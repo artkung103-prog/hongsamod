@@ -488,12 +488,61 @@ function updateReadingStatus(p) {
 }
 
 function getReadingStats() {
-  var data = getOrCreateSheet('reading').getDataRange().getValues();
-  var counts = {};
-  for (var i = 1; i < data.length; i++) { if (data[i][2]) counts[data[i][2]] = (counts[data[i][2]] || 0) + 1; }
-  var list = []; for (var k in counts) list.push({ name: k, count: counts[k] });
-  list.sort(function(a, b) { return b.count - a.count; });
-  return list.slice(0, 5);
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName('reading');
+  if (!sheet) return {
+    overall: [],
+    byClass: {}
+  };
+
+  const data = sheet.getDataRange().getValues();
+
+  const overall = {};
+  const byClass = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const className = data[i][1];   // ชั้น
+    const student = data[i][2];     // ชื่อ
+    if (!student) continue;
+
+    // แยกรายชื่อหากเป็นงานกลุ่ม (คั่นด้วยจุลภาค)
+    var studentNames = student.split(/, |,/).map(function(s) { return s.trim(); }).filter(Boolean);
+    
+    studentNames.forEach(function(studentName) {
+      // รวมทั้งโรงเรียน
+      overall[studentName] = (overall[studentName] || 0) + 1;
+
+      // แยกตามชั้น
+      if (!byClass[className]) {
+        byClass[className] = {};
+      }
+      byClass[className][studentName] = (byClass[className][studentName] || 0) + 1;
+    });
+  }
+
+  const overallTop =
+    Object.entries(overall)
+      .map(([name,count])=>({name,count}))
+      .sort((a,b)=>b.count-a.count);
+
+  const overallTop10 = overallTop.slice(0, 10);
+  const classTop = {};
+
+  Object.keys(byClass).forEach(cls=>{
+    classTop[cls] =
+      Object.entries(byClass[cls])
+      .map(([name,count])=>({name,count}))
+      .sort((a,b)=>b.count-a.count)
+      .slice(0, 10);
+  });
+
+  // NOTE: ไม่เขียนลงชีตใน getReadingStats เพราะทำให้ช้า
+  // การ sync ลงชีต number 5 / number ควรทำผ่าน trigger แยก
+
+  return {
+    overall: overallTop10,
+    byClass: classTop
+  };
 }
 
 // --- Homework (ส่งงาน) ---

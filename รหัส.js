@@ -48,6 +48,8 @@ function setupSystem() {
   getOrCreateSheet('link', ['วันที่เวลา', 'ชื่อลิ้ง', 'url']);
   getOrCreateSheet('dictionary', ['คำที่เขียนผิด', 'คำที่ถูกต้อง', 'หมวดหมู่/หมายเหตุ']);
   getOrCreateSheet('Assignments', ['AssignmentID', 'Title', 'Content', 'TargetClass', 'CreatedAt']);
+  getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  getOrCreateSheet('lessons', ['LessonNo', 'Topic', 'ExternalLink', 'ContentType', 'TargetClass', 'CreatedAt']);
   var configSheet = getOrCreateSheet('Config', ['KeyName', 'KeyValue', 'Description']);
   if (configSheet.getLastRow() <= 1) {
     configSheet.appendRow(['GAS_API_URL', 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec', 'ลิงก์ระบบหลังบ้าน Web App สำหรับใช้เชื่อมต่อ']);
@@ -94,6 +96,8 @@ function doGet(e) {
     else if (action === 'getLinks') data = getLinks();
     else if (action === 'getDictionaryWords') data = getDictionaryWords();
     else if (action === 'getAssignments') data = getAssignments(e.parameter.class);
+    else if (action === 'getHwTopics') data = getHwTopics(e.parameter.class);
+    else if (action === 'getLessons') data = getLessons();
     else data = { status: "success", message: "API เชื่อมต่อสมบูรณ์พร้อมใช้งาน!" };
 
     return ContentService.createTextOutput(JSON.stringify(data))
@@ -131,11 +135,15 @@ function doPost(e) {
     else if (action === 'editReadingLog') editReadingLog(payload);
     else if (action === 'updateReadingStatus') updateReadingStatus(payload);
     else if (action === 'addHomework') addHomework(payload);
+    else if (action === 'editHomework') editHomework(payload);
     else if (action === 'updateHomeworkStatus') updateHomeworkStatus(payload);
     else if (action === 'addLink') addLink(payload);
     else if (action === 'deleteLink') deleteLink(payload);
     else if (action === 'saveAssignment') saveAssignment(payload);
     else if (action === 'deleteAssignment') deleteAssignment(payload);
+    else if (action === 'saveHwTopic') data = saveHwTopic(payload);
+    else if (action === 'deleteHwTopic') data = deleteHwTopic(payload);
+    else if (action === 'saveLesson') data = saveLesson(payload);
     else if (action === 'addStudent') {
       var sheet = getOrCreateSheet('students');
       // เพิ่มลง students คอลัมน์ A=ชั้น, B=ชื่อ
@@ -514,14 +522,19 @@ function getReadingStats() {
     const student = data[i][2];     // ชื่อ
     if (!student) continue;
 
-    // รวมทั้งโรงเรียน
-    overall[student] = (overall[student] || 0) + 1;
+    // แยกรายชื่อหากเป็นงานกลุ่ม (คั่นด้วยจุลภาค)
+    var studentNames = student.split(/, |,/).map(function(s) { return s.trim(); }).filter(Boolean);
+    
+    studentNames.forEach(function(studentName) {
+      // รวมทั้งโรงเรียน
+      overall[studentName] = (overall[studentName] || 0) + 1;
 
-    // แยกตามชั้น
-    if (!byClass[className]) {
-      byClass[className] = {};
-    }
-    byClass[className][student] = (byClass[className][student] || 0) + 1;
+      // แยกตามชั้น
+      if (!byClass[className]) {
+        byClass[className] = {};
+      }
+      byClass[className][studentName] = (byClass[className][studentName] || 0) + 1;
+    });
   }
 
   const overallTop =
@@ -573,7 +586,8 @@ function addHomework(p) {
   var f1 = p.file1 ? uploadFileToDrive(p.file1.data, p.file1.type, p.file1.name) : '-';
   var f2 = p.file2 ? uploadFileToDrive(p.file2.data, p.file2.type, p.file2.name) : '-';
   var dtStr = new Date().toISOString();
-  getOrCreateSheet('homework').appendRow([dtStr, p.className, p.name1, p.name2 || '-', p.taskName, f1, f2, 'รอตรวจ']);
+  var status = p.status || 'รอตรวจ';
+  getOrCreateSheet('homework').appendRow([dtStr, p.className, p.name1, p.name2 || '-', p.taskName, f1, f2, status]);
 }
 
 function updateHomeworkStatus(p) {
@@ -886,4 +900,137 @@ function deleteAssignment(p) {
     }
   }
   return { status: 'success' };
+}
+
+// --- Homework Topics and Student Homework Edit API ---
+
+function getHwTopics(targetClass) {
+  var sheet = getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  var result = [];
+  for (var i = 1; i < data.length; i++) {
+    var id = data[i][0];
+    var title = data[i][1];
+    var cls = data[i][2] || 'ทุกชั้น';
+    var createdAt = data[i][3];
+    
+    if (!targetClass || targetClass === 'all' || cls === 'ทุกชั้น' || cls === targetClass) {
+      result.push({
+        id: id,
+        title: title,
+        targetClass: cls,
+        createdAt: createdAt,
+        rowIdx: i + 1
+      });
+    }
+  }
+  return result.reverse();
+}
+
+function saveHwTopic(p) {
+  var sheet = getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  var id = 'HWT_' + Date.now();
+  sheet.appendRow([id, p.title || '', p.targetClass || 'ทุกชั้น', new Date()]);
+  return { status: 'success', id: id };
+}
+
+function deleteHwTopic(p) {
+  var sheet = getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  if (p.rowIdx && p.rowIdx > 1) {
+    sheet.deleteRow(parseInt(p.rowIdx));
+    return { status: 'success' };
+  }
+  if (p.id) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == p.id) {
+        sheet.deleteRow(i + 1);
+        break;
+      }
+    }
+  }
+  return { status: 'success' };
+}
+
+function editHomework(p) {
+  var sheet = getOrCreateSheet('homework');
+  var row = parseInt(p.rowIdx);
+  
+  sheet.getRange(row, 2).setValue(p.className);
+  sheet.getRange(row, 3).setValue(p.name1);
+  sheet.getRange(row, 4).setValue(p.name2 || '-');
+  sheet.getRange(row, 5).setValue(p.taskName);
+  
+  if (p.file1) {
+    var f1 = uploadFileToDrive(p.file1.data, p.file1.type, p.file1.name);
+    sheet.getRange(row, 6).setValue(f1);
+  }
+  
+  if (p.file2) {
+    var f2 = uploadFileToDrive(p.file2.data, p.file2.type, p.file2.name);
+    sheet.getRange(row, 7).setValue(f2);
+  }
+  
+  sheet.getRange(row, 8).setValue('รอตรวจ');
+}
+
+// --- Lessons (ระบบบทเรียน) ---
+function getLessons() {
+  var sheet = getOrCreateSheet('lessons', ['LessonNo', 'Topic', 'ExternalLink', 'ContentType', 'TargetClass', 'CreatedAt', 'Term']);
+  var data = sheet.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    list.push({
+      rowIdx: i + 1,
+      lessonNo: parseInt(data[i][0]),
+      topic: data[i][1],
+      externalLink: data[i][2],
+      contentType: data[i][3],
+      targetClass: data[i][4],
+      createdAt: data[i][5],
+      term: data[i][6] ? parseInt(data[i][6]) : 1
+    });
+  }
+  return list;
+}
+
+function saveLesson(p) {
+  var sheet = getOrCreateSheet('lessons', ['LessonNo', 'Topic', 'ExternalLink', 'ContentType', 'TargetClass', 'CreatedAt', 'Term']);
+  
+  // ตรวจสอบและเพิ่มหัวคอลัมน์ Term (คอลัมน์ที่ 7) ถ้ายังไม่มี
+  var headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  if (headerRow.length < 7 || !headerRow[6] || headerRow[6] === '') {
+    sheet.getRange(1, 7).setValue('Term');
+    sheet.getRange(1, 7).setFontWeight('bold').setBackground('#e0f2fe');
+  }
+
+  var data = sheet.getDataRange().getValues();
+  var lessonNo = parseInt(p.lessonNo);
+  var targetClass = p.targetClass || 'ทั้งหมด';
+  var term = p.term ? parseInt(p.term) : 1;
+  var foundRow = -1;
+  
+  // ค้นหาบทเรียนโดยเช็คทั้ง LessonNo และ Term
+  for (var i = 1; i < data.length; i++) {
+    var rowLessonNo = parseInt(data[i][0]);
+    var rowTerm = data[i][6] ? parseInt(data[i][6]) : 1;
+    if (rowLessonNo === lessonNo && rowTerm === term) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  
+  var dtStr = new Date().toISOString();
+  if (foundRow !== -1) {
+    sheet.getRange(foundRow, 2).setValue(p.topic);
+    sheet.getRange(foundRow, 3).setValue(p.externalLink);
+    sheet.getRange(foundRow, 4).setValue(p.contentType || 'link');
+    sheet.getRange(foundRow, 5).setValue(targetClass);
+    sheet.getRange(foundRow, 6).setValue(dtStr);
+    sheet.getRange(foundRow, 7).setValue(term);
+  } else {
+    sheet.appendRow([lessonNo, p.topic, p.externalLink, p.contentType || 'link', targetClass, dtStr, term]);
+  }
+  return { status: "success", message: "บันทึกบทเรียนสำเร็จ" };
 }
