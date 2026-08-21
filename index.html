@@ -1694,8 +1694,8 @@ body:not(.dark-mode) textarea,
           <div style="width: 120px; min-width: 120px;">
             <label style="text-align: center;">ประเภทงาน</label>
             <div style="display: flex; gap: 6px;">
-              <button type="button" id="btn-job-single" class="btn-job-type active" onclick="setJobType('single')" style="flex: 1; height: 48px; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 20px;" title="งานเดี่ยว">👤</button>
-              <button type="button" id="btn-job-group" class="btn-job-type" onclick="setJobType('group')" style="flex: 1; height: 48px; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 20px;" title="งานกลุ่ม">👥</button>
+              <button type="button" id="btn-job-single" class="btn-job-type active" onclick="setJobType('single')" style="flex: 1; height: 56px; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 20px;" title="งานเดี่ยว">👤</button>
+              <button type="button" id="btn-job-group" class="btn-job-type" onclick="setJobType('group')" style="flex: 1; height: 56px; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 20px;" title="งานกลุ่ม">👥</button>
             </div>
           </div>
           <div style="flex: 1.5; min-width: 180px;">
@@ -2033,11 +2033,11 @@ body:not(.dark-mode) textarea,
     // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น (Default) - สลับตามสถานะการรัน (Cloudflare Proxy หรือ Direct GAS Link)
     const MY_GAS_URL = (window.location.protocol.startsWith('http')) 
       ? window.location.origin + '/api' 
-      : 'https://script.google.com/macros/s/AKfycbwNrEJyf9Uir23vntj_wWzdWQlj9L3HnNMYZzYlIkP1lnZo-qE41bcxZ3lJVgrCNCzUXQ/exec';
+      : 'https://script.google.com/macros/s/AKfycbyj-cFLaJCcBDWn72qAwzgpF-vBRlRlsZNRh6GGtXOzgN64ZpiJH6Djs4ZEJhjY2k2OVw/exec';
     
     // 2. ให้ระบบเช็คและเคลียร์ค่าเก่าที่หมดอายุหรือชี้ไปที่ deployment เดิมออกจาก localStorage
     const savedUrl = localStorage.getItem('gasApiUrl');
-    if (savedUrl && !savedUrl.includes('/api') && !savedUrl.includes('AKfycbwNrEJyf9Uir23vntj_wWzdWQlj9L3HnNMYZzYlIkP1lnZo-qE41bcxZ3lJVgrCNCzUXQ')) {
+    if (savedUrl && !savedUrl.includes('/api') && !savedUrl.includes('AKfycbyj-cFLaJCcBDWn72qAwzgpF-vBRlRlsZNRh6GGtXOzgN64ZpiJH6Djs4ZEJhjY2k2OVw')) {
       localStorage.removeItem('gasApiUrl');
     }
 
