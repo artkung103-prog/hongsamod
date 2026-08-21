@@ -1718,13 +1718,13 @@ body:not(.dark-mode) textarea,
           </div>
           <div style="flex: 1.5; min-width: 180px;">
             <label id="label-read-name">เลือกชื่อนักเรียน</label>
-            <select id="read-name" disabled style="margin-bottom: 0;">
+            <select id="read-name" disabled onchange="checkDuplicateGroupNames()" style="margin-bottom: 0;">
               <option value="">-- กรุณาเลือกชั้นก่อน --</option>
             </select>
           </div>
           <div id="group-member-2-box" style="display: none; flex: 1.5; min-width: 180px;">
             <label>เลือกชื่อคนที่ 2</label>
-            <select id="read-name-2" disabled style="margin-bottom: 0;">
+            <select id="read-name-2" disabled onchange="checkDuplicateGroupNames()" style="margin-bottom: 0;">
               <option value="">-- ไม่มี --</option>
             </select>
           </div>
@@ -3077,6 +3077,17 @@ console.log(payload);
       }
     }
 
+    function checkDuplicateGroupNames() {
+      if (currentJobType === 'group') {
+        const n1 = document.getElementById('read-name').value;
+        const n2 = document.getElementById('read-name-2').value;
+        if (n1 && n2 && n1 === n2) {
+          showToast('❌ ห้ามเลือกชื่อนักเรียนซ้ำกันในงานกลุ่ม', 'warning');
+          document.getElementById('read-name-2').value = '';
+        }
+      }
+    }
+
     async function fetchStudentsForReading() { 
       const cls = document.getElementById('read-class').value; 
       const nameSelect = document.getElementById('read-name'); 
@@ -3741,17 +3752,15 @@ console.log(payload);
       
       let name = '';
       if (currentJobType === 'group') {
-        const names = [];
         const n1 = document.getElementById('read-name').value;
         const n2 = document.getElementById('read-name-2').value;
-        if (n1) names.push(n1);
-        if (n2) names.push(n2);
-        
-        const uniqueNames = [...new Set(names)].filter(Boolean);
-        if (uniqueNames.length < 2) {
+        if (!n1 || !n2) {
           return showToast('กรุณาเลือกชื่อนักเรียนอย่างน้อย 2 คนสำหรับงานกลุ่ม', 'warning');
         }
-        name = uniqueNames.join(', ');
+        if (n1 === n2) {
+          return showToast('❌ ห้ามเลือกชื่อนักเรียนซ้ำกันในงานกลุ่ม', 'warning');
+        }
+        name = n1 + ', ' + n2;
       } else {
         name = document.getElementById('read-name').value;
       }
