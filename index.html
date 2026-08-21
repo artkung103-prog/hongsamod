@@ -1677,9 +1677,9 @@ body:not(.dark-mode) textarea,
         <div class="loading-overlay" id="reading-loading" style="border-radius: 18px;"><div class="spinner"></div></div>
         <input type="hidden" id="read-row-idx" value="">
         
-        <!-- แถวที่ 1: เลือกระดับชั้น + ประเภทงาน (เดี่ยว/กลุ่ม) + เลือกงานที่คุณครูสั่ง -->
-        <div style="display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 150px;">
+        <!-- บรรทัดแถวเดียวกัน: ชั้น / เดี่ยว-กลุ่ม / ชื่อคนที่ 1 / ชื่อคนที่ 2 / เลือกงานครูสั่ง -->
+        <div style="display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+          <div style="flex: 1; min-width: 140px;">
             <label>เลือกระดับชั้น</label>
             <select id="read-class" onchange="fetchStudentsForReading()" style="margin-bottom: 0;">
               <option value="">-- เลือกชั้นเรียน --</option>
@@ -1691,45 +1691,29 @@ body:not(.dark-mode) textarea,
               <option value="ป.6">ชั้น ป.6</option>
             </select>
           </div>
-          <div style="flex: 1; min-width: 220px;">
-            <label>ประเภทงาน</label>
-            <div style="display: flex; gap: 8px;">
-              <button type="button" id="btn-job-single" class="btn-job-type active" onclick="setJobType('single')" style="flex: 1; height: 48px; border-radius: 12px; margin-bottom: 0; padding: 0 16px;">📝 งานเดี่ยว</button>
-              <button type="button" id="btn-job-group" class="btn-job-type" onclick="setJobType('group')" style="flex: 1; height: 48px; border-radius: 12px; margin-bottom: 0; padding: 0 16px;">👥 งานกลุ่ม</button>
+          <div style="width: 120px; min-width: 120px;">
+            <label style="text-align: center;">ประเภทงาน</label>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" id="btn-job-single" class="btn-job-type active" onclick="setJobType('single')" style="flex: 1; height: 48px; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 20px;" title="งานเดี่ยว">👤</button>
+              <button type="button" id="btn-job-group" class="btn-job-type" onclick="setJobType('group')" style="flex: 1; height: 48px; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 20px;" title="งานกลุ่ม">👥</button>
             </div>
           </div>
-          <div style="flex: 1; min-width: 200px;">
-            <label>📋 เลือกงานที่คุณครูสั่ง</label>
-            <select id="read-assignment-select" onchange="onAssignmentSelected(this.value)" style="margin-bottom: 0; background: rgba(99, 102, 241, 0.15); border-color: #818cf8; color: #e0e7ff; font-weight: 700;">
-              <option value="">✍️ พิมพ์เรื่องย่อเอง</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- แถวที่ 2: รายชื่อนักเรียน (อยู่บรรทัดเดียวกัน) -->
-        <div id="reading-student-names-row" style="display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; width: 100%;">
-          <div style="flex: 1; min-width: 180px;">
+          <div style="flex: 1.5; min-width: 180px;">
             <label id="label-read-name">เลือกชื่อนักเรียน</label>
             <select id="read-name" disabled style="margin-bottom: 0;">
               <option value="">-- กรุณาเลือกชั้นก่อน --</option>
             </select>
           </div>
-          <div id="group-member-2-box" style="display: none; flex: 1; min-width: 180px;">
+          <div id="group-member-2-box" style="display: none; flex: 1.5; min-width: 180px;">
             <label>เลือกชื่อคนที่ 2</label>
             <select id="read-name-2" disabled style="margin-bottom: 0;">
               <option value="">-- ไม่มี --</option>
             </select>
           </div>
-          <div id="group-member-3-box" style="display: none; flex: 1; min-width: 180px;">
-            <label>เลือกชื่อคนที่ 3</label>
-            <select id="read-name-3" disabled style="margin-bottom: 0;">
-              <option value="">-- ไม่มี --</option>
-            </select>
-          </div>
-          <div id="group-member-4-box" style="display: none; flex: 1; min-width: 180px;">
-            <label>เลือกชื่อคนที่ 4</label>
-            <select id="read-name-4" disabled style="margin-bottom: 0;">
-              <option value="">-- ไม่มี --</option>
+          <div style="flex: 1.5; min-width: 200px;">
+            <label>📋 เลือกงานที่คุณครูสั่ง</label>
+            <select id="read-assignment-select" onchange="onAssignmentSelected(this.value)" style="margin-bottom: 0; background: rgba(99, 102, 241, 0.15); border-color: #818cf8; color: #e0e7ff; font-weight: 700;">
+              <option value="">✍️ พิมพ์เรื่องย่อเอง</option>
             </select>
           </div>
         </div>
@@ -2049,11 +2033,11 @@ body:not(.dark-mode) textarea,
     // 1. URL ที่ฝังไว้เป็นค่าเริ่มต้น (Default) - สลับตามสถานะการรัน (Cloudflare Proxy หรือ Direct GAS Link)
     const MY_GAS_URL = (window.location.protocol.startsWith('http')) 
       ? window.location.origin + '/api' 
-      : 'https://script.google.com/macros/s/AKfycbxDCeSDpcBvPL1K6tIoSSZvqq2YnBW2CASAimwtaAhCzVIIduudds3yPjzn3n-oorbZPA/exec';
+      : 'https://script.google.com/macros/s/AKfycbwNrEJyf9Uir23vntj_wWzdWQlj9L3HnNMYZzYlIkP1lnZo-qE41bcxZ3lJVgrCNCzUXQ/exec';
     
     // 2. ให้ระบบเช็คและเคลียร์ค่าเก่าที่หมดอายุหรือชี้ไปที่ deployment เดิมออกจาก localStorage
     const savedUrl = localStorage.getItem('gasApiUrl');
-    if (savedUrl && !savedUrl.includes('/api') && !savedUrl.includes('AKfycbxDCeSDpcBvPL1K6tIoSSZvqq2YnBW2CASAimwtaAhCzVIIduudds3yPjzn3n-oorbZPA')) {
+    if (savedUrl && !savedUrl.includes('/api') && !savedUrl.includes('AKfycbwNrEJyf9Uir23vntj_wWzdWQlj9L3HnNMYZzYlIkP1lnZo-qE41bcxZ3lJVgrCNCzUXQ')) {
       localStorage.removeItem('gasApiUrl');
     }
 
@@ -3037,32 +3021,22 @@ console.log(payload);
       const btnGroup = document.getElementById('btn-job-group');
       
       const box2 = document.getElementById('group-member-2-box');
-      const box3 = document.getElementById('group-member-3-box');
-      const box4 = document.getElementById('group-member-4-box');
       const labelName = document.getElementById('label-read-name');
 
       if (type === 'group') {
         if (btnSingle) btnSingle.classList.remove('active');
         if (btnGroup) btnGroup.classList.add('active');
         if (box2) box2.style.display = 'block';
-        if (box3) box3.style.display = 'block';
-        if (box4) box4.style.display = 'block';
         if (labelName) labelName.innerText = 'เลือกชื่อคนที่ 1';
       } else {
         if (btnSingle) btnSingle.classList.add('active');
         if (btnGroup) btnGroup.classList.remove('active');
         if (box2) box2.style.display = 'none';
-        if (box3) box3.style.display = 'none';
-        if (box4) box4.style.display = 'none';
         if (labelName) labelName.innerText = 'เลือกชื่อนักเรียน';
         
         // เคลียร์ค่า
         const sel2 = document.getElementById('read-name-2');
-        const sel3 = document.getElementById('read-name-3');
-        const sel4 = document.getElementById('read-name-4');
         if (sel2) sel2.value = '';
-        if (sel3) sel3.value = '';
-        if (sel4) sel4.value = '';
       }
     }
 
@@ -3070,8 +3044,6 @@ console.log(payload);
       const cls = document.getElementById('read-class').value; 
       const nameSelect = document.getElementById('read-name'); 
       const nameSelect2 = document.getElementById('read-name-2');
-      const nameSelect3 = document.getElementById('read-name-3');
-      const nameSelect4 = document.getElementById('read-name-4');
       const overlay = document.getElementById('reading-loading'); 
       
       const resetSelect = (sel, isFirst) => {
@@ -3082,8 +3054,6 @@ console.log(payload);
       
       resetSelect(nameSelect, true);
       resetSelect(nameSelect2, false);
-      resetSelect(nameSelect3, false);
-      resetSelect(nameSelect4, false);
       
       loadAssignmentsByClass(cls);
       if (!cls) return; 
@@ -3096,12 +3066,10 @@ console.log(payload);
           students.forEach(s => { nameSelect.innerHTML += `<option value="${s}">${s}</option>`; }); 
           nameSelect.disabled = false; 
           
-          [nameSelect2, nameSelect3, nameSelect4].forEach(sel => {
-            if (sel) {
-              students.forEach(s => { sel.innerHTML += `<option value="${s}">${s}</option>`; });
-              sel.disabled = false;
-            }
-          });
+          if (nameSelect2) {
+            students.forEach(s => { nameSelect2.innerHTML += `<option value="${s}">${s}</option>`; });
+            nameSelect2.disabled = false;
+          }
         } 
       } catch (e) { 
         showToast('ดึงรายชื่อล้มเหลว', 'error'); 
@@ -3704,8 +3672,6 @@ console.log(payload);
         await fetchStudentsForReading();
         if (names[0]) document.getElementById('read-name').value = names[0];
         if (names[1] && document.getElementById('read-name-2')) document.getElementById('read-name-2').value = names[1];
-        if (names[2] && document.getElementById('read-name-3')) document.getElementById('read-name-3').value = names[2];
-        if (names[3] && document.getElementById('read-name-4')) document.getElementById('read-name-4').value = names[3];
       } catch(e) {
         console.error(e);
       }
@@ -3741,12 +3707,8 @@ console.log(payload);
         const names = [];
         const n1 = document.getElementById('read-name').value;
         const n2 = document.getElementById('read-name-2').value;
-        const n3 = document.getElementById('read-name-3').value;
-        const n4 = document.getElementById('read-name-4').value;
         if (n1) names.push(n1);
         if (n2) names.push(n2);
-        if (n3) names.push(n3);
-        if (n4) names.push(n4);
         
         const uniqueNames = [...new Set(names)].filter(Boolean);
         if (uniqueNames.length < 2) {
@@ -3782,8 +3744,6 @@ console.log(payload);
         };
         resetSelect('read-name', '-- กรุณาเลือกชั้นก่อน --');
         resetSelect('read-name-2', '-- ไม่มี --');
-        resetSelect('read-name-3', '-- ไม่มี --');
-        resetSelect('read-name-4', '-- ไม่มี --');
         
         setJobType('single'); // Reset back to single work
         
