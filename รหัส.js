@@ -98,6 +98,8 @@ function doGet(e) {
     else if (action === 'getAssignments') data = getAssignments(e.parameter.class);
     else if (action === 'getHwTopics') data = getHwTopics(e.parameter.class);
     else if (action === 'getLessons') data = getLessons();
+    else if (action === 'getExams') data = getExams();
+    else if (action === 'getExamScores') data = getExamScores();
     else data = { status: "success", message: "API เชื่อมต่อสมบูรณ์พร้อมใช้งาน!" };
 
     return ContentService.createTextOutput(JSON.stringify(data))
@@ -144,6 +146,9 @@ function doPost(e) {
     else if (action === 'saveHwTopic') data = saveHwTopic(payload);
     else if (action === 'deleteHwTopic') data = deleteHwTopic(payload);
     else if (action === 'saveLesson') data = saveLesson(payload);
+    else if (action === 'saveExamConfig') data = saveExamConfig(payload);
+    else if (action === 'uploadExamPDF') data = uploadExamPDF(payload);
+    else if (action === 'saveExamScore') data = saveExamScore(payload);
     else if (action === 'addStudent') {
       var sheet = getOrCreateSheet('students');
       // เพิ่มลง students คอลัมน์ A=ชั้น, B=ชื่อ
@@ -496,8 +501,12 @@ function addReadingLog(p) {
 }
 
 function editReadingLog(p) {
-  // อัปเดตคอลัมน์ D ถึง G (เริ่ม 4, จำนวน 4 คอลัมน์)
-  getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 4, 1, 4).setValues([[p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']]);
+  // อัปเดตคอลัมน์ B ถึง G (เริ่ม 2, จำนวน 6 คอลัมน์): className, name, bookTitle, synopsis, rating, status
+  if (p.className && p.name) {
+    getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 2, 1, 6).setValues([[p.className, p.name, p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']]);
+  } else {
+    getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 4, 1, 4).setValues([[p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']]);
+  }
 }
 
 function updateReadingStatus(p) {
@@ -1033,4 +1042,159 @@ function saveLesson(p) {
     sheet.appendRow([lessonNo, p.topic, p.externalLink, p.contentType || 'link', targetClass, dtStr, term]);
   }
   return { status: "success", message: "บันทึกบทเรียนสำเร็จ" };
+}
+
+// =========================================================================
+// 📝 12. ส่วนระบบสอบออนไลน์ (Online Examination System)
+// =========================================================================
+function getExams() {
+  var sheet = getOrCreateSheet('exams');
+  var data = sheet.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) {
+      var ansKey = [];
+      try {
+        ansKey = typeof data[i][7] === 'string' ? JSON.parse(data[i][7]) : (Array.isArray(data[i][7]) ? data[i][7] : []);
+      } catch (e) {
+        ansKey = String(data[i][7] || '').split(',');
+      }
+      list.push({
+        rowIdx: i + 1,
+        semester: String(data[i][0]),
+        grade: String(data[i][1]),
+        subject: String(data[i][2]),
+        totalQuestions: parseInt(data[i][3]) || 10,
+        choicesCount: parseInt(data[i][4]) || 3,
+        timeLimit: parseInt(data[i][5]) || 60,
+        pdfId: String(data[i][6] || ''),
+        answerKey: ansKey
+      });
+    }
+  }
+  return list;
+}
+
+function saveExamConfig(p) {
+  var sheet = getOrCreateSheet('exams');
+  var data = sheet.getDataRange().getValues();
+  var ansKeyJson = JSON.stringify(p.answerKey || []);
+  var finalPdfId = p.pdfId || '';
+
+  // หากมีการแนบไฟล์ PDF มาพร้อมกับ config
+  if (p.pdfData || (p.pdfFile && p.pdfFile.data)) {
+    var rawB64 = p.pdfData || p.pdfFile.data;
+    var filename = p.filename || (p.pdfFile ? p.pdfFile.name : '') || ('exam_' + p.grade + '_' + p.subject + '_' + Date.now() + '.pdf');
+    var mime = p.mimeType || (p.pdfFile ? p.pdfFile.type : '') || 'application/pdf';
+    var uploaded = uploadExamPDF({ data: rawB64, filename: filename, mimeType: mime });
+    if (uploaded && uploaded.fileId) {
+      finalPdfId = uploaded.fileId;
+    }
+  }
+
+  var foundRow = -1;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(p.semester) && String(data[i][1]) === String(p.grade) && String(data[i][2]) === String(p.subject)) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  if (foundRow > -1) {
+    sheet.getRange(foundRow, 4, 1, 5).setValues([[
+      parseInt(p.totalQuestions) || 10,
+      parseInt(p.choicesCount) || 4,
+      parseInt(p.timeLimit) || 60,
+      finalPdfId,
+      ansKeyJson
+    ]]);
+  } else {
+    sheet.appendRow([
+      String(p.semester),
+      String(p.grade),
+      String(p.subject),
+      parseInt(p.totalQuestions) || 10,
+      parseInt(p.choicesCount) || 4,
+      parseInt(p.timeLimit) || 60,
+      finalPdfId,
+      ansKeyJson
+    ]);
+  }
+  return { status: "success", message: "บันทึกข้อสอบเรียบร้อย", pdfId: finalPdfId };
+}
+
+function uploadExamPDF(p) {
+  try {
+    if (!p.data) return { status: "error", message: "ไม่มีข้อมูลไฟล์" };
+    var examFolderId = "1XfCSFFHFZDTp5s7EcNelMNfifCHLHziU";
+    var folder;
+    try {
+      folder = DriveApp.getFolderById(examFolderId);
+    } catch(fErr1) {
+      try {
+        folder = DriveApp.getFolderById(FOLDER_ID);
+      } catch(fErr2) {
+        folder = DriveApp.getRootFolder();
+      }
+    }
+    var cleanData = p.data;
+    if (cleanData.indexOf(',') !== -1) {
+      cleanData = cleanData.split(',')[1];
+    }
+    var bytes = Utilities.base64Decode(cleanData);
+    var filename = p.filename || ('exam_' + Date.now() + '.pdf');
+    var blob = Utilities.newBlob(bytes, p.mimeType || 'application/pdf', filename);
+    var file = folder.createFile(blob);
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch(shErr){}
+    var fileId = file.getId();
+    return { status: "success", fileId: fileId, url: file.getUrl() };
+  } catch(err) {
+    return { status: "error", message: err.toString() };
+  }
+}
+
+function getExamScores() {
+  var sheet = getOrCreateSheet('exam_scores');
+  var data = sheet.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1]) {
+      list.push({
+        rowIdx: i + 1,
+        date: data[i][0],
+        grade: String(data[i][1]),
+        name: String(data[i][2]),
+        semester: String(data[i][3]),
+        subject: String(data[i][4]),
+        score: parseInt(data[i][5]) || 0,
+        totalQuestions: parseInt(data[i][6]) || 10,
+        attemptCount: parseInt(data[i][7]) || 1
+      });
+    }
+  }
+  return list.reverse();
+}
+
+function saveExamScore(p) {
+  var sheet = getOrCreateSheet('exam_scores');
+  var data = sheet.getDataRange().getValues();
+  var dtStr = new Date().toISOString();
+  var attempt = 1;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][1]) === String(p.grade) && String(data[i][2]) === String(p.name) && String(data[i][3]) === String(p.semester) && String(data[i][4]) === String(p.subject)) {
+      attempt++;
+    }
+  }
+  sheet.appendRow([
+    dtStr,
+    String(p.grade),
+    String(p.name),
+    String(p.semester),
+    String(p.subject),
+    parseInt(p.score) || 0,
+    parseInt(p.totalQuestions) || 10,
+    attempt
+  ]);
+  return { status: "success", attemptCount: attempt };
 }

@@ -48,6 +48,12 @@ function setupSystem() {
   getOrCreateSheet('link', ['วันที่เวลา', 'ชื่อลิ้ง', 'url']);
   getOrCreateSheet('dictionary', ['คำที่เขียนผิด', 'คำที่ถูกต้อง', 'หมวดหมู่/หมายเหตุ']);
   getOrCreateSheet('Assignments', ['AssignmentID', 'Title', 'Content', 'TargetClass', 'CreatedAt']);
+  getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  getOrCreateSheet('lessons', ['LessonNo', 'Topic', 'ExternalLink', 'ContentType', 'TargetClass', 'CreatedAt']);
+  var configSheet = getOrCreateSheet('Config', ['KeyName', 'KeyValue', 'Description']);
+  if (configSheet.getLastRow() <= 1) {
+    configSheet.appendRow(['GAS_API_URL', 'https://script.google.com/macros/s/AKfycbwg-QW1zSlqghhLTGz3EDZMDDw2nAf72uuWygYzoEJxGFEF7pnZRoAqk0WNiZfvXvxClw/exec', 'ลิงก์ระบบหลังบ้าน Web App สำหรับใช้เชื่อมต่อ']);
+  }
   
   // ชีตสำหรับให้คุณครูนำไปดึงสูตรสถิติต่อ
   getOrCreateSheet('sum', ['สถิติ (รอตั้งค่าสูตร)']);
@@ -90,6 +96,10 @@ function doGet(e) {
     else if (action === 'getLinks') data = getLinks();
     else if (action === 'getDictionaryWords') data = getDictionaryWords();
     else if (action === 'getAssignments') data = getAssignments(e.parameter.class);
+    else if (action === 'getHwTopics') data = getHwTopics(e.parameter.class);
+    else if (action === 'getLessons') data = getLessons();
+    else if (action === 'getExams') data = getExams();
+    else if (action === 'getExamScores') data = getExamScores();
     else data = { status: "success", message: "API เชื่อมต่อสมบูรณ์พร้อมใช้งาน!" };
 
     return ContentService.createTextOutput(JSON.stringify(data))
@@ -115,7 +125,7 @@ function doPost(e) {
     var action = payload.action;
     var data = { status: "success", message: "รับข้อมูลสำเร็จ" };
 
-    if (action === 'logAttendance') logAttendance(payload);
+    if (action === 'logAttendance') data = logAttendance(payload) || data;
     else if (action === 'saveConfig') saveConfig(payload);
     else if (action === 'registerUser') registerUser(payload);
     else if (action === 'addStudentData') addStudentData(payload);
@@ -127,11 +137,18 @@ function doPost(e) {
     else if (action === 'editReadingLog') editReadingLog(payload);
     else if (action === 'updateReadingStatus') updateReadingStatus(payload);
     else if (action === 'addHomework') addHomework(payload);
+    else if (action === 'editHomework') editHomework(payload);
     else if (action === 'updateHomeworkStatus') updateHomeworkStatus(payload);
     else if (action === 'addLink') addLink(payload);
     else if (action === 'deleteLink') deleteLink(payload);
     else if (action === 'saveAssignment') saveAssignment(payload);
     else if (action === 'deleteAssignment') deleteAssignment(payload);
+    else if (action === 'saveHwTopic') data = saveHwTopic(payload);
+    else if (action === 'deleteHwTopic') data = deleteHwTopic(payload);
+    else if (action === 'saveLesson') data = saveLesson(payload);
+    else if (action === 'saveExamConfig') data = saveExamConfig(payload);
+    else if (action === 'uploadExamPDF') data = uploadExamPDF(payload);
+    else if (action === 'saveExamScore') data = saveExamScore(payload);
     else if (action === 'addStudent') {
       var sheet = getOrCreateSheet('students');
       // เพิ่มลง students คอลัมน์ A=ชั้น, B=ชื่อ
@@ -271,25 +288,30 @@ function logAttendance(p) {
   var timeStr = Utilities.formatDate(d, "Asia/Bangkok", "HH:mm:ss");
   
   // ป้องกันการลงชื่อซ้ำภายใน 60 นาที ในระดับ Server-side
-  var data = sheet.getDataRange().getValues();
-  if (data.length > 1) {
-    var nowMs = d.getTime();
-    var oneHourMs = 60 * 60 * 1000;
-    for (var i = data.length - 1; i >= 1; i--) {
-      var rowName = data[i][0];
-      var rowDate = data[i][2];
-      var rowTime = data[i][3];
-      if (rowName === p.name) {
-        var formattedDate = rowDate instanceof Date ? Utilities.formatDate(rowDate, "Asia/Bangkok", "dd/MM/yyyy") : String(rowDate);
-        if (formattedDate === dateStr) {
-          var formattedTime = rowTime instanceof Date ? Utilities.formatDate(rowTime, "Asia/Bangkok", "HH:mm:ss") : String(rowTime);
-          var rowTimestamp = parseAttendanceTime(formattedDate, formattedTime);
-          if (rowTimestamp && (nowMs - rowTimestamp.getTime() < oneHourMs)) {
-            return { status: "success", message: "มีการลงชื่อซ้ำภายใน 1 ชั่วโมงแล้ว" };
+  try {
+    var data = sheet.getDataRange().getValues();
+    if (data.length > 1) {
+      var nowMs = d.getTime();
+      var oneHourMs = 60 * 60 * 1000;
+      for (var i = data.length - 1; i >= 1; i--) {
+        var rowName = data[i][0];
+        var rowDate = data[i][2];
+        var rowTime = data[i][3];
+        if (rowName && p.name && String(rowName).trim() === String(p.name).trim()) {
+          var formattedDate = rowDate instanceof Date ? Utilities.formatDate(rowDate, "Asia/Bangkok", "dd/MM/yyyy") : String(rowDate);
+          if (formattedDate === dateStr) {
+            var formattedTime = rowTime instanceof Date ? Utilities.formatDate(rowTime, "Asia/Bangkok", "HH:mm:ss") : String(rowTime);
+            var rowTimestamp = parseAttendanceTime(formattedDate, formattedTime);
+            if (rowTimestamp && !isNaN(rowTimestamp.getTime()) && (nowMs - rowTimestamp.getTime() < oneHourMs)) {
+              Logger.log("Duplicate attendance skipped for " + p.name);
+              return { status: "success", message: "มีการลงชื่อซ้ำภายใน 1 ชั่วโมงแล้ว (ข้ามการบันทึก)" };
+            }
           }
         }
       }
     }
+  } catch (err) {
+    Logger.log("Error checking duplicate in logAttendance: " + err);
   }
 
   // Attendance: A=ชื่อ, B=ชั้น, C=วันที่, D=เวลา
@@ -479,8 +501,12 @@ function addReadingLog(p) {
 }
 
 function editReadingLog(p) {
-  // อัปเดตคอลัมน์ D ถึง G (เริ่ม 4, จำนวน 4 คอลัมน์)
-  getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 4, 1, 4).setValues([[p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']]);
+  // อัปเดตคอลัมน์ B ถึง G (เริ่ม 2, จำนวน 6 คอลัมน์): className, name, bookTitle, synopsis, rating, status
+  if (p.className && p.name) {
+    getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 2, 1, 6).setValues([[p.className, p.name, p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']]);
+  } else {
+    getOrCreateSheet('reading').getRange(parseInt(p.rowIdx), 4, 1, 4).setValues([[p.bookTitle, p.synopsis, p.rating, 'รอตรวจ']]);
+  }
 }
 
 function updateReadingStatus(p) {
@@ -569,7 +595,8 @@ function addHomework(p) {
   var f1 = p.file1 ? uploadFileToDrive(p.file1.data, p.file1.type, p.file1.name) : '-';
   var f2 = p.file2 ? uploadFileToDrive(p.file2.data, p.file2.type, p.file2.name) : '-';
   var dtStr = new Date().toISOString();
-  getOrCreateSheet('homework').appendRow([dtStr, p.className, p.name1, p.name2 || '-', p.taskName, f1, f2, 'รอตรวจ']);
+  var status = p.status || 'รอตรวจ';
+  getOrCreateSheet('homework').appendRow([dtStr, p.className, p.name1, p.name2 || '-', p.taskName, f1, f2, status]);
 }
 
 function updateHomeworkStatus(p) {
@@ -607,7 +634,10 @@ function addLink(p) {
 }
 
 function deleteLink(p) { 
-  getOrCreateSheet('link').getRange(parseInt(p.rowIdx), 1, 1, 3).clearContent(); 
+  var sheet = getOrCreateSheet('link');
+  if (p.rowIdx && parseInt(p.rowIdx) > 1) {
+    sheet.deleteRow(parseInt(p.rowIdx));
+  }
 }
 
 // --- Dictionary (คลังคำมักเขียนผิด 200 คำ) ---
@@ -879,4 +909,292 @@ function deleteAssignment(p) {
     }
   }
   return { status: 'success' };
+}
+
+// --- Homework Topics and Student Homework Edit API ---
+
+function getHwTopics(targetClass) {
+  var sheet = getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  var result = [];
+  for (var i = 1; i < data.length; i++) {
+    var id = data[i][0];
+    var title = data[i][1];
+    var cls = data[i][2] || 'ทุกชั้น';
+    var createdAt = data[i][3];
+    
+    if (!targetClass || targetClass === 'all' || cls === 'ทุกชั้น' || cls === targetClass) {
+      result.push({
+        id: id,
+        title: title,
+        targetClass: cls,
+        createdAt: createdAt,
+        rowIdx: i + 1
+      });
+    }
+  }
+  return result.reverse();
+}
+
+function saveHwTopic(p) {
+  var sheet = getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  var id = 'HWT_' + Date.now();
+  sheet.appendRow([id, p.title || '', p.targetClass || 'ทุกชั้น', new Date()]);
+  return { status: 'success', id: id };
+}
+
+function deleteHwTopic(p) {
+  var sheet = getOrCreateSheet('HwTopics', ['TopicID', 'Title', 'TargetClass', 'CreatedAt']);
+  if (p.rowIdx && p.rowIdx > 1) {
+    sheet.deleteRow(parseInt(p.rowIdx));
+    return { status: 'success' };
+  }
+  if (p.id) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == p.id) {
+        sheet.deleteRow(i + 1);
+        break;
+      }
+    }
+  }
+  return { status: 'success' };
+}
+
+function editHomework(p) {
+  var sheet = getOrCreateSheet('homework');
+  var row = parseInt(p.rowIdx);
+  
+  sheet.getRange(row, 2).setValue(p.className);
+  sheet.getRange(row, 3).setValue(p.name1);
+  sheet.getRange(row, 4).setValue(p.name2 || '-');
+  sheet.getRange(row, 5).setValue(p.taskName);
+  
+  if (p.file1) {
+    var f1 = uploadFileToDrive(p.file1.data, p.file1.type, p.file1.name);
+    sheet.getRange(row, 6).setValue(f1);
+  }
+  
+  if (p.file2) {
+    var f2 = uploadFileToDrive(p.file2.data, p.file2.type, p.file2.name);
+    sheet.getRange(row, 7).setValue(f2);
+  }
+  
+  sheet.getRange(row, 8).setValue('รอตรวจ');
+}
+
+// --- Lessons (ระบบบทเรียน) ---
+function getLessons() {
+  var sheet = getOrCreateSheet('lessons', ['LessonNo', 'Topic', 'ExternalLink', 'ContentType', 'TargetClass', 'CreatedAt', 'Term']);
+  var data = sheet.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    list.push({
+      rowIdx: i + 1,
+      lessonNo: parseInt(data[i][0]),
+      topic: data[i][1],
+      externalLink: data[i][2],
+      contentType: data[i][3],
+      targetClass: data[i][4],
+      createdAt: data[i][5],
+      term: data[i][6] ? parseInt(data[i][6]) : 1
+    });
+  }
+  return list;
+}
+
+function saveLesson(p) {
+  var sheet = getOrCreateSheet('lessons', ['LessonNo', 'Topic', 'ExternalLink', 'ContentType', 'TargetClass', 'CreatedAt', 'Term']);
+  
+  // ตรวจสอบและเพิ่มหัวคอลัมน์ Term (คอลัมน์ที่ 7) ถ้ายังไม่มี
+  var headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  if (headerRow.length < 7 || !headerRow[6] || headerRow[6] === '') {
+    sheet.getRange(1, 7).setValue('Term');
+    sheet.getRange(1, 7).setFontWeight('bold').setBackground('#e0f2fe');
+  }
+
+  var data = sheet.getDataRange().getValues();
+  var lessonNo = parseInt(p.lessonNo);
+  var targetClass = p.targetClass || 'ทั้งหมด';
+  var term = p.term ? parseInt(p.term) : 1;
+  var foundRow = -1;
+  
+  // ค้นหาบทเรียนโดยเช็คทั้ง LessonNo และ Term
+  for (var i = 1; i < data.length; i++) {
+    var rowLessonNo = parseInt(data[i][0]);
+    var rowTerm = data[i][6] ? parseInt(data[i][6]) : 1;
+    if (rowLessonNo === lessonNo && rowTerm === term) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  
+  var dtStr = new Date().toISOString();
+  if (foundRow !== -1) {
+    sheet.getRange(foundRow, 2).setValue(p.topic);
+    sheet.getRange(foundRow, 3).setValue(p.externalLink);
+    sheet.getRange(foundRow, 4).setValue(p.contentType || 'link');
+    sheet.getRange(foundRow, 5).setValue(targetClass);
+    sheet.getRange(foundRow, 6).setValue(dtStr);
+    sheet.getRange(foundRow, 7).setValue(term);
+  } else {
+    sheet.appendRow([lessonNo, p.topic, p.externalLink, p.contentType || 'link', targetClass, dtStr, term]);
+  }
+  return { status: "success", message: "บันทึกบทเรียนสำเร็จ" };
+}
+
+// =========================================================================
+// 📝 12. ส่วนระบบสอบออนไลน์ (Online Examination System)
+// =========================================================================
+function getExams() {
+  var sheet = getOrCreateSheet('exams');
+  var data = sheet.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) {
+      var ansKey = [];
+      try {
+        ansKey = typeof data[i][7] === 'string' ? JSON.parse(data[i][7]) : (Array.isArray(data[i][7]) ? data[i][7] : []);
+      } catch (e) {
+        ansKey = String(data[i][7] || '').split(',');
+      }
+      list.push({
+        rowIdx: i + 1,
+        semester: String(data[i][0]),
+        grade: String(data[i][1]),
+        subject: String(data[i][2]),
+        totalQuestions: parseInt(data[i][3]) || 10,
+        choicesCount: parseInt(data[i][4]) || 3,
+        timeLimit: parseInt(data[i][5]) || 60,
+        pdfId: String(data[i][6] || ''),
+        answerKey: ansKey
+      });
+    }
+  }
+  return list;
+}
+
+function saveExamConfig(p) {
+  var sheet = getOrCreateSheet('exams');
+  var data = sheet.getDataRange().getValues();
+  var ansKeyJson = JSON.stringify(p.answerKey || []);
+  var finalPdfId = p.pdfId || '';
+
+  // หากมีการแนบไฟล์ PDF มาพร้อมกับ config
+  if (p.pdfData || (p.pdfFile && p.pdfFile.data)) {
+    var rawB64 = p.pdfData || p.pdfFile.data;
+    var filename = p.filename || (p.pdfFile ? p.pdfFile.name : '') || ('exam_' + p.grade + '_' + p.subject + '_' + Date.now() + '.pdf');
+    var mime = p.mimeType || (p.pdfFile ? p.pdfFile.type : '') || 'application/pdf';
+    var uploaded = uploadExamPDF({ data: rawB64, filename: filename, mimeType: mime });
+    if (uploaded && uploaded.fileId) {
+      finalPdfId = uploaded.fileId;
+    }
+  }
+
+  var foundRow = -1;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(p.semester) && String(data[i][1]) === String(p.grade) && String(data[i][2]) === String(p.subject)) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  if (foundRow > -1) {
+    sheet.getRange(foundRow, 4, 1, 5).setValues([[
+      parseInt(p.totalQuestions) || 10,
+      parseInt(p.choicesCount) || 4,
+      parseInt(p.timeLimit) || 60,
+      finalPdfId,
+      ansKeyJson
+    ]]);
+  } else {
+    sheet.appendRow([
+      String(p.semester),
+      String(p.grade),
+      String(p.subject),
+      parseInt(p.totalQuestions) || 10,
+      parseInt(p.choicesCount) || 4,
+      parseInt(p.timeLimit) || 60,
+      finalPdfId,
+      ansKeyJson
+    ]);
+  }
+  return { status: "success", message: "บันทึกข้อสอบเรียบร้อย", pdfId: finalPdfId };
+}
+
+function uploadExamPDF(p) {
+  try {
+    if (!p.data) return { status: "error", message: "ไม่มีข้อมูลไฟล์" };
+    var examFolderId = "1XfCSFFHFZDTp5s7EcNelMNfifCHLHziU";
+    var folder;
+    try {
+      folder = DriveApp.getFolderById(examFolderId);
+    } catch(fErr1) {
+      try {
+        folder = DriveApp.getFolderById(FOLDER_ID);
+      } catch(fErr2) {
+        folder = DriveApp.getRootFolder();
+      }
+    }
+    var cleanData = p.data;
+    if (cleanData.indexOf(',') !== -1) {
+      cleanData = cleanData.split(',')[1];
+    }
+    var bytes = Utilities.base64Decode(cleanData);
+    var filename = p.filename || ('exam_' + Date.now() + '.pdf');
+    var blob = Utilities.newBlob(bytes, p.mimeType || 'application/pdf', filename);
+    var file = folder.createFile(blob);
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch(shErr){}
+    var fileId = file.getId();
+    return { status: "success", fileId: fileId, url: file.getUrl() };
+  } catch(err) {
+    return { status: "error", message: err.toString() };
+  }
+}
+
+function getExamScores() {
+  var sheet = getOrCreateSheet('exam_scores');
+  var data = sheet.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1]) {
+      list.push({
+        rowIdx: i + 1,
+        date: data[i][0],
+        grade: String(data[i][1]),
+        name: String(data[i][2]),
+        semester: String(data[i][3]),
+        subject: String(data[i][4]),
+        score: parseInt(data[i][5]) || 0,
+        totalQuestions: parseInt(data[i][6]) || 10,
+        attemptCount: parseInt(data[i][7]) || 1
+      });
+    }
+  }
+  return list.reverse();
+}
+
+function saveExamScore(p) {
+  var sheet = getOrCreateSheet('exam_scores');
+  var data = sheet.getDataRange().getValues();
+  var dtStr = new Date().toISOString();
+  var attempt = 1;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][1]) === String(p.grade) && String(data[i][2]) === String(p.name) && String(data[i][3]) === String(p.semester) && String(data[i][4]) === String(p.subject)) {
+      attempt++;
+    }
+  }
+  sheet.appendRow([
+    dtStr,
+    String(p.grade),
+    String(p.name),
+    String(p.semester),
+    String(p.subject),
+    parseInt(p.score) || 0,
+    parseInt(p.totalQuestions) || 10,
+    attempt
+  ]);
+  return { status: "success", attemptCount: attempt };
 }

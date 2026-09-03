@@ -14,6 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;800&family=Prompt:wght@400;600;700;800&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
@@ -225,13 +226,15 @@ body:not(.dark-mode) textarea,
     .hw-card-box-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
     body.light-mode .hw-card-box-footer { border-top-color: #f1f5f9; }
 
-    /* CSS สำหรับกล่องบทเรียนเรืองแสงสีเขียว 1-20 (ทรงสี่เหลี่ยมจัตุรัส 165x165) */
+    /* CSS สำหรับกล่องบทเรียนเรืองแสงสีเขียว 1-20 (ทรงสี่เหลี่ยมจัตุรัส 165x165 สำหรับนักเรียน และทรงขยายความสูงสำหรับคุณครู) */
     .lesson-card-wrap { width: 165px !important; height: 165px !important; min-height: 165px !important; max-height: 165px !important; aspect-ratio: 1 / 1 !important; box-sizing: border-box !important; margin: 0 auto; cursor: pointer !important; }
     .lesson-card-glow { background: rgba(15, 23, 42, 0.8) !important; border: 2px solid #10b981 !important; border-radius: 18px !important; padding: 12px 10px !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; position: relative !important; box-shadow: 0 0 18px rgba(16, 185, 129, 0.45), inset 0 0 10px rgba(16, 185, 129, 0.15) !important; transition: all 0.25s ease !important; backdrop-filter: blur(10px) !important; width: 165px !important; height: 165px !important; min-height: 165px !important; max-height: 165px !important; aspect-ratio: 1 / 1 !important; justify-content: space-between !important; box-sizing: border-box !important; }
     body.light-mode .lesson-card-glow { background: #ffffff !important; border-color: #10b981 !important; box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3) !important; }
     .lesson-card-glow:hover { transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 0 24px rgba(16, 185, 129, 0.7), inset 0 0 16px rgba(16, 185, 129, 0.25) !important; }
     .lesson-card-locked { background: rgba(15, 23, 42, 0.45) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important; border-radius: 18px !important; padding: 12px 10px !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; position: relative !important; opacity: 0.7 !important; filter: grayscale(0.5) !important; cursor: pointer !important; width: 165px !important; height: 165px !important; min-height: 165px !important; max-height: 165px !important; aspect-ratio: 1 / 1 !important; justify-content: space-between !important; box-sizing: border-box !important; }
     body.light-mode .lesson-card-locked { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+    .lesson-card-teacher { width: 165px !important; min-height: 205px !important; height: auto !important; max-height: none !important; aspect-ratio: auto !important; box-sizing: border-box !important; margin: 0 auto; padding: 12px 10px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
+    .lesson-card-glow.lesson-card-teacher, .lesson-card-locked.lesson-card-teacher { height: auto !important; max-height: none !important; aspect-ratio: auto !important; min-height: 205px !important; }
 
     /* แอนิเมชันไอคอนสมุดขยับได้เมื่อเมาส์ชี้ (Wiggle/Bounce Hover Animation) */
     @keyframes lessonBookBounce {
@@ -257,6 +260,27 @@ body:not(.dark-mode) textarea,
     .btn-action-swal-confirm { border-radius: 50px !important; padding: 12px 28px !important; font-size: 1.02em !important; font-weight: 800 !important; font-family: 'Prompt', sans-serif !important; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 0 20px rgba(16, 185, 129, 0.6) !important; border: none !important; margin: 10px auto 0 auto !important; }
     .btn-action-swal-confirm:hover { transform: translateY(-2px) scale(1.03) !important; box-shadow: 0 0 26px rgba(16, 185, 129, 0.85) !important; }
 
+    .btn-action-swal-fullwidth {
+      width: 100% !important;
+      padding: 14px 20px !important;
+      font-size: 1.05em !important;
+      font-weight: 800 !important;
+      font-family: 'Prompt', sans-serif !important;
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-radius: 14px !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.4) !important;
+      cursor: pointer !important;
+      margin: 10px 0 0 0 !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-action-swal-fullwidth:hover {
+      background: #1d4ed8 !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 20px rgba(37,99,235,0.6) !important;
+    }
+
     .swal-cyber-popup { border-radius: 24px !important; border: 1.5px solid rgba(255, 255, 255, 0.12) !important; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.15) !important; backdrop-filter: blur(16px) !important; padding: 20px 22px !important; }
 
     .font-18-input select, .font-18-input input[type="tel"], .font-18-input textarea { font-size: 18px !important; padding: 16px !important; }
@@ -268,6 +292,27 @@ body:not(.dark-mode) textarea,
     .highlight-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px !important; font-size: 18px !important; font-family: 'Sarabun', sans-serif; color: transparent; pointer-events: none; z-index: 1; white-space: pre-wrap; word-wrap: break-word; overflow: hidden; line-height: 1.6 !important; }
     .highlight-overlay span.error { text-decoration: underline wavy #ef4444 !important; text-decoration-thickness: 3px !important; text-underline-offset: 4px !important; background: rgba(239,68,68,0.25) !important; color: transparent !important; font-weight: bold; border-radius: 4px; }
     .font-18-input textarea#read-synopsis { position: relative; z-index: 2; background: transparent !important; border: none !important; box-shadow: none !important; margin-bottom: 0 !important; width: 100%; height: 178px !important; resize: none; padding: 16px !important; font-size: 18px !important; color: #e2e8f0; line-height: 1.6 !important; overflow-y: auto !important; }
+
+    /* Exam Subjects Grid: 5 columns on Desktop, 3 on Tablet, 2 on Mobile */
+    .exam-subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto 30px auto;
+      padding: 0 10px;
+    }
+    @media (max-width: 1024px) {
+      .exam-subjects-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .exam-subjects-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+    }
 
     .btn-job-type { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 15px; font-weight: 600; font-family: 'Sarabun', sans-serif; cursor: pointer; transition: all 0.2s; }
     .btn-job-type.active { background: linear-gradient(135deg, #6366f1, #4f46e5) !important; border-color: #6366f1 !important; color: white !important; box-shadow: 0 0 12px rgba(99, 102, 241, 0.4) !important; }
@@ -323,7 +368,7 @@ body:not(.dark-mode) textarea,
     }
     .btn-action:disabled { background: rgba(255,255,255,0.1); color: #64748b; cursor: not-allowed; box-shadow: none; transform: none;}
 
-    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999999 !important; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
     .toast { padding: 12px 20px; border-radius: 12px; color: white; font-size: 0.9em; font-weight: 600; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toastSlide 0.3s ease forwards; backdrop-filter: blur(10px); }
     .toast.success { background: rgba(16,185,129,0.9); border: 1px solid #34d399; }
     .toast.warning { background: rgba(245,158,11,0.9); border: 1px solid #fbbf24; }
@@ -355,10 +400,110 @@ body:not(.dark-mode) textarea,
     .swal2-input:focus, .swal2-select:focus { border-color: #6366f1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important; }
     .swal2-popup { font-family: 'Sarabun', sans-serif !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 20px !important; }
 
-    .tab-group { display: flex; width: 100%; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 4px; margin-bottom: 20px; overflow-x: auto; }
-    .tab-btn { flex: 1; min-width: 110px; padding: 10px 5px; text-align: center; border-radius: 10px; cursor: pointer; color: #94a3b8; font-weight: 600; font-size: 0.9em; transition: all 0.3s; white-space: nowrap;}
-    .tab-btn.active { background: rgba(250, 204, 21, 0.2); color: #facc15; }
-    .tab-hw .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+    .tab-group {
+      display: flex;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto 20px auto;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 5px;
+      gap: 6px;
+      overflow-x: auto;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(16px);
+      box-sizing: border-box;
+    }
+    body.light-mode .tab-group {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 11px 16px;
+      text-align: center;
+      border-radius: 13px;
+      cursor: pointer;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.95em;
+      font-family: 'Prompt', 'Noto Sans Thai', sans-serif;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    body.light-mode .tab-btn {
+      color: #64748b;
+    }
+    .tab-btn:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    body.light-mode .tab-btn:hover {
+      color: #0f172a;
+      background: rgba(0, 0, 0, 0.03);
+    }
+    .tab-btn.active {
+      background: rgba(234, 179, 8, 0.2) !important;
+      color: #fef08a !important;
+      border: 1px solid rgba(234, 179, 8, 0.45) !important;
+      box-shadow: 0 0 16px rgba(234, 179, 8, 0.25) !important;
+    }
+    body.light-mode .tab-btn.active {
+      background: #fef9c3 !important;
+      color: #854d0e !important;
+      border: 1.5px solid #facc15 !important;
+      box-shadow: 0 2px 10px rgba(234, 179, 8, 0.15) !important;
+    }
+
+    /* Lessons Tab Active Accent */
+    .tab-lessons .tab-btn.active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.45)) !important;
+      color: #a7f3d0 !important;
+      border: 1px solid #10b981 !important;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.35) !important;
+    }
+    body.light-mode .tab-lessons .tab-btn.active {
+      background: #ecfdf5 !important;
+      color: #065f46 !important;
+      border: 1.5px solid #10b981 !important;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    /* Stats Tab Active Accent */
+    .tab-stats .tab-btn.active {
+      background: rgba(234, 179, 8, 0.22) !important;
+      color: #fef08a !important;
+      border: 1px solid rgba(234, 179, 8, 0.5) !important;
+      box-shadow: 0 0 16px rgba(234, 179, 8, 0.3) !important;
+    }
+    body.light-mode .tab-stats .tab-btn.active {
+      background: #fef9c3 !important;
+      color: #854d0e !important;
+      border: 1.5px solid #facc15 !important;
+      box-shadow: 0 2px 10px rgba(234, 179, 8, 0.15) !important;
+    }
+
+    /* Exam Tab Active Accent */
+    .tab-exam .tab-btn.active {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.45)) !important;
+      color: #bfdbfe !important;
+      border: 1px solid #3b82f6 !important;
+      box-shadow: 0 0 18px rgba(59, 130, 246, 0.35) !important;
+    }
+    body.light-mode .tab-exam .tab-btn.active {
+      background: #eff6ff !important;
+      color: #1e40af !important;
+      border: 1.5px solid #3b82f6 !important;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2) !important;
+    }
+
+    .tab-hw .tab-btn.active { background: rgba(99, 102, 241, 0.2) !important; color: #818cf8 !important; border-color: rgba(99, 102, 241, 0.4) !important; }
+    body.light-mode .tab-hw .tab-btn.active { background: #e0e7ff !important; color: #3730a3 !important; border-color: #818cf8 !important; }
     .tab-borrow .tab-btn { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
     .tab-borrow .tab-btn.active { background: linear-gradient(135deg, #ef4444, #dc2626) !important; color: #ffffff !important; font-weight: 800 !important; border-color: #ef4444 !important; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.65), 0 0 10px rgba(239, 68, 68, 0.4) !important; }
     .tab-data .tab-btn.active { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
@@ -497,8 +642,27 @@ body:not(.dark-mode) textarea,
     body.light-mode .stats-card [style*="color: #818cf8"] { color: #4338ca !important; background: #e0e7ff !important; border: 1px solid #c7d2fe; } 
     body.light-mode .stats-card [style*="color: #34d399"] { color: #059669 !important; background: #d1fae5 !important; border: 1px solid #a7f3d0; } 
     body.light-mode .stats-card [style*="color: #facc15"] { color: #b45309 !important; background: #fef3c7 !important; border: 1px solid #fde68a; } 
-    body.light-mode .stats-card [style*="color: #ef4444"] { color: #b91c1c !important; background: #fee2e2 !important; border: 1px solid #fecaca; } 
     body.light-mode .stats-card [style*="color: #f59e0b"] { color: #b45309 !important; background: #fef3c7 !important; border: 1px solid #fde68a; } 
+
+    /* Light Mode Overrides for Teacher Exam Panel */
+    body.light-mode #teacher-exam-panel {
+      background: #ffffff !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 8px 30px rgba(59,130,246,0.12) !important;
+    }
+    body.light-mode #teacher-exam-panel select,
+    body.light-mode #teacher-exam-panel input {
+      background: #ffffff !important;
+      color: #1e293b !important;
+      border: 1.5px solid #cbd5e1 !important;
+    }
+    body.light-mode #teacher-exam-panel [style*="background: rgba(15,23,42,0.6)"] {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-mode #teacher-exam-panel [style*="border-bottom: 1.5px solid rgba(255,255,255,0.12)"] {
+      border-bottom: 1.5px solid #e2e8f0 !important;
+    }
 
     /* ========================================================
        🌙 TOGGLE SWITCH CSS (มุมขวาล่าง - แสงสะท้อนสีเหลืองทอง)
@@ -1386,7 +1550,7 @@ body:not(.dark-mode) textarea,
         <div class="dash-icon-box box-red"><span class="menu-icon-text">📇</span></div>
         <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">สมาชิก</div>
       </div>
-      <div class="dash-card neon-card card-gold" onclick="nav('lessons')">
+      <div class="dash-card neon-card card-gold" onclick="window.open('https://spring-grass-123c.artkung103.workers.dev/', '_blank')">
         <div class="dash-icon-box box-gold"><span class="menu-icon-text">💻</span></div>
         <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">ห้องเรียน</div>
       </div>
@@ -1398,7 +1562,7 @@ body:not(.dark-mode) textarea,
 
     <!-- แถวที่ 3: เมนูการเรียนรู้ & ตั้งค่า (สอบ / คะแนน / บทเรียน / ตั้งค่า) -->
     <div class="dashboard-grid" style="margin-bottom: 16px;">
-      <div class="dash-card neon-card card-cyan" onclick="Swal.fire('📝 ระบบสอบ', 'ระบบแบบทดสอบกำลังเตรียมเปิดใช้งานเร็วๆ นี้', 'info')">
+      <div class="dash-card neon-card card-cyan" onclick="nav('exam')">
         <div class="dash-icon-box box-cyan"><span class="menu-icon-text">📝</span></div>
         <div class="card-title" style="font-size: 0.95em; margin-top: 6px; margin-bottom: 0;">สอบ</div>
       </div>
@@ -1424,9 +1588,26 @@ body:not(.dark-mode) textarea,
     </div>
 
     <!-- View 1: Grid View -->
-    <div id="lessons-grid-view">
-      <!-- Progress Bar (for student only) -->
-      <div id="lessons-progress-container" class="stats-card" style="display: none; margin: 15px auto; padding: 15px; border-radius: 16px; max-width: 1200px; width: 100%; box-sizing: border-box; border-left: 5px solid #10b981; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);">
+    <div id="lessons-grid-view" style="width: 100%; margin: 0 auto;">
+      
+      <!-- 1. Segmented Tab Bar for Term 1 / Term 2 (ความกว้าง 100% เท่ากับกล่องด้านล่าง) -->
+      <div class="tab-group tab-lessons" style="width: 100%; margin: 0 auto 16px auto;">
+        <div class="tab-btn active" id="btn-lesson-term-1" onclick="setLessonTermFilter(1)">📚 เทอม 1 (20 บท)</div>
+        <div class="tab-btn" id="btn-lesson-term-2" onclick="setLessonTermFilter(2)">📚 เทอม 2 (20 บท)</div>
+      </div>
+
+      <!-- 2. Controls Row: Mode Indicator & Class Filter Dropdown (ความกว้าง 100% เท่ากันเป๊ะ) -->
+      <div style="width: 100%; margin: 0 auto 20px auto; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <span id="lesson-mode-indicator" class="status-pill waiting" style="font-size: 0.9em; padding: 10px 18px; font-weight: 700; border-radius: 14px; margin: 0; white-space: nowrap;">โหมดผู้ใช้งาน</span>
+        <select id="lesson-filter-class" onchange="initLessonsPage()" style="flex: 1; min-width: 220px; margin: 0; padding: 11px 18px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.15); background: rgba(15,23,42,0.85); color: white; font-weight: 700; font-size: 0.95em; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+          <option value="ทั้งหมด">ระดับชั้น: ทั้งหมด</option>
+          <option value="ป.1-3">ระดับชั้น ป.1-3</option>
+          <option value="ป.4-6">ระดับชั้น ป.4-6</option>
+        </select>
+      </div>
+
+      <!-- 3. Progress Bar (for student only) -->
+      <div id="lessons-progress-container" class="stats-card" style="display: none; margin: 0 auto 20px auto; padding: 15px 20px; border-radius: 16px; width: 100%; box-sizing: border-box; border-left: 5px solid #10b981; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <span style="font-size: 1.05em; font-weight: 700; color: #10b981;">📊 ความก้าวหน้าในการเรียน</span>
           <span id="lessons-progress-text" style="font-size: 1.05em; font-weight: 700; color: #10b981;">0% (เรียนผ่านแล้ว 0/20 บท)</span>
@@ -1436,27 +1617,8 @@ body:not(.dark-mode) textarea,
         </div>
       </div>
 
-      <!-- Controls: Mode Indicator, Term Toggle (เทอม 1 / เทอม 2), and Filter Class -->
-      <div style="text-align: center; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <span id="lesson-mode-indicator" class="status-pill waiting" style="font-size: 0.9em; padding: 6px 14px; font-weight: 700;">โหมดผู้ใช้งาน</span>
-        
-        <!-- Term Toggle Buttons -->
-        <div style="display: inline-flex; gap: 4px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.12);">
-          <button id="btn-lesson-term-1" type="button" style="padding: 6px 16px; font-size: 0.85em; font-weight: 700; border-radius: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; cursor: pointer; transition: all 0.2s;" onclick="setLessonTermFilter(1)">📚 เทอม 1 (20 บท)</button>
-          <button id="btn-lesson-term-2" type="button" style="padding: 6px 16px; font-size: 0.85em; font-weight: 700; border-radius: 20px; background: transparent; color: #cbd5e1; border: none; cursor: pointer; transition: all 0.2s;" onclick="setLessonTermFilter(2)">📚 เทอม 2 (20 บท)</button>
-          <button id="btn-lesson-term-all" type="button" style="padding: 6px 16px; font-size: 0.85em; font-weight: 700; border-radius: 20px; background: transparent; color: #cbd5e1; border: none; cursor: pointer; transition: all 0.2s;" onclick="setLessonTermFilter('all')">🏆 ทั้งหมด (40 บท)</button>
-        </div>
-
-        <!-- Filter Class Dropdown for Teacher & Student (ป.1-3 / ป.4-6 / ทั้งหมด) -->
-        <select id="lesson-filter-class" onchange="initLessonsPage()" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.8); color: white; font-weight: 700; font-size: 0.88em; cursor: pointer;">
-          <option value="ทั้งหมด">ระดับชั้น: ทั้งหมด</option>
-          <option value="ป.1-3">ระดับชั้น ป.1-3</option>
-          <option value="ป.4-6">ระดับชั้น ป.4-6</option>
-        </select>
-      </div>
-
       <!-- ⚙️ แผงจัดการเนื้อหาบทเรียน (โหมดครูผู้สอน) -->
-      <div id="teacher-lesson-panel" class="stats-card" style="display: none; margin: 15px auto 25px auto; padding: 18px 20px; border-radius: 20px; max-width: 1200px; width: 100%; box-sizing: border-box; background: rgba(15,23,42,0.75); border: 2px solid #10b981; box-shadow: 0 0 22px rgba(16,185,129,0.3); backdrop-filter: blur(12px);">
+      <div id="teacher-lesson-panel" class="stats-card" style="display: none; margin: 15px auto 25px auto; padding: 18px 20px; border-radius: 20px; width: 100%; box-sizing: border-box; background: rgba(15,23,42,0.75); border: 2px solid #10b981; box-shadow: 0 0 22px rgba(16,185,129,0.3); backdrop-filter: blur(12px);">
         <div style="font-size: 1.1em; font-weight: 800; color: #10b981; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 1.3em;">⚙️</span>
@@ -1839,7 +2001,7 @@ body:not(.dark-mode) textarea,
 
     <div id="reading-tab-3" class="tab-content">
       <!-- Filter Bar -->
-      <div class="stats-header-bar" style="max-width: 750px; margin: 0 auto 16px auto;">
+      <div class="stats-header-bar" style="width: 100%; margin: 0 0 16px 0;">
         <h3 class="stats-header-title">🏆 อันดับสูงสุด นักอ่านยอดเยี่ยม</h3>
         <div class="stats-class-tabs" id="reading-stats-class-tabs">
           <button class="stats-tab-btn active" onclick="filterReadingStatsTab('all')">🏆 รวมทั้งหมด</button>
@@ -1881,11 +2043,12 @@ body:not(.dark-mode) textarea,
       <div class="form-section full-width font-18-input">
         <div class="loading-overlay" id="hw-loading" style="border-radius: 18px;"><div class="spinner"></div></div>
         
-        <!-- แถวที่ 1: เลือกระดับชั้น / ผู้ส่งงานคนที่ 1 / ผู้ส่งงานคนที่ 2 (บรรทัดเดียวกัน) -->
-        <div class="hw-form-row-3">
-          <div class="hw-form-field">
-            <label>เลือกระดับชั้น</label>
-            <select id="hw-class" onchange="fetchStudentsForHomework()">
+        <!-- แถวที่ 1: เลือกระดับชั้น / เลือกชื่อนักเรียน / ประเภทงาน -->
+        <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+          <!-- 1. ระดับชั้น -->
+          <div style="flex: 1; min-width: 125px;">
+            <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">เลือกระดับชั้น</label>
+            <select id="hw-class" onchange="fetchStudentsForHomework()" style="margin-bottom: 0;">
               <option value="">-- เลือกชั้นเรียน --</option>
               <option value="ป.1">ชั้น ป.1</option>
               <option value="ป.2">ชั้น ป.2</option>
@@ -1895,52 +2058,81 @@ body:not(.dark-mode) textarea,
               <option value="ป.6">ชั้น ป.6</option>
             </select>
           </div>
-          <div class="hw-form-field">
-            <label>ผู้ส่งงาน คนที่ 1 (บังคับ)</label>
-            <select id="hw-name-1" onchange="handleHomeworkNameChange()" disabled>
+
+          <!-- 2. ผู้ส่งงานคนที่ 1 -->
+          <div style="flex: 1.6; min-width: 175px;">
+            <label id="label-hw-name-1" style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">เลือกชื่อนักเรียน (บังคับ)</label>
+            <select id="hw-name-1" onchange="handleHomeworkNameChange()" disabled style="margin-bottom: 0;">
               <option value="">-- กรุณาเลือกชื่อ --</option>
             </select>
           </div>
-          <div class="hw-form-field">
-            <label>ผู้ส่งงาน คนที่ 2 (ถ้าทำคู่)</label>
-            <select id="hw-name-2" onchange="handleHomeworkNameChange()" disabled>
-              <option value="">-- ทำคนเดียวไม่ต้องเลือก --</option>
+
+          <!-- 3. ผู้ส่งงานคนที่ 2 (แสดงถัดจากคนที่ 1 เมื่อเลือกงานกลุ่ม) -->
+          <div id="hw-group-member-2-box" style="display: none; flex: 1.5; min-width: 170px;">
+            <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">ผู้ส่งงาน คนที่ 2 (คู่หู)</label>
+            <select id="hw-name-2" onchange="handleHomeworkNameChange()" disabled style="margin-bottom: 0;">
+              <option value="">-- เลือกชื่อคนที่ 2 --</option>
             </select>
           </div>
+
+          <!-- 4. ประเภทงาน (ไอคอนล้วน 👤 / 👥) -->
+          <div style="width: 110px; min-width: 110px;">
+            <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em; text-align: center;">ประเภทงาน</label>
+            <div style="display: flex; gap: 6px; height: 56px;">
+              <button type="button" id="btn-hw-job-single" class="btn-job-type active" onclick="setHwPageJobType('single')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="งานเดี่ยว">👤</button>
+              <button type="button" id="btn-hw-job-group" class="btn-job-type" onclick="setHwPageJobType('group')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="งานกลุ่ม">👥</button>
+            </div>
+          </div>
         </div>
 
-        <!-- แถวที่ 2: ชื่องาน / บทเรียน (ยาว 1 บรรทัดเต็ม) -->
-        <div style="margin-bottom: 16px;">
-          <label>ชื่องาน / บทเรียน</label>
-          <input type="text" id="hw-title" placeholder="เช่น แบบฝึกหัดคณิตหน้า 15" style="width: 100%;">
+        <!-- แถวที่ 2: ชื่องาน / บทเรียน + รูปแบบชิ้นงาน (ไอคอนล้วน 📁 / 📝) -->
+        <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+          <div style="flex: 1; min-width: 220px;">
+            <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">ชื่องาน / บทเรียน</label>
+            <input type="text" id="hw-title" placeholder="เช่น แบบฝึกหัดคณิตหน้า 15" style="width: 100%; margin-bottom: 0;">
+          </div>
+          
+          <div style="width: 110px; min-width: 110px;">
+            <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em; text-align: center;">รูปแบบชิ้นงาน</label>
+            <div style="display: flex; gap: 6px; height: 56px;">
+              <button type="button" id="btn-hw-work-files" class="btn-job-type active" onclick="setHwPageWorkMode('files')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="มีชิ้นงาน">📁</button>
+              <button type="button" id="btn-hw-work-none" class="btn-job-type" onclick="setHwPageWorkMode('none')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="ไม่มีชิ้นงาน">📝</button>
+            </div>
+          </div>
         </div>
 
-        <!-- แถวที่ 3: แนบไฟล์งาน พร้อม Image Preview ดูง่าย ชัดเจน -->
-        <label style="margin-top: 10px; margin-bottom: 8px;">แนบไฟล์งาน (รองรับรูปภาพ, PDF, Word ฯลฯ)</label>
-        <div class="hw-file-grid">
-          <!-- ไฟล์งาน 1 -->
-          <div class="hw-file-card" id="card-hw-file-1">
-            <input type="file" id="hw-file-1" style="display:none" onchange="updateHwFileLabel('hw-file-1')">
-            <label for="hw-file-1" id="label-hw-file-1" style="cursor: pointer; width: 100%; display: block; margin: 0;">
-              <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #818cf8;">📁 ไฟล์งาน 1 (บังคับ)</span>
-              <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์รูปภาพหรือเอกสาร</div>
-            </label>
-            <div id="hw-file-1-preview" class="hw-file-preview-box" style="display:none;"></div>
-          </div>
+        <!-- แถวที่ 3: แนบไฟล์งาน (ซ่อนเมื่อเลือกไม่มีชิ้นงาน) -->
+        <div id="hw-file-section" style="margin-bottom: 16px;">
+          <label style="margin-top: 10px; margin-bottom: 8px; font-weight: 700; color: #cbd5e1; display: block; font-size: 0.9em;">แนบไฟล์งาน (รองรับรูปภาพ, PDF, Word ฯลฯ)</label>
+          <div class="hw-file-grid">
+            <!-- ไฟล์งาน 1 -->
+            <div class="hw-file-card" id="card-hw-file-1">
+              <input type="file" id="hw-file-1" style="display:none" onchange="updateHwFileLabel('hw-file-1')">
+              <label for="hw-file-1" id="label-hw-file-1" style="cursor: pointer; width: 100%; display: block; margin: 0;">
+                <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #818cf8;">📁 ไฟล์งาน 1 (บังคับ)</span>
+                <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์รูปภาพหรือเอกสาร</div>
+              </label>
+              <div id="hw-file-1-preview" class="hw-file-preview-box" style="display:none;"></div>
+            </div>
 
-          <!-- ไฟล์งาน 2 -->
-          <div class="hw-file-card" id="card-hw-file-2">
-            <input type="file" id="hw-file-2" style="display:none" onchange="updateHwFileLabel('hw-file-2')">
-            <label for="hw-file-2" id="label-hw-file-2" style="cursor: pointer; width: 100%; display: block; margin: 0;">
-              <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #a78bfa;">📁 ไฟล์งาน 2 (ตัวเลือก)</span>
-              <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์เพิ่มเติม (ถ้ามี)</div>
-            </label>
-            <div id="hw-file-2-preview" class="hw-file-preview-box" style="display:none;"></div>
+            <!-- ไฟล์งาน 2 -->
+            <div class="hw-file-card" id="card-hw-file-2">
+              <input type="file" id="hw-file-2" style="display:none" onchange="updateHwFileLabel('hw-file-2')">
+              <label for="hw-file-2" id="label-hw-file-2" style="cursor: pointer; width: 100%; display: block; margin: 0;">
+                <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #a78bfa;">📁 ไฟล์งาน 2 (ตัวเลือก)</span>
+                <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์เพิ่มเติม (ถ้ามี)</div>
+              </label>
+              <div id="hw-file-2-preview" class="hw-file-preview-box" style="display:none;"></div>
+            </div>
           </div>
+        </div>
+
+        <!-- กล่องแจ้งเมื่อเลือกไม่มีชิ้นงาน -->
+        <div id="hw-no-file-note" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1.5px dashed rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; text-align: center; color: #34d399; font-weight: 700; font-size: 0.95em;">
+          📝 โหมดไม่มีชิ้นงาน (ไม่ต้องแนบไฟล์ สามารถกดปุ่มส่งงานได้ทันที)
         </div>
 
         <button id="btn-hw-submit" class="btn-action" style="background: linear-gradient(135deg, #6366f1, #4338ca); color: white;" onclick="submitHomework()">📤 ส่งงาน</button>
-        <div style="text-align: center; font-size: 0.8em; color: #ef4444; margin-top: 5px;">*จำกัดขนาดไฟล์รวมไม่เกิน 5MB เพื่อป้องกันระบบขัดข้อง</div>
       </div>
     </div>
 
@@ -1951,13 +2143,333 @@ body:not(.dark-mode) textarea,
     </div>
   </div>
 
-  <!-- ==================== STATS PAGE ==================== -->
+  <!-- ==================== EXAM PAGE (ระบบสอบออนไลน์) ==================== -->
+  <div id="page-exam" class="page-container wide">
+    <!-- View 1: Main Subjects Selection View -->
+    <div id="exam-main-view">
+      <div class="top-bar">
+        <button class="back-btn" onclick="nav('menu')">← กลับ</button>
+        <div class="page-title">📝 ระบบสอบออนไลน์</div>
+        <div class="spacer"></div>
+      </div>
+
+      <!-- 1. Semester 2-Button Segmented Tab Bar -->
+      <div class="tab-group tab-exam" style="width: 100%; margin: 0 0 20px 0;">
+        <div class="tab-btn active" id="btn-exam-sem-1" onclick="switchExamSemester('1')">ภาคเรียนที่ 1</div>
+        <div class="tab-btn" id="btn-exam-sem-2" onclick="switchExamSemester('2')">ภาคเรียนที่ 2</div>
+      </div>
+
+      <!-- 2. ⚙️ Teacher Exam Management Panel (แสดงอัตโนมัติในโหมดครู) -->
+      <div id="teacher-exam-panel" class="stats-card" style="display: none; width: 100%; box-sizing: border-box; margin: 0 0 24px 0; padding: 22px; border-radius: 20px; background: rgba(15,23,42,0.85); border: 2px solid #3b82f6; box-shadow: 0 8px 30px rgba(59,130,246,0.25); backdrop-filter: blur(14px);">
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1.5px solid rgba(255,255,255,0.12); flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4em; box-shadow: 0 4px 12px rgba(59,130,246,0.4);">
+              ⚙️
+            </div>
+            <div>
+              <h3 style="font-weight: 800; font-size: 1.25em; margin: 0 0 2px 0; color: #60a5fa;">จัดการข้อสอบ (โหมดครู)</h3>
+              <p style="font-size: 0.85em; font-weight: 600; color: #94a3b8; margin: 0;">ตั้งค่าข้อสอบ อัปโหลดไฟล์ PDF และเฉลยคำตอบ</p>
+            </div>
+          </div>
+          <div id="teacher-exam-header-badge" style="font-size: 0.82em; background: rgba(59,130,246,0.15); color: #93c5fd; padding: 4px 12px; border-radius: 20px; border: 1px solid #3b82f6; font-weight: 700;">
+            โหมดครูผู้สอน
+          </div>
+        </div>
+
+        <!-- 2 Columns Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 20px;">
+          
+          <!-- Column 1 (Left): ตั้งค่าข้อสอบ -->
+          <div>
+            <h4 style="font-weight: 800; font-size: 1.05em; margin: 0 0 14px 0; color: #93c5fd;">📋 ตั้งค่าระบบสอบ</h4>
+            
+            <!-- Row 1: ภาคเรียน | ชั้น -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+              <div>
+                <label style="font-size: 0.82em; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">ภาคเรียน</label>
+                <select id="teacher-exam-semester" onchange="loadExistingExamIntoPanel()" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; background: rgba(15,23,42,0.7); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.18); outline: none;">
+                  <option value="1">ภาคเรียนที่ 1</option>
+                  <option value="2">ภาคเรียนที่ 2</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.82em; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">ระดับชั้น</label>
+                <select id="teacher-exam-grade" onchange="loadExistingExamIntoPanel()" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; background: rgba(15,23,42,0.7); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.18); outline: none;">
+                  <option value="ป.1">ชั้น ป.1</option>
+                  <option value="ป.2" selected>ชั้น ป.2</option>
+                  <option value="ป.3">ชั้น ป.3</option>
+                  <option value="ป.4">ชั้น ป.4</option>
+                  <option value="ป.5">ชั้น ป.5</option>
+                  <option value="ป.6">ชั้น ป.6</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Row 2: วิชา | จำนวนข้อสอบ -->
+            <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; margin-bottom: 12px;">
+              <div>
+                <label style="font-size: 0.82em; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">รายวิชา</label>
+                <select id="teacher-exam-subject" onchange="loadExistingExamIntoPanel()" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; background: rgba(15,23,42,0.7); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.18); outline: none;">
+                  <option value="ภาษาไทย">ภาษาไทย</option>
+                  <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                  <option value="วิทยาศาสตร์ฯ">วิทยาศาสตร์ฯ</option>
+                  <option value="สังคมศึกษาฯ">สังคมศึกษาฯ</option>
+                  <option value="ประวัติศาสตร์">ประวัติศาสตร์</option>
+                  <option value="สุขศึกษาฯ">สุขศึกษาฯ</option>
+                  <option value="ศิลปะ">ศิลปะ</option>
+                  <option value="การงานอาชีพ">การงานอาชีพ</option>
+                  <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                  <option value="หน้าที่พลเมือง">หน้าที่พลเมือง</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.82em; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">จำนวนข้อสอบ</label>
+                <input type="number" id="teacher-exam-total-qs" value="10" min="1" max="100" oninput="renderTeacherAnswerKeyMatrix()" style="width: 100%; padding: 10px; border-radius: 12px; text-align: center; font-weight: 800; background: rgba(15,23,42,0.7); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.18); outline: none; box-sizing: border-box;">
+              </div>
+            </div>
+
+            <!-- Row 3: จำนวนตัวเลือก | เวลาสอบ (นาที) -->
+            <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; margin-bottom: 14px;">
+              <div>
+                <label style="font-size: 0.82em; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">จำนวนตัวเลือก</label>
+                <select id="teacher-exam-choices" onchange="renderTeacherAnswerKeyMatrix()" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; background: rgba(15,23,42,0.7); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.18); outline: none;">
+                  <option value="3">3 ตัวเลือก (ก,ข,ค)</option>
+                  <option value="4" selected>4 ตัวเลือก (ก,ข,ค,ง)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.82em; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">เวลาสอบ (นาที)</label>
+                <input type="number" id="teacher-exam-timelimit" value="60" min="1" max="180" style="width: 100%; padding: 10px; border-radius: 12px; text-align: center; font-weight: 800; color: #38bdf8; background: rgba(15,23,42,0.7); border: 1.5px solid rgba(255,255,255,0.18); outline: none; box-sizing: border-box;">
+              </div>
+            </div>
+
+            <!-- Row 4: ไฟล์ข้อสอบ PDF -->
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label style="font-size: 0.82em; font-weight: 700; color: #94a3b8;">ไฟล์ข้อสอบ PDF</label>
+                <a href="https://drive.google.com/drive/u/0/folders/1XfCSFFHFZDTp5s7EcNelMNfifCHLHziU" target="_blank" rel="noopener noreferrer" style="font-size: 0.78em; font-weight: 700; color: #38bdf8; text-decoration: none; display: flex; align-items: center; gap: 4px; background: rgba(56,189,248,0.12); padding: 3px 10px; border-radius: 8px; border: 1px solid rgba(56,189,248,0.3); transition: all 0.2s;">
+                  📂 โฟลเดอร์ Drive ↗
+                </a>
+              </div>
+              <input type="text" id="teacher-exam-pdf-link" placeholder="วางลิงก์ Google Drive หรือ File ID ที่นี่..." style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 0.88em; margin-bottom: 8px; background: rgba(15,23,42,0.7); color: #ffffff; border: 1px solid rgba(255,255,255,0.18); box-sizing: border-box;">
+              
+              <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 8px;">
+                <input type="file" id="teacher-exam-pdf-file" accept="application/pdf" style="display: none;" onchange="handleTeacherExamFileUpload(this)">
+                <button type="button" onclick="document.getElementById('teacher-exam-pdf-file').click()" style="padding: 10px; border-radius: 12px; border: 2px dashed rgba(59,130,246,0.4); background: rgba(59,130,246,0.08); color: #60a5fa; font-weight: 800; font-size: 0.88em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                  📄 แนบไฟล์ PDF
+                </button>
+                <a href="https://drive.google.com/drive/u/0/folders/1XfCSFFHFZDTp5s7EcNelMNfifCHLHziU" target="_blank" rel="noopener noreferrer" style="padding: 10px; border-radius: 12px; border: 1px solid rgba(16,185,129,0.3); background: rgba(16,185,129,0.08); color: #34d399; font-weight: 800; font-size: 0.88em; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                  📁 เปิดไดรฟ์
+                </a>
+              </div>
+              <div id="teacher-exam-file-status" style="font-size: 0.8em; margin-top: 6px; text-align: center;"></div>
+            </div>
+          </div>
+
+          <!-- Column 2 (Right): กระดาษคำตอบเฉลย (1 คอลัมน์ เรียง 1-10 ความยาวเท่ากับ 8 ข้อ) -->
+          <div style="background: rgba(15,23,42,0.6); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1.5px solid rgba(255,255,255,0.12);">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.2em;">📝</span>
+                <span style="font-weight: 800; font-size: 1.05em; color: #60a5fa;">กระดาษคำตอบเฉลย</span>
+              </div>
+              <span style="font-size: 0.78em; font-weight: 700; color: #38bdf8; background: rgba(59,130,246,0.15); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(59,130,246,0.3);">คลิกฝนคำตอบที่ถูกต้อง</span>
+            </div>
+
+            <!-- Answer Key Single Column with height for 10 items without scrolling -->
+            <div id="teacher-exam-answer-key-grid" style="display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; padding-right: 4px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button" onclick="saveTeacherExamFromPanel()" style="width: 100%; padding: 14px; font-size: 1.05em; font-weight: 800; font-family: 'Prompt', sans-serif; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 14px; box-shadow: 0 4px 18px rgba(59,130,246,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+          💾 บันทึกข้อสอบ
+        </button>
+      </div>
+
+      <!-- 3. Main Exam Header Bar (สำหรับนักเรียนและภาพรวม) -->
+      <div class="stats-card" style="display: flex; justify-content: space-between; align-items: center; gap: 14px; margin: 0 0 20px 0; width: 100%; box-sizing: border-box; padding: 16px 22px; border-radius: 20px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 52px; height: 52px; border-radius: 16px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.6em; box-shadow: 0 4px 14px rgba(59,130,246,0.4);">
+            📝
+          </div>
+          <div>
+            <h2 style="font-weight: 800; font-size: 1.35em; margin: 0 0 2px 0; color: inherit;">สอบออนไลน์</h2>
+            <p style="font-size: 0.85em; font-weight: 600; color: #94a3b8; margin: 0;">เลือกรายวิชาและคลิกเพื่อเริ่มทำแบบทดสอบวัดผล</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading / Status -->
+      <div class="status-text" id="exam-loading-status" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0;">
+        <div class="spinner" style="border-top-color: #38bdf8; width: 40px; height: 40px; border-width: 3px;"></div>
+        <div style="margin-top: 10px; color: #bae6fd; font-size: 1em; font-weight: 600;">กำลังโหลดข้อมูลข้อสอบ...</div>
+      </div>
+
+      <!-- 3. 10 Subject Cards Grid (5 columns x 2 rows) -->
+      <div id="exam-subjects-grid" class="exam-subjects-grid">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- View 2: Split-Screen Online Exam Room -->
+    <div id="exam-room-view" style="display: none; width: 100%; max-width: 1500px; margin: 0 auto; height: calc(100vh - 120px); min-height: 520px; flex-direction: column;">
+      <!-- Sticky Bar -->
+      <div style="background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <button onclick="exitExamRoom()" class="btn-action" style="width: auto; margin: 0; padding: 8px 16px; font-size: 0.85em; background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid #ef4444; border-radius: 10px; font-weight: 700; cursor: pointer;">
+          ✖ ออกจากการสอบ
+        </button>
+
+        <div style="flex: 1; text-align: center; min-width: 200px;">
+          <div id="exam-room-title" style="font-weight: 800; font-size: 1.1em; color: #60a5fa; margin-bottom: 3px;">วิชา...</div>
+          <div style="width: 100%; max-width: 320px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; margin: 0 auto;">
+            <div id="exam-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #10b981); transition: width 0.3s ease;"></div>
+          </div>
+          <div id="exam-progress-text" style="font-size: 0.78em; color: #94a3b8; font-weight: 700; margin-top: 2px;">ทำไปแล้ว 0 / 10 ข้อ</div>
+        </div>
+
+        <div id="exam-timer-box" style="padding: 6px 14px; font-size: 1.2em; font-weight: 800; font-family: monospace; border-radius: 12px; background: rgba(15,23,42,0.9); border: 2px solid #3b82f6; color: #60a5fa; box-shadow: 0 0 12px rgba(59,130,246,0.3);">
+          ⏱️ 60:00
+        </div>
+      </div>
+
+      <!-- Split Layout -->
+      <div style="display: flex; gap: 14px; flex: 1; min-height: 0; overflow: hidden;">
+        <!-- Left: PDF Viewer (70%) -->
+        <div style="flex: 7; background: #1e293b; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; overflow: hidden; position: relative; display: flex; flex-direction: column;">
+          <iframe id="exam-pdf-frame" src="" style="width: 100%; height: 100%; border: none; background: white; flex: 1;"></iframe>
+        </div>
+
+        <!-- Right: Digital Answer Sheet (30%) -->
+        <div style="flex: 3; min-width: 280px; max-width: 380px; background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 14px; display: flex; flex-direction: column;">
+          <div style="font-weight: 800; font-size: 1em; color: #e2e8f0; text-align: center; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px;">
+            📝 กระดาษคำตอบ
+          </div>
+
+          <div id="exam-answer-sheet-list" style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered by JS -->
+          </div>
+
+          <div style="padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px;">
+            <button onclick="submitExamAnswers()" class="btn-action" style="width: 100%; margin: 0; padding: 12px; font-size: 1.05em; font-weight: 800; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 16px rgba(16,185,129,0.5); cursor: pointer;">
+              🚀 ส่งคำตอบ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== STATS / SCORES PAGE (ระบบคะแนน & สถิติ) ==================== -->
   <div id="page-stats" class="page-container wide" style="position: relative;">
     <canvas id="fireworks-canvas"></canvas>
-    <div class="top-bar" style="position: relative; z-index: 2;"><button class="back-btn" onclick="nav('menu')">← กลับ</button><div class="page-title">📊 สถิติการใช้งาน</div><div class="spacer"></div></div>
-    <div class="status-text" id="stats-status" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0;"><div class="spinner" style="border-top-color: #38bdf8; width: 45px; height: 45px; border-width: 4px;"></div><div style="margin-top: 15px; color: #bae6fd; font-size: 1.1em; font-weight: 600;">กำลังดาวน์โหลดข้อมูล...</div></div>
-    <div id="stats-content" style="position: relative; z-index: 2; width: 100%; display: none;">
-      <div class="stats-card full-width" style="max-width: 1000px; margin: 0 auto 20px auto; padding: 20px; position: relative; z-index: 2;">
+    <div class="top-bar" style="position: relative; z-index: 2;">
+      <button class="back-btn" onclick="nav('menu')">← กลับ</button>
+      <div class="page-title">📊 ระบบคะแนน & สถิติ</div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- 3 Main Tabs: Exam Scores / Lesson Scores / Library Leaderboard -->
+    <div class="tab-group tab-stats" style="position: relative; z-index: 2;">
+      <div class="tab-btn active" id="score-tab-btn-1" onclick="switchScoreDashboardTab(1)">📝 ผลคะแนนสอบออนไลน์</div>
+      <div class="tab-btn" id="score-tab-btn-2" onclick="switchScoreDashboardTab(2)">📖 ผลคะแนนบทเรียน</div>
+      <div class="tab-btn" id="score-tab-btn-3" onclick="switchScoreDashboardTab(3)">🏆 สถิติห้องสมุด</div>
+    </div>
+
+    <div class="status-text" id="stats-status" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0;">
+      <div class="spinner" style="border-top-color: #38bdf8; width: 45px; height: 45px; border-width: 4px;"></div>
+      <div style="margin-top: 15px; color: #bae6fd; font-size: 1.1em; font-weight: 600;">กำลังดาวน์โหลดข้อมูล...</div>
+    </div>
+
+    <!-- Tab Content 1: ผลคะแนนสอบออนไลน์ -->
+    <div id="score-tab-content-1" class="tab-content" style="position: relative; z-index: 2; width: 100%;">
+      <div class="stats-card full-width" style="width: 100%; box-sizing: border-box; margin: 0 0 20px 0; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+          <div style="font-weight: 800; font-size: 1.15em; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
+            📝 ประวัติคะแนนสอบออนไลน์
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="score-exam-filter-sem" onchange="renderExamScoresTable()" style="margin: 0; padding: 7px 12px; font-size: 0.88em; font-weight: 700; border-radius: 10px; background: rgba(15,23,42,0.6); color: white;">
+              <option value="1">ภาคเรียนที่ 1</option>
+              <option value="2">ภาคเรียนที่ 2</option>
+            </select>
+            <select id="score-exam-filter-class" onchange="renderExamScoresTable()" style="margin: 0; padding: 7px 12px; font-size: 0.88em; font-weight: 700; border-radius: 10px; background: rgba(15,23,42,0.6); color: white;">
+              <option value="all">-- ทุกระดับชั้น --</option>
+              <option value="ป.1">ชั้น ป.1</option>
+              <option value="ป.2">ชั้น ป.2</option>
+              <option value="ป.3">ชั้น ป.3</option>
+              <option value="ป.4">ชั้น ป.4</option>
+              <option value="ป.5">ชั้น ป.5</option>
+              <option value="ป.6">ชั้น ป.6</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto; width: 100%;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9em; white-space: nowrap;">
+            <thead>
+              <tr style="background: rgba(59,130,246,0.15); color: #93c5fd; border-bottom: 1px solid rgba(59,130,246,0.3);">
+                <th style="padding: 10px 14px;">วันที่ / เวลา</th>
+                <th style="padding: 10px 14px;">ชั้น</th>
+                <th style="padding: 10px 14px;">ชื่อ-สกุล</th>
+                <th style="padding: 10px 14px;">วิชาที่สอบ</th>
+                <th style="padding: 10px 14px; text-align: center;">คะแนน</th>
+                <th style="padding: 10px 14px; text-align: center;">ครั้งที่ทำ</th>
+              </tr>
+            </thead>
+            <tbody id="score-exam-tbody">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content 2: ผลคะแนนบทเรียน & ตรวจงาน -->
+    <div id="score-tab-content-2" class="tab-content" style="position: relative; z-index: 2; width: 100%; display: none;">
+      <div class="stats-card full-width" style="width: 100%; box-sizing: border-box; margin: 0 0 20px 0; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+          <div style="font-weight: 800; font-size: 1.15em; color: #34d399; display: flex; align-items: center; gap: 8px;">
+            📖 ประวัติการเรียนบทเรียน & ส่งงาน
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="score-lesson-filter-class" onchange="renderLessonScoresTable()" style="margin: 0; padding: 7px 12px; font-size: 0.88em; font-weight: 700; border-radius: 10px; background: rgba(15,23,42,0.6); color: white;">
+              <option value="all">-- ทุกระดับชั้น --</option>
+              <option value="ป.1">ชั้น ป.1</option>
+              <option value="ป.2">ชั้น ป.2</option>
+              <option value="ป.3">ชั้น ป.3</option>
+              <option value="ป.4">ชั้น ป.4</option>
+              <option value="ป.5">ชั้น ป.5</option>
+              <option value="ป.6">ชั้น ป.6</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto; width: 100%;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9em; white-space: nowrap;">
+            <thead>
+              <tr style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-bottom: 1px solid rgba(16,185,129,0.3);">
+                <th style="padding: 10px 14px;">วันที่ / เวลา</th>
+                <th style="padding: 10px 14px;">ชั้น</th>
+                <th style="padding: 10px 14px;">ชื่อ-สกุล</th>
+                <th style="padding: 10px 14px;">เรื่อง / บทเรียน</th>
+                <th style="padding: 10px 14px; text-align: center;">คะแนน (เต็ม 10)</th>
+                <th style="padding: 10px 14px; text-align: center;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="score-lesson-tbody">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content 3: สถิติห้องสมุด (Leaderboard) -->
+    <div id="score-tab-content-3" class="tab-content" style="position: relative; z-index: 2; width: 100%; display: none;">
+      <div class="stats-card full-width" style="width: 100%; box-sizing: border-box; margin: 0 0 20px 0; padding: 20px; position: relative; z-index: 2;">
         <div class="stats-header-bar">
           <div class="stats-header-title">🏆 เข้าใช้ห้องสมุดมากที่สุด</div>
           <div class="stats-class-tabs" id="stats-class-tabs">
@@ -2371,19 +2883,17 @@ body:not(.dark-mode) textarea,
 
     function logoutStudent(e) {
       if (e) e.stopPropagation();
-      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
-      const roleText = isTeacher ? 'ครู' : 'นักเรียน';
+      const isLight = document.body.classList.contains('light-mode');
 
       Swal.fire({
         title: '🚪 ยืนยันการออกจากระบบ',
-        text: `คุณต้องการออกจากระบบโหมด${roleText}ใช่หรือไม่?`,
-        icon: 'question',
         showCancelButton: true,
-        confirmButtonText: '🚪 ยืนยันออกจากระบบ',
+        confirmButtonText: 'ยืนยัน',
         cancelButtonText: 'ยกเลิก',
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
-        background: '#ffffff', color: '#0f172a',
+        background: isLight ? '#ffffff' : '#1e293b',
+        color: isLight ? '#0f172a' : '#f8fafc',
         customClass: { popup: 'light-override-popup' }
       }).then((result) => {
         if (result.isConfirmed) {
@@ -2584,11 +3094,12 @@ body:not(.dark-mode) textarea,
         if (pageId === 'scan') initScanPage(); 
         if (pageId === 'register') initRegisterPage(); 
         if (pageId === 'stats') {
-          fetchStats();
+          initStatsPage();
           startFireworks();
         } else {
           stopFireworks();
         }
+        if (pageId === 'exam') initExamPage();
         if (pageId === 'borrow') switchBorrowTab(1); 
         if (pageId === 'reading') switchReadingTab(1); 
         if (pageId === 'homework') switchHomeworkTab(1); 
@@ -2877,16 +3388,131 @@ console.log(payload);
       }
     }
 
+    let currentHwPageJobType = 'single';
+    let currentHwPageWorkMode = 'files';
+
+    function setHwPageJobType(type) {
+      currentHwPageJobType = type;
+      const btnSingle = document.getElementById('btn-hw-job-single');
+      const btnGroup = document.getElementById('btn-hw-job-group');
+      const box2 = document.getElementById('hw-group-member-2-box');
+      const label1 = document.getElementById('label-hw-name-1');
+
+      if (type === 'group') {
+        if (btnSingle) btnSingle.classList.remove('active');
+        if (btnGroup) btnGroup.classList.add('active');
+        if (box2) box2.style.display = 'block';
+        if (label1) label1.innerText = 'ผู้ส่งงาน คนที่ 1 (บังคับ)';
+      } else {
+        if (btnSingle) btnSingle.classList.add('active');
+        if (btnGroup) btnGroup.classList.remove('active');
+        if (box2) box2.style.display = 'none';
+        if (label1) label1.innerText = 'เลือกชื่อนักเรียน (บังคับ)';
+        const sel2 = document.getElementById('hw-name-2');
+        if (sel2) sel2.value = '';
+      }
+    }
+
+    function setHwPageWorkMode(mode) {
+      currentHwPageWorkMode = mode;
+      const btnFiles = document.getElementById('btn-hw-work-files');
+      const btnNone = document.getElementById('btn-hw-work-none');
+      const fileSec = document.getElementById('hw-file-section');
+      const noFileNote = document.getElementById('hw-no-file-note');
+
+      if (mode === 'none') {
+        if (btnFiles) btnFiles.classList.remove('active');
+        if (btnNone) btnNone.classList.add('active');
+        if (fileSec) fileSec.style.display = 'none';
+        if (noFileNote) noFileNote.style.display = 'block';
+      } else {
+        if (btnFiles) btnFiles.classList.add('active');
+        if (btnNone) btnNone.classList.remove('active');
+        if (fileSec) fileSec.style.display = 'block';
+        if (noFileNote) noFileNote.style.display = 'none';
+      }
+    }
+
     async function submitHomework() { 
-      const cls = document.getElementById('hw-class').value, n1 = document.getElementById('hw-name-1').value, n2 = document.getElementById('hw-name-2').value, title = document.getElementById('hw-title').value.trim(); const file1 = document.getElementById('hw-file-1').files[0], file2 = document.getElementById('hw-file-2').files[0]; 
-      if (!cls || !n1 || !title || !file1) return showToast('กรุณากรอกข้อมูลและแนบไฟล์ 1', 'warning'); const totalSize = (file1.size || 0) + (file2 ? file2.size : 0); if (totalSize > 5 * 1024 * 1024) return showToast('ขนาดไฟล์รวมเกิน 5MB', 'error'); 
-      Swal.fire({ title: '⏳ กำลังอัปโหลด...', html: 'กรุณารอสักครู่ (อาจใช้เวลา 1-2 นาทีหากไฟล์ใหญ่)', background: '#16213e', color: '#e2e8f0', allowOutsideClick: false, showConfirmButton: false }); 
+      const cls = document.getElementById('hw-class')?.value || '';
+      const n1 = document.getElementById('hw-name-1')?.value || '';
+      const n2 = document.getElementById('hw-name-2')?.value || '';
+      const title = document.getElementById('hw-title')?.value.trim() || '';
+      const file1 = document.getElementById('hw-file-1')?.files?.[0];
+      const file2 = document.getElementById('hw-file-2')?.files?.[0];
+
+      if (!cls) return showToast('กรุณาเลือกระดับชั้น', 'warning');
+      if (!n1) return showToast('กรุณาเลือกผู้ส่งงาน คนที่ 1', 'warning');
+      if (currentHwPageJobType === 'group' && !n2) {
+        return showToast('กรุณาเลือกผู้ส่งงาน คนที่ 2 (งานกลุ่ม)', 'warning');
+      }
+      if (currentHwPageJobType === 'group' && n1 && n2 && n1 === n2) {
+        return showToast('ไม่สามารถเลือกชื่อผู้ส่งงานซ้ำกันได้', 'warning');
+      }
+      if (!title) return showToast('กรุณากรอกชื่องาน / บทเรียน', 'warning');
+
+      if (currentHwPageWorkMode === 'files') {
+        if (!file1) return showToast('กรุณาแนบไฟล์งาน 1 เพื่อส่งงาน', 'warning');
+        const totalSize = (file1 ? file1.size : 0) + (file2 ? file2.size : 0);
+        if (totalSize > 5 * 1024 * 1024) return showToast('ขนาดไฟล์รวมเกิน 5MB', 'error');
+      }
+
+      Swal.fire({
+        title: '⏳ กำลังอัปโหลด...',
+        html: 'กรุณารอสักครู่' + (currentHwPageWorkMode === 'files' ? ' (อาจใช้เวลา 1-2 นาทีหากไฟล์ใหญ่)' : '...'),
+        background: '#16213e',
+        color: '#e2e8f0',
+        allowOutsideClick: false,
+        showConfirmButton: false
+      });
+
       try { 
-        const f1Base64 = await getBase64(file1); let f2Base64 = null; if (file2) f2Base64 = await getBase64(file2); 
-        await gasPost({ action: 'addHomework', className: cls, name1: n1, name2: n2, taskName: title, file1: f1Base64, file2: f2Base64 }); 
-        Swal.fire({ icon: 'success', title: 'ส่งงานสำเร็จ', background: '#16213e', color: '#e2e8f0', timer: 1500, showConfirmButton: false }); 
-        document.getElementById('hw-class').value = ''; document.getElementById('hw-name-1').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>'; document.getElementById('hw-name-1').disabled = true; document.getElementById('hw-name-2').innerHTML = '<option value="">-- ทำคนเดียวไม่ต้องเลือก --</option>'; document.getElementById('hw-name-2').disabled = true; document.getElementById('hw-title').value = ''; clearHwFile('hw-file-1'); clearHwFile('hw-file-2'); setTimeout(() => switchHomeworkTab(2), 1000); 
-      } catch(e) { Swal.fire({ icon: 'error', title: 'ล้มเหลว', text: 'ไม่สามารถอัปโหลดไฟล์ได้', background: '#16213e', color: '#e2e8f0' }); } 
+        let f1Base64 = null;
+        let f2Base64 = null;
+        if (currentHwPageWorkMode === 'files') {
+          if (file1) f1Base64 = await getBase64(file1);
+          if (file2) f2Base64 = await getBase64(file2);
+        }
+
+        await gasPost({
+          action: 'addHomework',
+          className: cls,
+          name1: n1,
+          name2: (currentHwPageJobType === 'group' && n2) ? n2 : '-',
+          taskName: title,
+          file1: f1Base64,
+          file2: f2Base64
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'ส่งงานสำเร็จ! 🎉',
+          background: '#16213e',
+          color: '#e2e8f0',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        document.getElementById('hw-class').value = '';
+        document.getElementById('hw-name-1').innerHTML = '<option value="">-- กรุณาเลือกชั้นก่อน --</option>';
+        document.getElementById('hw-name-1').disabled = true;
+        document.getElementById('hw-name-2').innerHTML = '<option value="">-- ทำคนเดียวไม่ต้องเลือก --</option>';
+        document.getElementById('hw-name-2').disabled = true;
+        document.getElementById('hw-title').value = '';
+        clearHwFile('hw-file-1');
+        clearHwFile('hw-file-2');
+        setHwPageJobType('single');
+        setHwPageWorkMode('files');
+        setTimeout(() => switchHomeworkTab(2), 1000);
+      } catch(e) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ส่งงานล้มเหลว',
+          text: 'ไม่สามารถส่งงานได้: ' + e.toString(),
+          background: '#16213e',
+          color: '#e2e8f0'
+        });
+      }
     }
     async function fetchHomeworks() { 
       const statusDiv = document.getElementById('hw-status'), listDiv = document.getElementById('hw-list'); statusDiv.style.display = 'flex'; listDiv.innerHTML = ''; 
@@ -2913,18 +3539,18 @@ console.log(payload);
         let statusBg = isDone ? 'rgba(52, 211, 153, 0.15)' : 'rgba(251, 191, 36, 0.15)';
         let statusText = isDone ? '✅ ตรวจแล้ว' : '⏳ รอตรวจ';
         
-        let safeFile1 = String(item.file1 || '');
-        let safeFile2 = String(item.file2 || '');
+        let f1Url = getFileUrl(item.file1);
+        let f2Url = getFileUrl(item.file2);
         
         let fileLinks = '<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">';
         let fileCount = 0; 
         
-        if (safeFile1.startsWith('http')) {
-          fileLinks += `<button onclick="viewHomeworkFile('${safeFile1}')" class="btn-action btn-info" style="padding: 6px 14px; font-size: 0.85em; display: inline-flex; width: auto; margin-bottom: 0;">📄 เปิดไฟล์ 1</button>`;
+        if (f1Url) {
+          fileLinks += `<button onclick="viewHomeworkFile('${f1Url}')" class="btn-action btn-info" style="padding: 6px 14px; font-size: 0.85em; display: inline-flex; width: auto; margin-bottom: 0;">📄 เปิดไฟล์ 1</button>`;
           fileCount++;
         } 
-        if (safeFile2.startsWith('http')) {
-          fileLinks += `<button onclick="viewHomeworkFile('${safeFile2}')" class="btn-action btn-secondary" style="padding: 6px 14px; font-size: 0.85em; display: inline-flex; width: auto; margin-bottom: 0;">📄 เปิดไฟล์ 2</button>`;
+        if (f2Url) {
+          fileLinks += `<button onclick="viewHomeworkFile('${f2Url}')" class="btn-action btn-secondary" style="padding: 6px 14px; font-size: 0.85em; display: inline-flex; width: auto; margin-bottom: 0;">📄 เปิดไฟล์ 2</button>`;
           fileCount++;
         } 
         fileLinks += '</div>';
@@ -2933,8 +3559,8 @@ console.log(payload);
         let name2Val = (item.name2 && item.name2 !== '-') ? item.name2 : null;
         
         let scoreDisplay = '';
-        if (safeFile2 && safeFile2 !== '-' && !safeFile2.startsWith('http')) {
-          scoreDisplay = `<div style="font-weight: 700; color: #facc15; font-size: 1.05em; margin-top: 4px;">⭐ คะแนน: ${safeFile2}</div>`;
+        if (item.file2 && item.file2 !== '-' && !f2Url) {
+          scoreDisplay = `<div style="font-weight: 700; color: #facc15; font-size: 1.05em; margin-top: 4px;">⭐ คะแนน: ${item.file2}</div>`;
         }
 
         cardsHtml += `
@@ -2956,14 +3582,21 @@ console.log(payload);
             </div>
 
             <div class="hw-card-box-footer">
-              <button onclick="changeHomeworkStatus(${item.rowIdx}, '${safeFile2.replace(/'/g, "\\'")}')" class="btn-c-action" style="width: 100%; margin: 0; padding: 10px; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 6px;">✏️ ครูตรวจงาน</button>
+              <button onclick="changeHomeworkStatus(${item.rowIdx}, '${String(item.file2 || '').replace(/'/g, "\\'")}')" class="btn-c-action" style="width: 100%; margin: 0; padding: 10px; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 6px;">✏️ ครูตรวจงาน</button>
             </div>
           </div>
         `; 
       }); 
       listDiv.innerHTML = cardsHtml; 
     }
-    function viewHomeworkFile(url) { let embedUrl = url; if (url.includes('drive.google.com') && url.includes('/view')) { embedUrl = url.replace('/view?usp=sharing', '/preview').replace('/view', '/preview'); } Swal.fire({ title: '📄 ตรวจงานนักเรียน', html: `<iframe src="${embedUrl}" style="width: 100%; height: 60vh; border: none; border-radius: 8px; background: white;"></iframe>`, width: '90%', background: document.body.classList.contains('light-mode') ? '#fff' : '#16213e', color: document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0', showCloseButton: true, showConfirmButton: false }); }
+    function viewHomeworkFile(url) { 
+      if (!url) return;
+      let finalUrl = url.trim();
+      if (!finalUrl.startsWith('http')) {
+        finalUrl = `https://drive.google.com/file/d/${finalUrl}/view?usp=sharing`;
+      }
+      window.open(finalUrl, '_blank');
+    }
     
     async function changeHomeworkStatus(rowIdx, currentScore) { 
       let defScore = (currentScore && currentScore !== '-' && !currentScore.startsWith('http')) ? currentScore : '';
@@ -3002,14 +3635,18 @@ console.log(payload);
     }
 
     // --- BORROW / RETURN ---
-    function switchReadingTab(tabIndex) {
+    function switchReadingTab(tabIndex, isEditing = false) {
       document.querySelectorAll('#page-reading .tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('#page-reading .tab-content').forEach(content => content.classList.remove('active'));
       const activeBtn = document.getElementById('tab-btn-' + tabIndex);
       const activeContent = document.getElementById('reading-tab-' + tabIndex);
       if (activeBtn) activeBtn.classList.add('active');
       if (activeContent) activeContent.classList.add('active');
-      if (tabIndex === 1) { applyLoggedInUserToForm('read'); alignJobTypeButtonsHeight(); stopFireworks(); }
+      if (tabIndex === 1) { 
+        if (!isEditing) applyLoggedInUserToForm('read'); 
+        alignJobTypeButtonsHeight(); 
+        stopFireworks(); 
+      }
       if (tabIndex === 2) { fetchReadingLogs(); stopFireworks(); }
       if (tabIndex === 3) { fetchReadingStats(); startFireworks(); }
     }
@@ -3721,12 +4358,12 @@ console.log(payload);
     }
 
     async function editStudentReading(rowIdx, cls, name, title, synopsis, rating) { 
-      switchReadingTab(1); 
+      switchReadingTab(1, true); 
       const overlay = document.getElementById('reading-loading'); 
       overlay.style.display = 'flex'; 
       document.getElementById('read-class').value = cls; 
       
-      const names = name.split(/, |,/).map(s => s.trim()).filter(Boolean);
+      const names = (name || '').split(/,\s*|\band\b|และ/).map(s => s.trim()).filter(Boolean);
       if (names.length > 1) {
         setJobType('group');
       } else {
@@ -3876,9 +4513,15 @@ console.log(payload);
 
       let filteredData = allReadingLogs;
 
-      // In Student Mode: ONLY show reading logs submitted by current student!
+      // In Student Mode: ONLY show reading logs submitted by current student (supports single & paired work)!
       if (!isTeacher && currentLoggedInUser && currentLoggedInUser.name) {
-        filteredData = filteredData.filter(item => item.name === currentLoggedInUser.name);
+        const currentStudentName = currentLoggedInUser.name.trim();
+        filteredData = filteredData.filter(item => {
+          if (!item.name) return false;
+          if (item.name.trim() === currentStudentName) return true;
+          const names = item.name.split(/,\s*|\band\b|และ/).map(s => s.trim()).filter(Boolean);
+          return names.includes(currentStudentName);
+        });
       } else if (isTeacher) {
         if (filterClass !== 'all') filteredData = filteredData.filter(item => item.className === filterClass);
         if (filterStatus !== 'all') filteredData = filteredData.filter(item => item.status === filterStatus);
@@ -3908,8 +4551,12 @@ console.log(payload);
           starHtml += (i <= item.rating) ? '★' : '<span class="empty" style="opacity:0.3;">☆</span>';
         }
 
+        const namesList = (item.name || '').split(/,\s*|\band\b|และ/).map(s => s.trim()).filter(Boolean);
+        const displayName = namesList.length > 1 ? `👥 ${namesList.join(' คู่กับ ')}` : `👤 ${item.name}`;
+
         const safeSynopsis = (item.synopsis || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>").replace(/\r/g, "");
         const safeTitle = (item.bookTitle || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        const safeName = (item.name || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
         html += `
         <div class="stats-card" style="background: ${cardBg}; border-left: 5px solid ${statusColor}; box-shadow: 0 4px 20px ${glowColor}; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; gap: 12px; margin-bottom: 10px; border-radius: 14px;">
@@ -3918,7 +4565,7 @@ console.log(payload);
             <div style="font-size: 1.4em; flex-shrink: 0;">📖</div>
             <div style="text-align: left; overflow: hidden;">
               <div style="font-weight: 800; font-size: 1.05em; color: ${titleColor}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.bookTitle}</div>
-              <div style="font-size: 0.85em; color: ${labelColor};">ผู้ส่ง: <b style="color: ${nameColor};">${item.name}</b> (${item.className})</div>
+              <div style="font-size: 0.85em; color: ${labelColor};">ผู้ส่ง: <b style="color: ${nameColor};">${displayName}</b> (${item.className})</div>
             </div>
           </div>
 
@@ -3935,8 +4582,8 @@ console.log(payload);
             ${isTeacher ? `
               <button onclick="teacherReadSynopsis('${safeTitle}', '${safeSynopsis}', ${item.rowIdx})" title="📖 อ่านเนื้อหา" class="btn-action" style="padding: 6px 16px; font-size: 0.88em; margin: 0; background: linear-gradient(135deg, #38bdf8, #0284c7); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 อ่านเนื้อหา</button>
             ` : `
-              <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}', ${item.rowIdx}, '${item.className}', '${item.name}', ${item.rating}, '${item.status}')" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
-              ${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReadingWithAuth(${item.rowIdx}, '${item.className}', '${item.name}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไขงาน</button>` : ''}
+              <button onclick="showSynopsisModal('${safeTitle}', '${safeSynopsis}', ${item.rowIdx}, '${item.className}', '${safeName}', ${item.rating}, '${item.status}')" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: rgba(56,189,248,0.15); border: 1px solid #38bdf8; color: ${isLight ? '#0284c7' : '#bae6fd'}; border-radius: 50px; font-weight: 700; white-space: nowrap;">📖 ดูเรื่องย่อ</button>
+              ${item.status === 'กลับไปแก้ไข' ? `<button onclick="editStudentReadingWithAuth(${item.rowIdx}, '${item.className}', '${safeName}', '${safeTitle}', '${safeSynopsis}', ${item.rating})" class="btn-action" style="padding: 6px 16px; font-size: 0.85em; margin: 0; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 50px; font-weight: 700; white-space: nowrap;">✏️ แก้ไขงาน</button>` : ''}
             `}
           </div>
         </div>`;
@@ -4478,6 +5125,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     function showSynopsisModal(title, text, rowIdx, cls, name, rating, status) {
       const safeTitle = (title || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
       const safeText = (text || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      const safeName = (name || '').toString().replace(/'/g, "\\'").replace(/"/g, "&quot;");
       const isApproved = (status === 'ตรวจแล้ว');
 
       Swal.fire({ 
@@ -4485,7 +5133,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         html: `
           <div class="modal-content-box" style="text-align: left; max-height: 50vh; overflow-y: auto; background: #f8fafc; color: #0f172a; padding: 18px; border-radius: 12px; font-size: 1em; line-height: 1.8; border: 1.5px solid #cbd5e1; margin-bottom: 16px;">${text}</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button onclick="Swal.close(); editStudentReadingDirect(${rowIdx}, '${cls}', '${name}', '${safeTitle}', '${safeText}', ${rating});" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">✏️ แก้ไข</button>
+            <button onclick="Swal.close(); editStudentReadingDirect(${rowIdx}, '${cls}', '${safeName}', '${safeTitle}', '${safeText}', ${rating});" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(239,68,68,0.4);">✏️ แก้ไข</button>
             ${!isApproved ? `<button onclick="Swal.close(); teacherApproveWithPassword(${rowIdx});" style="padding:10px 20px; background:linear-gradient(135deg,#0284c7,#0369a1); color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif; box-shadow:0 4px 12px rgba(2,132,199,0.4);">🔒 ครูตรวจ</button>` : ''}
             <button onclick="Swal.close();" style="padding:10px 20px; background:#64748b; color:white; border:none; border-radius:50px; font-size:0.95em; font-weight:700; cursor:pointer; font-family:'Sarabun',sans-serif;">✕ ปิด</button>
           </div>
@@ -5185,20 +5833,15 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       { lessonNo: 20, topic: 'นวัตกรรมและเทคโนโลยีอนาคต', contentType: 'pdf', externalLink: '' }
     ];
 
-    let currentSelectedTerm = 1; // 1 | 2 | 'all'
+    let currentSelectedTerm = 1; // 1 | 2
 
     function setLessonTermFilter(term) {
       currentSelectedTerm = term;
       const b1 = document.getElementById('btn-lesson-term-1');
       const b2 = document.getElementById('btn-lesson-term-2');
-      const bAll = document.getElementById('btn-lesson-term-all');
       
-      const activeStyle = "padding: 6px 14px; font-size: 0.85em; font-weight: 700; border-radius: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; cursor: pointer; transition: all 0.2s;";
-      const inactiveStyle = "padding: 6px 14px; font-size: 0.85em; font-weight: 700; border-radius: 20px; background: transparent; color: #cbd5e1; border: none; cursor: pointer; transition: all 0.2s;";
-      
-      if (b1) b1.style.cssText = (term === 1) ? activeStyle : inactiveStyle;
-      if (b2) b2.style.cssText = (term === 2) ? activeStyle : inactiveStyle;
-      if (bAll) bAll.style.cssText = (term === 'all') ? activeStyle : inactiveStyle;
+      if (b1) b1.classList.toggle('active', term === 1);
+      if (b2) b2.classList.toggle('active', term === 2);
       
       showLessonsGrid();
     }
@@ -5331,6 +5974,8 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       const name2Select = document.getElementById('swal-lesson-name2');
       if (!name1Select || !name2Select) return;
 
+      const isStudentLoggedIn = !!(currentLoggedInUser && !currentLoggedInUser.isTeacher && currentLoggedInUser.name);
+
       name1Select.innerHTML = '<option value="">-- กำลังโหลดรายชื่อ... --</option>';
       name2Select.innerHTML = '<option value="">-- กำลังโหลดรายชื่อ... --</option>';
       name1Select.disabled = true;
@@ -5358,7 +6003,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
               name2Select.innerHTML += `<option value="${name}">${name}</option>`;
             }
           });
-          name1Select.disabled = false;
+          name1Select.disabled = isStudentLoggedIn ? true : false;
           name2Select.disabled = false;
         }
       } catch (e) {
@@ -5468,6 +6113,51 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       });
     }
 
+    let currentSwalJobType = 'single';
+    let currentSwalWorkMode = 'files';
+
+    function setSwalLessonJobType(type) {
+      currentSwalJobType = type;
+      const btnSingle = document.getElementById('btn-swal-job-single');
+      const btnGroup = document.getElementById('btn-swal-job-group');
+      const box2 = document.getElementById('swal-group-member-2-box');
+      const label1 = document.getElementById('label-swal-lesson-name1');
+
+      if (type === 'group') {
+        if (btnSingle) btnSingle.classList.remove('active');
+        if (btnGroup) btnGroup.classList.add('active');
+        if (box2) box2.style.display = 'block';
+        if (label1) label1.innerText = 'ผู้ส่งงาน คนที่ 1 (บังคับ)';
+      } else {
+        if (btnSingle) btnSingle.classList.add('active');
+        if (btnGroup) btnGroup.classList.remove('active');
+        if (box2) box2.style.display = 'none';
+        if (label1) label1.innerText = 'เลือกชื่อนักเรียน (บังคับ)';
+        const sel2 = document.getElementById('swal-lesson-name2');
+        if (sel2) sel2.value = '';
+      }
+    }
+
+    function setSwalLessonWorkMode(mode) {
+      currentSwalWorkMode = mode;
+      const btnFiles = document.getElementById('btn-swal-work-files');
+      const btnNone = document.getElementById('btn-swal-work-none');
+      const fileSec = document.getElementById('swal-lesson-file-section');
+      const noFileNote = document.getElementById('swal-lesson-no-file-note');
+
+      if (mode === 'none') {
+        if (btnFiles) btnFiles.classList.remove('active');
+        if (btnNone) btnNone.classList.add('active');
+        if (fileSec) fileSec.style.display = 'none';
+        if (noFileNote) noFileNote.style.display = 'block';
+      } else {
+        if (btnFiles) btnFiles.classList.add('active');
+        if (btnNone) btnNone.classList.remove('active');
+        if (fileSec) fileSec.style.display = 'block';
+        if (noFileNote) noFileNote.style.display = 'none';
+      }
+    }
+
     async function submitSwalLessonFromModal(lessonNo) {
       const cls = document.getElementById('swal-lesson-class')?.value || '';
       const n1 = document.getElementById('swal-lesson-name1')?.value || '';
@@ -5478,11 +6168,19 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
 
       if (!cls) return showToast('กรุณาเลือกระดับชั้น', 'warning');
       if (!n1) return showToast('กรุณาเลือกผู้ส่งงาน คนที่ 1', 'warning');
+      if (currentSwalJobType === 'group' && !n2) {
+        return showToast('กรุณาเลือกผู้ส่งงาน คนที่ 2 (งานกลุ่ม)', 'warning');
+      }
+      if (currentSwalJobType === 'group' && n1 && n2 && n1 === n2) {
+        return showToast('ไม่สามารถเลือกชื่อผู้ส่งงานซ้ำกันได้', 'warning');
+      }
       if (!title) return showToast('กรุณากรอกชื่องาน / บทเรียน', 'warning');
-      if (!file1) return showToast('กรุณาแนบไฟล์งาน 1 เพื่อส่งงาน', 'warning');
 
-      const totalSize = (file1 ? file1.size : 0) + (file2 ? file2.size : 0);
-      if (totalSize > 5 * 1024 * 1024) return showToast('ขนาดไฟล์รวมเกิน 5MB', 'error');
+      if (currentSwalWorkMode === 'files') {
+        if (!file1) return showToast('กรุณาแนบไฟล์งาน 1 เพื่อส่งงาน', 'warning');
+        const totalSize = (file1 ? file1.size : 0) + (file2 ? file2.size : 0);
+        if (totalSize > 5 * 1024 * 1024) return showToast('ขนาดไฟล์รวมเกิน 5MB', 'error');
+      }
 
       const isLight = document.body.classList.contains('light-mode');
       const bgSwal = isLight ? '#ffffff' : '#16213e';
@@ -5490,7 +6188,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
 
       Swal.fire({
         title: '⏳ กำลังส่งงานบทเรียน...',
-        html: 'กรุณารอสักครู่ (อาจใช้เวลา 1-2 นาทีหากไฟล์ใหญ่)',
+        html: 'กรุณารอสักครู่' + (currentSwalWorkMode === 'files' ? ' (อาจใช้เวลา 1-2 นาทีหากไฟล์ใหญ่)' : '...'),
         background: bgSwal,
         color: colorSwal,
         allowOutsideClick: false,
@@ -5500,18 +6198,20 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       try {
         let f1Base64 = null;
         let f2Base64 = null;
-        if (file1) {
-          if (file1.type.startsWith('image/')) {
-            f1Base64 = await getBase64(file1);
-          } else {
-            f1Base64 = await readFileAsBase64(file1);
+        if (currentSwalWorkMode === 'files') {
+          if (file1) {
+            if (file1.type.startsWith('image/')) {
+              f1Base64 = await getBase64(file1);
+            } else {
+              f1Base64 = await readFileAsBase64(file1);
+            }
           }
-        }
-        if (file2) {
-          if (file2.type.startsWith('image/')) {
-            f2Base64 = await getBase64(file2);
-          } else {
-            f2Base64 = await readFileAsBase64(file2);
+          if (file2) {
+            if (file2.type.startsWith('image/')) {
+              f2Base64 = await getBase64(file2);
+            } else {
+              f2Base64 = await readFileAsBase64(file2);
+            }
           }
         }
 
@@ -5519,7 +6219,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           action: 'addHomework',
           className: cls,
           name1: n1,
-          name2: n2 || '-',
+          name2: (currentSwalJobType === 'group' && n2) ? n2 : '-',
           taskName: title,
           file1: f1Base64,
           file2: f2Base64
@@ -5539,7 +6239,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         Swal.fire({
           icon: 'error',
           title: 'ส่งงานล้มเหลว',
-          text: 'ไม่สามารถอัปโหลดไฟล์ได้: ' + e.toString(),
+          text: 'ไม่สามารถส่งงานได้: ' + e.toString(),
           background: bgSwal,
           color: colorSwal
         });
@@ -5556,10 +6256,14 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           lesson = (allL || []).find(l => Number(l.lessonNo) === Number(lessonNo)) || {};
         }
       }
+      currentSwalJobType = 'single';
+      currentSwalWorkMode = 'files';
+
       const isLight = document.body.classList.contains('light-mode');
       const bg = isLight ? '#ffffff' : '#151b30';
       const color = isLight ? '#1e293b' : '#e2e8f0';
 
+      const isStudentLoggedIn = !!(currentLoggedInUser && !currentLoggedInUser.isTeacher && currentLoggedInUser.name);
       const userCls = currentLoggedInUser ? currentLoggedInUser.cls : '';
       const currentStudentName = currentLoggedInUser ? currentLoggedInUser.name : '';
 
@@ -5567,29 +6271,30 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       const lessonTopic = lesson.topic || `บทเรียนบทที่ ${lessonNo}`;
 
       const swalHtml = `
-        <div class="form-section full-width font-18-input" style="text-align: left; color: ${color}; font-family: 'Sarabun', 'Prompt', sans-serif; padding: 4px 2px; background: transparent; border: none; box-shadow: none;">
+        <div class="form-section full-width font-18-input" style="text-align: left; color: ${color}; font-family: 'Sarabun', sans-serif; padding: 4px 2px; background: transparent; border: none; box-shadow: none;">
           
-          <!-- แถวหัวข้อ: ชื่องาน/บทเรียน + ปุ่มเข้าสู่บทเรียน -->
+          <!-- แถวหัวข้อ: ชื่องาน/บทเรียน + ปุ่มเข้าสู่บทเรียน (สีเหลือง ฟอนต์ Sarabun) -->
           <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; backdrop-filter: blur(12px);">
             <div style="flex: 1; font-size: 1.05em; font-weight: 800; color: #ffffff; line-height: 1.4; word-break: break-word;">
               <span style="color: #818cf8;">📖 หัวข้อบทเรียน:</span> <span>${lessonTopic}</span>
             </div>
             ${externalLink ? `
             <div style="flex-shrink: 0;">
-              <button type="button" class="btn-action" style="margin: 0; padding: 10px 18px; font-size: 0.92em; font-weight: 800; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); font-family: 'Prompt', sans-serif;" onclick="executeStudentEnterLesson(${lessonNo}, '${externalLink.replace(/'/g, "\\'")}', this)">
+              <button id="btn-student-enter-lesson" type="button" class="btn-action" style="margin: 0; padding: 10px 18px; font-size: 0.95em; font-weight: 800; border-radius: 12px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; border: none; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45); font-family: 'Sarabun', sans-serif; transition: all 0.3s ease;" onclick="executeStudentEnterLesson(${lessonNo}, '${externalLink.replace(/'/g, "\\'")}', this)">
                 🔗 เข้าสู่บทเรียน
               </button>
             </div>` : `
             <div style="flex-shrink: 0;">
-              <span style="font-size: 0.85em; color: #94a3b8;">(ไม่มีลิงก์ภายนอก)</span>
+              <span style="font-size: 0.85em; color: #94a3b8; font-family: 'Sarabun', sans-serif;">(ไม่มีลิงก์ภายนอก)</span>
             </div>`}
           </div>
 
-          <!-- แถวที่ 1: เลือกระดับชั้น / ผู้ส่งงานคนที่ 1 / ผู้ส่งงานคนที่ 2 (บรรทัดเดียวกัน) -->
-          <div class="hw-form-row-3" style="margin-bottom: 16px;">
-            <div class="hw-form-field">
-              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">เลือกระดับชั้น</label>
-              <select id="swal-lesson-class" onchange="onSwalLessonClassChange()" style="margin-bottom: 0;">
+          <!-- แถวที่ 1: เลือกระดับชั้น / เลือกชื่อนักเรียน / ประเภทงาน -->
+          <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+            <!-- 1. เลือกระดับชั้น -->
+            <div style="flex: 1; min-width: 125px;">
+              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">เลือกระดับชั้น ${isStudentLoggedIn ? '🔒' : ''}</label>
+              <select id="swal-lesson-class" onchange="onSwalLessonClassChange()" style="margin-bottom: 0; ${isStudentLoggedIn ? 'opacity: 0.85; cursor: not-allowed;' : ''}" ${isStudentLoggedIn ? 'disabled' : ''}>
                 <option value="">-- เลือกชั้นเรียน --</option>
                 <option value="ป.1" ${userCls === 'ป.1' ? 'selected' : ''}>ชั้น ป.1</option>
                 <option value="ป.2" ${userCls === 'ป.2' ? 'selected' : ''}>ชั้น ป.2</option>
@@ -5599,53 +6304,82 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
                 <option value="ป.6" ${userCls === 'ป.6' ? 'selected' : ''}>ชั้น ป.6</option>
               </select>
             </div>
-            <div class="hw-form-field">
-              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">ผู้ส่งงาน คนที่ 1 (บังคับ)</label>
-              <select id="swal-lesson-name1" onchange="handleSwalLessonNameChange()" style="margin-bottom: 0;" ${userCls ? '' : 'disabled'}>
+
+            <!-- 2. เลือกชื่อนักเรียน (คนที่ 1) -->
+            <div style="flex: 1.6; min-width: 175px;">
+              <label id="label-swal-lesson-name1" style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">เลือกชื่อนักเรียน (บังคับ) ${isStudentLoggedIn ? '🔒' : ''}</label>
+              <select id="swal-lesson-name1" onchange="handleSwalLessonNameChange()" style="margin-bottom: 0; ${isStudentLoggedIn ? 'opacity: 0.85; cursor: not-allowed;' : ''}" ${isStudentLoggedIn ? 'disabled' : (userCls ? '' : 'disabled')}>
                 <option value="">-- กรุณาเลือกชื่อ --</option>
               </select>
             </div>
-            <div class="hw-form-field">
-              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">ผู้ส่งงาน คนที่ 2 (ถ้าทำคู่)</label>
+
+            <!-- 3. ผู้ส่งงานคนที่ 2 (แสดงถัดจากคนที่ 1 เมื่อเลือกงานกลุ่ม) -->
+            <div id="swal-group-member-2-box" style="display: none; flex: 1.5; min-width: 170px;">
+              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">ผู้ส่งงาน คนที่ 2 (คู่หู)</label>
               <select id="swal-lesson-name2" onchange="handleSwalLessonNameChange()" style="margin-bottom: 0;" ${userCls ? '' : 'disabled'}>
-                <option value="">-- ทำคนเดียวไม่ต้องเลือก --</option>
+                <option value="">-- เลือกชื่อคนที่ 2 --</option>
               </select>
             </div>
+
+            <!-- 4. ประเภทงาน (ไอคอนล้วน 👤 / 👥 ขนาดพอดีบรรทัด) -->
+            <div style="width: 110px; min-width: 110px;">
+              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em; text-align: center;">ประเภทงาน</label>
+              <div style="display: flex; gap: 6px; height: 56px;">
+                <button type="button" id="btn-swal-job-single" class="btn-job-type active" onclick="setSwalLessonJobType('single')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="งานเดี่ยว">👤</button>
+                <button type="button" id="btn-swal-job-group" class="btn-job-type" onclick="setSwalLessonJobType('group')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="งานกลุ่ม">👥</button>
+              </div>
+            </div>
           </div>
 
-          <!-- แถวที่ 2: ชื่องาน / บทเรียน (ยาว 1 บรรทัดเต็ม) -->
-          <div style="margin-bottom: 16px;">
-            <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">ชื่องาน / บทเรียน</label>
-            <input type="text" id="swal-lesson-title" value="บทเรียนบทที่ ${lessonNo}: ${lesson.topic || ''}" style="width: 100%; margin-bottom: 0;">
+          <!-- แถวที่ 2: ชื่องาน / บทเรียน + รูปแบบชิ้นงาน (ไอคอนล้วน 📁 / 📝) -->
+          <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+            <div style="flex: 1; min-width: 220px;">
+              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em;">ชื่องาน / บทเรียน</label>
+              <input type="text" id="swal-lesson-title" value="บทเรียนบทที่ ${lessonNo}: ${lesson.topic || ''}" style="width: 100%; margin-bottom: 0;">
+            </div>
+            
+            <div style="width: 110px; min-width: 110px;">
+              <label style="font-weight: 700; color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.9em; text-align: center;">รูปแบบชิ้นงาน</label>
+              <div style="display: flex; gap: 6px; height: 56px;">
+                <button type="button" id="btn-swal-work-files" class="btn-job-type active" onclick="setSwalLessonWorkMode('files')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="มีชิ้นงาน">📁</button>
+                <button type="button" id="btn-swal-work-none" class="btn-job-type" onclick="setSwalLessonWorkMode('none')" style="flex: 1; height: 100%; border-radius: 12px; margin-bottom: 0; padding: 0; font-size: 24px; display: inline-flex; align-items: center; justify-content: center;" title="ไม่มีชิ้นงาน">📝</button>
+              </div>
+            </div>
           </div>
 
-          <!-- แถวที่ 3: แนบไฟล์งาน พร้อม Image Preview ดูง่าย ชัดเจน -->
-          <label style="margin-top: 10px; margin-bottom: 8px; font-weight: 700; color: #cbd5e1; display: block;">แนบไฟล์งาน (รองรับรูปภาพ, PDF, Word ฯลฯ)</label>
-          <div class="hw-file-grid">
-            <!-- ไฟล์งาน 1 -->
-            <div class="hw-file-card" id="card-swal-lesson-file-1">
-              <input type="file" id="swal-lesson-file-1" style="display:none" onchange="updateSwalLessonFileLabel('swal-lesson-file-1')">
-              <label for="swal-lesson-file-1" id="label-swal-lesson-file-1" style="cursor: pointer; width: 100%; display: block; margin: 0;">
-                <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #818cf8;">📁 ไฟล์งาน 1 (บังคับ)</span>
-                <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์รูปภาพหรือเอกสาร</div>
-              </label>
-              <div id="swal-lesson-file-1-preview" class="hw-file-preview-box" style="display:none;"></div>
-            </div>
+          <!-- แถวที่ 3: แนบไฟล์งาน (ซ่อนเมื่อเลือก 'ไม่มีชิ้นงาน') -->
+          <div id="swal-lesson-file-section" style="margin-bottom: 16px;">
+            <label style="margin-top: 6px; margin-bottom: 8px; font-weight: 700; color: #cbd5e1; display: block; font-size: 0.9em;">แนบไฟล์งาน (รองรับรูปภาพ, PDF, Word ฯลฯ)</label>
+            <div class="hw-file-grid">
+              <!-- ไฟล์งาน 1 -->
+              <div class="hw-file-card" id="card-swal-lesson-file-1">
+                <input type="file" id="swal-lesson-file-1" style="display:none" onchange="updateSwalLessonFileLabel('swal-lesson-file-1')">
+                <label for="swal-lesson-file-1" id="label-swal-lesson-file-1" style="cursor: pointer; width: 100%; display: block; margin: 0;">
+                  <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #818cf8;">📁 ไฟล์งาน 1 (บังคับ)</span>
+                  <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์รูปภาพหรือเอกสาร</div>
+                </label>
+                <div id="swal-lesson-file-1-preview" class="hw-file-preview-box" style="display:none;"></div>
+              </div>
 
-            <!-- ไฟล์งาน 2 -->
-            <div class="hw-file-card" id="card-swal-lesson-file-2">
-              <input type="file" id="swal-lesson-file-2" style="display:none" onchange="updateSwalLessonFileLabel('swal-lesson-file-2')">
-              <label for="swal-lesson-file-2" id="label-swal-lesson-file-2" style="cursor: pointer; width: 100%; display: block; margin: 0;">
-                <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #a78bfa;">📁 ไฟล์งาน 2 (ตัวเลือก)</span>
-                <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์เพิ่มเติม (ถ้ามี)</div>
-              </label>
-              <div id="swal-lesson-file-2-preview" class="hw-file-preview-box" style="display:none;"></div>
+              <!-- ไฟล์งาน 2 -->
+              <div class="hw-file-card" id="card-swal-lesson-file-2">
+                <input type="file" id="swal-lesson-file-2" style="display:none" onchange="updateSwalLessonFileLabel('swal-lesson-file-2')">
+                <label for="swal-lesson-file-2" id="label-swal-lesson-file-2" style="cursor: pointer; width: 100%; display: block; margin: 0;">
+                  <span class="hw-upload-title" style="font-weight: 700; font-size: 0.95em; color: #a78bfa;">📁 ไฟล์งาน 2 (ตัวเลือก)</span>
+                  <div style="font-size: 0.8em; color: #94a3b8; margin-top: 4px;">แตะเพื่อเลือกไฟล์เพิ่มเติม (ถ้ามี)</div>
+                </label>
+                <div id="swal-lesson-file-2-preview" class="hw-file-preview-box" style="display:none;"></div>
+              </div>
             </div>
+          </div>
+
+          <!-- กล่องแจ้งเมื่อเลือกโหมดไม่มีชิ้นงาน -->
+          <div id="swal-lesson-no-file-note" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1.5px dashed rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; text-align: center; color: #34d399; font-weight: 700; font-size: 0.95em;">
+            📝 โหมดไม่มีชิ้นงาน (ไม่ต้องแนบไฟล์ สามารถกดปุ่มส่งงานได้ทันที)
           </div>
 
           <!-- แถวที่ 4: ปุ่มส่งงานหลัก สีม่วง Gradient -->
-          <button id="btn-swal-lesson-submit" type="button" class="btn-action" style="background: linear-gradient(135deg, #6366f1, #4338ca); color: white; margin-top: 8px; width: 100%; padding: 14px 20px; font-size: 1.05em; font-weight: 700; border-radius: 12px; cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); font-family: 'Sarabun', 'Prompt', sans-serif;" onclick="submitSwalLessonFromModal(${lessonNo})">📤 ส่งงาน</button>
-          <div style="text-align: center; font-size: 0.8em; color: #ef4444; margin-top: 8px;">*จำกัดขนาดไฟล์รวมไม่เกิน 5MB เพื่อป้องกันระบบขัดข้อง</div>
+          <button id="btn-swal-lesson-submit" type="button" class="btn-action" style="background: linear-gradient(135deg, #6366f1, #4338ca); color: white; margin-top: 8px; width: 100%; padding: 14px 20px; font-size: 1.05em; font-weight: 700; border-radius: 12px; cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); font-family: 'Sarabun', sans-serif;" onclick="submitSwalLessonFromModal(${lessonNo})">📤 ส่งงาน</button>
         </div>
       `;
 
@@ -5674,7 +6408,9 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     function executeStudentEnterLesson(lessonNo, link, btnElem) {
       if (btnElem) {
         btnElem.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-        btnElem.style.boxShadow = '0 0 14px rgba(16, 185, 129, 0.65)';
+        btnElem.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.7)';
+        btnElem.style.color = '#ffffff';
+        btnElem.style.fontFamily = "'Sarabun', sans-serif";
         btnElem.innerHTML = '✅ เข้าเรียนแล้ว';
       }
       if (link && link.startsWith('http')) {
@@ -5853,16 +6589,16 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         const safeClassStr = (lesson.targetClass||'ทั้งหมด').replace(/'/g, "\\'");
 
         if (isTeacher) {
-          const cardClass = hasData ? 'dash-card neon-card lesson-card-glow lesson-card-wrap' : 'dash-card lesson-card-locked lesson-card-wrap';
+          const cardClass = hasData ? 'dash-card neon-card lesson-card-glow lesson-card-teacher' : 'dash-card lesson-card-locked lesson-card-teacher';
           html += `
             <div class="${cardClass}">
               <div style="font-size: 0.8em; font-weight: 800; color: ${hasData ? '#10b981' : '#94a3b8'};" class="lesson-card-label">บทที่ ${lessonNo} (เทอม ${lesson.term})</div>
-              <div style="font-size: 1.5em; margin: 2px 0;" class="lesson-card-icon">${hasData ? '📖' : '📝'}</div>
-              <div style="font-size: 0.86em; font-weight: 800; line-height: 1.3; margin-bottom: 4px; max-height: 2.6em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: ${hasData ? 'inherit' : '#94a3b8'};" class="lesson-card-topic" title="${hasData ? lesson.topic : 'ยังไม่ได้กรอกเนื้อหา'}">${hasData ? lesson.topic : 'ยังไม่ได้กรอกเนื้อหา'}</div>
+              <div style="font-size: 1.4em; margin: 2px 0;" class="lesson-card-icon">${hasData ? '📖' : '📝'}</div>
+              <div style="font-size: 0.85em; font-weight: 800; line-height: 1.3; margin-bottom: 3px; max-height: 2.6em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: ${hasData ? 'inherit' : '#94a3b8'};" class="lesson-card-topic" title="${hasData ? lesson.topic : 'ยังไม่ได้กรอกเนื้อหา'}">${hasData ? lesson.topic : 'ยังไม่ได้กรอกเนื้อหา'}</div>
               <div style="font-size: 0.75em; font-weight: 700; color: ${hasData ? '#34d399' : '#cbd5e1'}; margin-bottom: 6px;">${hasData ? '✅ มีเนื้อหาแล้ว' : '⚠️ ยังไม่ได้กรอก'}</div>
               
-              <div style="display: flex; flex-direction: column; gap: 5px; width: 100%; box-sizing: border-box; margin-top: auto; padding-top: 6px;">
-                <button type="button" class="btn-action" style="padding: 6px 8px; font-size: 0.8em; font-weight: 700; background: ${hasData ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #64748b, #475569)'}; color: white; border: none; margin: 0; width: 100%; border-radius: 12px; cursor: pointer;" onclick="selectLessonInPanel(${lessonNo})">✏️ จัดการบทเรียน</button>
+              <div style="display: flex; flex-direction: column; gap: 5px; width: 100%; box-sizing: border-box; margin-top: auto; padding-top: 4px;">
+                <button type="button" class="btn-action" style="padding: 6px 8px; font-size: 0.8em; font-weight: 700; background: ${hasData ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #64748b, #475569)'}; color: white; border: none; margin: 0; width: 100%; border-radius: 10px; cursor: pointer;" onclick="selectLessonInPanel(${lessonNo})">✏️ จัดการบทเรียน</button>
                 <div style="display: flex; gap: 4px; width: 100%;">
                   <button type="button" class="btn-action" style="padding: 6px 4px; font-size: 0.75em; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; margin: 0; flex: 1; border-radius: 8px; cursor: pointer; white-space: nowrap; min-width: 0;" onclick="openStudentLessonSweetAlert(${lessonNo})">📖 เรียน</button>
                   <button type="button" class="btn-action" style="padding: 6px 4px; font-size: 0.75em; font-weight: 700; background: ${pendingSub > 0 ? 'linear-gradient(135deg, #a78bfa, #7c3aed)' : 'rgba(167, 139, 250, 0.25)'}; border: 1px solid #a78bfa; color: ${pendingSub > 0 ? 'white' : '#a78bfa'}; margin: 0; flex: 1; border-radius: 8px; cursor: pointer; white-space: nowrap; min-width: 0;" onclick="showLessonSubmissions(${lessonNo}, '${safeTopicStr}')">👨‍🏫 ตรวจ (${pendingSub})</button>
@@ -5941,8 +6677,12 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
     function getFileUrl(val) {
       if (!val || typeof val !== 'string') return null;
       const trimmed = val.trim();
+      if (!trimmed || trimmed === '-' || trimmed === 'null' || trimmed === 'undefined') return null;
       if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
         return trimmed;
+      }
+      if (trimmed.length >= 15 && !trimmed.includes(' ') && !/^\d+(\.\d+)?$/.test(trimmed)) {
+        return `https://drive.google.com/file/d/${trimmed}/view?usp=sharing`;
       }
       return null;
     }
@@ -5979,8 +6719,10 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
           icon: 'info',
           background: bgSwal,
           color: colorSwal,
-          confirmButtonText: 'ปิด',
-          confirmButtonColor: '#6366f1'
+          showConfirmButton: false,
+          showCloseButton: true,
+          allowOutsideClick: false,
+          allowEscapeKey: false
         });
         return;
       }
@@ -5992,10 +6734,10 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         
         let fileButtons = '';
         if (file1Url) {
-          fileButtons += `<button onclick="viewHomeworkFile('${file1Url}')" class="btn-action" style="padding: 5px 10px; font-size: 0.82em; background: #10b981; color: white; border: none; margin-right: 4px; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap;">📄 ไฟล์ 1</button>`;
+          fileButtons += `<button onclick="viewHomeworkFile('${file1Url}')" type="button" style="padding: 0 12px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; line-height: 36px !important; font-size: 0.85em !important; font-family: 'Sarabun', sans-serif !important; background: linear-gradient(135deg, #10b981, #059669) !important; color: white !important; border: none !important; margin: 0 4px 0 0 !important; border-radius: 8px !important; font-weight: 700 !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 4px !important; white-space: nowrap !important; box-sizing: border-box !important; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;" title="คลิกเพื่อเปิดดูไฟล์ 1 ในแท็บใหม่">📄 ไฟล์ 1 ↗</button>`;
         }
         if (file2Url) {
-          fileButtons += `<button onclick="viewHomeworkFile('${file2Url}')" class="btn-action" style="padding: 5px 10px; font-size: 0.82em; background: #06b6d4; color: white; border: none; margin-right: 4px; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap;">📄 ไฟล์ 2</button>`;
+          fileButtons += `<button onclick="viewHomeworkFile('${file2Url}')" type="button" style="padding: 0 12px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; line-height: 36px !important; font-size: 0.85em !important; font-family: 'Sarabun', sans-serif !important; background: linear-gradient(135deg, #06b6d4, #0891b2) !important; color: white !important; border: none !important; margin: 0 4px 0 0 !important; border-radius: 8px !important; font-weight: 700 !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 4px !important; white-space: nowrap !important; box-sizing: border-box !important; box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4) !important;" title="คลิกเพื่อเปิดดูไฟล์ 2 ในแท็บใหม่">📄 ไฟล์ 2 ↗</button>`;
         }
         
         const isGraded = item.status === 'ตรวจแล้ว' || item.status === 'เรียนแล้ว';
@@ -6004,7 +6746,7 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         
         html += `
           <!-- INDIVIDUAL STRICT SINGLE HORIZONTAL BAR -->
-          <div style="background: ${itemCardBg}; border: 1px solid ${itemBorder}; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex-wrap: nowrap; overflow-x: auto; width: 100%; box-sizing: border-box;">
+          <div style="background: ${itemCardBg}; border: 1px solid ${itemBorder}; border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex-wrap: nowrap; overflow-x: auto; width: 100%; box-sizing: border-box;">
             
             <!-- Col 1: Student Name & Class Badge -->
             <div style="flex: 1 1 auto; min-width: 170px; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap;">
@@ -6028,11 +6770,11 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
 
             <!-- Col 4: Score Input & Icon-Only Glowing Buttons -->
             <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
-              <input type="number" id="inline-score-${item.rowIdx}" value="${scoreVal}" placeholder="คะแนน" style="width: 65px; text-align: center; padding: 0 4px; font-weight: 800; border-radius: 8px; border: 1px solid ${itemBorder}; background: ${selBg}; color: ${selColor}; font-size: 0.88em; height: 36px; box-sizing: border-box;">
+              <input type="number" id="inline-score-${item.rowIdx}" value="${scoreVal}" placeholder="" style="width: 58px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; text-align: center !important; padding: 0 4px !important; font-weight: 800 !important; border-radius: 8px !important; border: 1px solid ${itemBorder} !important; background: ${selBg} !important; color: ${selColor} !important; font-size: 0.95em !important; margin: 0 !important; box-sizing: border-box !important;">
 
-              <button onclick="directSaveLessonGrade(${item.rowIdx}, 'ตรวจแล้ว', ${lessonNo})" class="btn-action" style="padding: 0 12px; font-size: 1.05em; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; margin: 0; border-radius: 8px; font-weight: 800; cursor: pointer; white-space: nowrap; height: 36px; box-sizing: border-box; box-shadow: 0 0 14px rgba(16,185,129,0.8); display: inline-flex; align-items: center; justify-content: center;" title="บันทึกตรวจแล้ว">💾</button>
+              <button onclick="directSaveLessonGrade(${item.rowIdx}, 'ตรวจแล้ว', ${lessonNo})" type="button" style="padding: 0 !important; width: 36px !important; min-width: 36px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; font-size: 1.05em !important; background: linear-gradient(135deg, #10b981, #059669) !important; color: white !important; border: none !important; margin: 0 !important; border-radius: 8px !important; font-weight: 800 !important; cursor: pointer !important; white-space: nowrap !important; box-sizing: border-box !important; box-shadow: 0 0 14px rgba(16,185,129,0.8) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;" title="บันทึกตรวจแล้ว">💾</button>
 
-              <button onclick="directSaveLessonGrade(${item.rowIdx}, 'รอตรวจ', ${lessonNo})" class="btn-action" style="padding: 0 12px; font-size: 1.05em; background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; margin: 0; border-radius: 8px; font-weight: 800; cursor: pointer; white-space: nowrap; height: 36px; box-sizing: border-box; box-shadow: 0 0 12px rgba(245,158,11,0.5); display: inline-flex; align-items: center; justify-content: center;" title="ส่งกลับไปแก้ไข / รอตรวจ">🔄</button>
+              <button onclick="directSaveLessonGrade(${item.rowIdx}, 'รอตรวจ', ${lessonNo})" type="button" style="padding: 0 !important; width: 36px !important; min-width: 36px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; font-size: 1.05em !important; background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: white !important; border: none !important; margin: 0 !important; border-radius: 8px !important; font-weight: 800 !important; cursor: pointer !important; white-space: nowrap !important; box-sizing: border-box !important; box-shadow: 0 0 14px rgba(245,158,11,0.8) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;" title="ส่งกลับไปแก้ไข / รอตรวจ">🔄</button>
             </div>
 
           </div>
@@ -6046,8 +6788,10 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
         width: 'min(95vw, 980px)',
         background: bgSwal,
         color: colorSwal,
-        confirmButtonText: 'ปิด',
-        confirmButtonColor: '#6366f1'
+        showConfirmButton: false,
+        showCloseButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false
       });
     }
 
@@ -6080,6 +6824,829 @@ function editStudentReadingWithAuth(rowIdx, cls, name, title, synopsis, rating) 
       }
     }
 
+    // =========================================================================
+    // 📝 13. ระบบสอบออนไลน์ (ONLINE EXAMINATION SYSTEM)
+    // =========================================================================
+    const EXAM_SUBJECTS = [
+      { name: 'ภาษาไทย', icon: '🇹🇭', color: '#3b82f6' },
+      { name: 'คณิตศาสตร์', icon: '📐', color: '#10b981' },
+      { name: 'วิทยาศาสตร์ฯ', icon: '🔬', color: '#8b5cf6' },
+      { name: 'สังคมศึกษาฯ', icon: '🌍', color: '#f59e0b' },
+      { name: 'ประวัติศาสตร์', icon: '🏛️', color: '#ef4444' },
+      { name: 'สุขศึกษาฯ', icon: '🏃‍♂️', color: '#06b6d4' },
+      { name: 'ศิลปะ', icon: '🎨', color: '#ec4899' },
+      { name: 'การงานอาชีพ', icon: '🛠️', color: '#14b8a6' },
+      { name: 'ภาษาต่างประเทศ', icon: '🔤', color: '#6366f1' },
+      { name: 'หน้าที่พลเมือง', icon: '⚖️', color: '#f97316' }
+    ];
+    const CHOICES_TEXT = ['ก', 'ข', 'ค', 'ง'];
+
+    let currentExamSemester = '1';
+    let allExamsList = [];
+    let allExamScoresList = [];
+    let activeRunningExam = null;
+    let studentExamAnswers = [];
+    let examTimerInterval = null;
+    let examTimeRemaining = 0;
+    let swalTeacherAnswerKeys = [];
+    let currentScoreDashboardTab = 1;
+
+    function switchLessonViewTab(tabIdx) {
+      const btn1 = document.getElementById('tab-btn-lesson-1');
+      const btn2 = document.getElementById('tab-btn-lesson-2');
+      const btn3 = document.getElementById('tab-btn-lesson-3');
+      if (btn1) btn1.classList.toggle('active', tabIdx === 1);
+      if (btn2) btn2.classList.toggle('active', tabIdx === 2);
+      if (btn3) btn3.classList.toggle('active', tabIdx === 3);
+
+      if (tabIdx === 1) {
+        document.getElementById('lessons-grid-view').style.display = 'block';
+      } else if (tabIdx === 2) {
+        nav('homework');
+        switchHomeworkTab(1);
+      } else if (tabIdx === 3) {
+        nav('homework');
+        switchHomeworkTab(2);
+      }
+    }
+
+    function handleExamThirdTabClick() {
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      if (isTeacher) {
+        openManageExamModal();
+      } else {
+        nav('stats');
+        switchScoreDashboardTab(1);
+      }
+    }
+
+    async function initExamPage() {
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const teacherPanel = document.getElementById('teacher-exam-panel');
+      if (teacherPanel) {
+        teacherPanel.style.display = isTeacher ? 'block' : 'none';
+      }
+
+      document.getElementById('exam-main-view').style.display = 'block';
+      document.getElementById('exam-room-view').style.display = 'none';
+
+      const loadingStatus = document.getElementById('exam-loading-status');
+      if (loadingStatus) loadingStatus.style.display = 'flex';
+
+      try {
+        const [exams, scores] = await Promise.all([
+          gasGet('getExams'),
+          gasGet('getExamScores')
+        ]);
+        allExamsList = Array.isArray(exams) ? exams : [];
+        allExamScoresList = Array.isArray(scores) ? scores : [];
+      } catch(e) {
+        console.error('Fetch exams error:', e);
+      } finally {
+        if (loadingStatus) loadingStatus.style.display = 'none';
+      }
+      if (isTeacher) {
+        loadExistingExamIntoPanel();
+      }
+      renderExamSubjectGrid();
+    }
+
+    function switchExamSemester(sem) {
+      currentExamSemester = String(sem);
+      const btn1 = document.getElementById('btn-exam-sem-1');
+      const btn2 = document.getElementById('btn-exam-sem-2');
+      if (btn1 && btn2) {
+        btn1.classList.toggle('active', sem === '1');
+        btn2.classList.toggle('active', sem === '2');
+      }
+      const teacherSem = document.getElementById('teacher-exam-semester');
+      if (teacherSem) {
+        teacherSem.value = String(sem);
+      }
+      loadExistingExamIntoPanel();
+      renderExamSubjectGrid();
+    }
+
+    function renderExamSubjectGrid() {
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const userGrade = isTeacher ? (document.getElementById('teacher-exam-grade')?.value || 'ป.2') : (currentLoggedInUser?.className || 'ป.1');
+      const studentName = currentLoggedInUser?.name || '';
+
+      const container = document.getElementById('exam-subjects-grid');
+      if (!container) return;
+
+      const isLight = document.body.classList.contains('light-mode');
+      const cardBg = isLight ? '#ffffff' : 'rgba(15,23,42,0.7)';
+      const cardBorder = isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)';
+      const textColor = isLight ? '#1e293b' : '#f8fafc';
+      const subTextColor = isLight ? '#64748b' : '#94a3b8';
+
+      let html = '';
+      EXAM_SUBJECTS.forEach((sub) => {
+        const examConfig = allExamsList.find(e => 
+          String(e.semester) === String(currentExamSemester) &&
+          String(e.grade).trim() === String(userGrade).trim() &&
+          String(e.subject).trim() === String(sub.name).trim()
+        );
+
+        const myScores = allExamScoresList.filter(s => 
+          String(s.semester) === String(currentExamSemester) &&
+          String(s.grade).trim() === String(userGrade).trim() &&
+          String(s.name).trim() === String(studentName).trim() &&
+          String(s.subject).trim() === String(sub.name).trim()
+        );
+        const isTaken = myScores.length > 0;
+        const bestScore = isTaken ? Math.max(...myScores.map(s => parseInt(s.score)||0)) : 0;
+        const totalQs = examConfig ? (parseInt(examConfig.totalQuestions)||20) : 20;
+
+        let btnText = '';
+        let btnStyle = '';
+        let isBtnDisabled = false;
+
+        if (!examConfig || !examConfig.pdfId) {
+          btnText = 'ยังไม่เปิดสอบ';
+          btnStyle = isLight ? 'background: #f1f5f9; color: #94a3b8; cursor: not-allowed;' : 'background: rgba(148,163,184,0.15); color: #64748b; cursor: not-allowed;';
+          isBtnDisabled = true;
+        } else if (isTaken && !isTeacher) {
+          btnText = 'สอบใหม่อีกครั้ง';
+          btnStyle = isLight ? 'background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; cursor: pointer;' : 'background: rgba(99,102,241,0.25); color: #c7d2fe; border: 1px solid rgba(99,102,241,0.4); cursor: pointer;';
+        } else {
+          btnText = isTeacher ? 'ทดสอบข้อสอบ' : 'เริ่มทำข้อสอบ';
+          btnStyle = 'background: #3b82f6; color: #ffffff; cursor: pointer; box-shadow: 0 4px 12px rgba(59,130,246,0.35);';
+        }
+
+        html += `
+          <div style="background: ${cardBg}; border: 1.5px solid ${cardBorder}; border-radius: 20px; padding: 22px 14px 16px 14px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.06); transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; min-height: 200px; ${isBtnDisabled ? 'opacity: 0.65;' : ''}" onmouseover="${isBtnDisabled ? '' : `this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(59,130,246,0.2)'`}" onmouseout="${isBtnDisabled ? '' : `this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'`}">
+            
+            ${isTaken && !isTeacher ? `
+              <div style="position: absolute; top: -10px; right: 12px; background: #10b981; color: white; font-size: 0.72em; font-weight: 800; padding: 2px 10px; border-radius: 20px; border: 2px solid ${isLight ? '#ffffff' : '#1e293b'}; box-shadow: 0 2px 8px rgba(16,185,129,0.4); display: flex; align-items: center; gap: 4px; z-index: 2;">
+                ✔️ สอบแล้ว (${bestScore}/${totalQs})
+              </div>
+            ` : ''}
+
+            <!-- Circular Icon Box matching Image 1 -->
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: ${isBtnDisabled ? (isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)') : (isLight ? '#dbeafe' : 'rgba(59,130,246,0.18)')}; color: ${isBtnDisabled ? '#94a3b8' : '#3b82f6'}; display: flex; align-items: center; justify-content: center; font-size: 1.5em; margin-bottom: 10px;">
+              💾
+            </div>
+
+            <!-- Subject Title -->
+            <div style="font-weight: 800; font-size: 1.12em; color: ${textColor}; margin-bottom: 3px;">
+              ${sub.name}
+            </div>
+
+            <!-- Subtitle question count -->
+            <div style="font-size: 0.8em; font-weight: 600; color: ${subTextColor}; margin-bottom: 14px;">
+              ${examConfig && examConfig.pdfId ? `มีข้อสอบ ${totalQs} ข้อ` : 'ยังไม่มีข้อสอบ'}
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="${isBtnDisabled ? '' : `startExam('${sub.name}')`}" ${isBtnDisabled ? 'disabled' : ''} class="btn-action" style="width: 100%; margin: 0; padding: 10px 6px; font-size: 0.88em; font-weight: 800; border-radius: 12px; border: none; ${btnStyle}">
+              ${btnText}
+            </button>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function startExam(subjectName) {
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const userGrade = isTeacher ? (document.getElementById('exam-filter-class')?.value || 'ป.2') : (currentLoggedInUser?.className || 'ป.1');
+
+      const examConfig = allExamsList.find(e => 
+        String(e.semester) === String(currentExamSemester) &&
+        String(e.grade).trim() === String(userGrade).trim() &&
+        String(e.subject).trim() === String(subjectName).trim()
+      );
+
+      if (!examConfig || !examConfig.pdfId) {
+        Swal.fire('ยังไม่มีข้อสอบ', 'คุณครูยังไม่ได้อัปโหลดข้อสอบในวิชานี้ครับ', 'info');
+        return;
+      }
+
+      activeRunningExam = examConfig;
+      const totalQs = parseInt(examConfig.totalQuestions) || 10;
+      studentExamAnswers = new Array(totalQs).fill(null);
+
+      document.getElementById('exam-main-view').style.display = 'none';
+      const roomView = document.getElementById('exam-room-view');
+      roomView.style.display = 'flex';
+
+      document.getElementById('exam-room-title').innerText = `${examConfig.subject} (ภาคเรียนที่ ${examConfig.semester} ชั้น ${examConfig.grade})`;
+
+      let pdfEmbedUrl = examConfig.pdfId.trim();
+      if (pdfEmbedUrl.includes('drive.google.com') && pdfEmbedUrl.includes('/view')) {
+        pdfEmbedUrl = pdfEmbedUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+      } else if (!pdfEmbedUrl.startsWith('http')) {
+        pdfEmbedUrl = `https://drive.google.com/file/d/${pdfEmbedUrl}/preview`;
+      }
+      document.getElementById('exam-pdf-frame').src = pdfEmbedUrl;
+
+      renderExamAnswerSheet();
+      updateExamProgress();
+
+      const timeLimitMin = parseInt(examConfig.timeLimit) || 60;
+      examTimeRemaining = timeLimitMin * 60;
+      startExamTimer();
+    }
+
+    function startExamTimer() {
+      if (examTimerInterval) clearInterval(examTimerInterval);
+      updateTimerDisplay();
+
+      examTimerInterval = setInterval(() => {
+        examTimeRemaining--;
+        updateTimerDisplay();
+        if (examTimeRemaining <= 0) {
+          clearInterval(examTimerInterval);
+          Swal.fire({
+            icon: 'warning',
+            title: '⏰ หมดเวลาสอบ!',
+            text: 'ระบบกำลังส่งคำตอบอัตโนมัติ...',
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            submitExamAnswers(true);
+          });
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const timerBox = document.getElementById('exam-timer-box');
+      if (!timerBox) return;
+      const mins = Math.floor(examTimeRemaining / 60);
+      const secs = examTimeRemaining % 60;
+      const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      timerBox.innerText = `⏱️ ${timeStr}`;
+
+      if (examTimeRemaining <= 60) {
+        timerBox.style.color = '#ef4444';
+        timerBox.style.borderColor = '#ef4444';
+      } else {
+        timerBox.style.color = '#60a5fa';
+        timerBox.style.borderColor = '#3b82f6';
+      }
+    }
+
+    function renderExamAnswerSheet() {
+      if (!activeRunningExam) return;
+      const container = document.getElementById('exam-answer-sheet-list');
+      if (!container) return;
+
+      const totalQs = parseInt(activeRunningExam.totalQuestions) || 10;
+      const numChoices = parseInt(activeRunningExam.choicesCount) === 4 ? 4 : 3;
+      const choiceOptions = CHOICES_TEXT.slice(0, numChoices);
+
+      const isLight = document.body.classList.contains('light-mode');
+      const itemBg = isLight ? '#f8fafc' : 'rgba(255,255,255,0.05)';
+      const itemBorder = isLight ? '#cbd5e1' : 'rgba(255,255,255,0.1)';
+      const qNumColor = isLight ? '#0f172a' : '#f8fafc';
+
+      let html = '';
+      for (let i = 0; i < totalQs; i++) {
+        const selectedChoice = studentExamAnswers[i];
+        html += `
+          <div style="background: ${selectedChoice ? 'rgba(59,130,246,0.15)' : itemBg}; border: 1px solid ${selectedChoice ? '#3b82f6' : itemBorder}; border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: all 0.2s ease;">
+            <span style="font-weight: 800; font-size: 0.9em; color: ${qNumColor}; min-width: 45px;">ข้อ ${i + 1}</span>
+            <div style="display: flex; gap: 6px;">
+        `;
+        choiceOptions.forEach((choiceLetter) => {
+          const isSelected = selectedChoice === choiceLetter;
+          html += `
+            <button onclick="selectExamAnswer(${i}, '${choiceLetter}')" type="button" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid ${isSelected ? '#3b82f6' : (isLight ? '#cbd5e1' : 'rgba(255,255,255,0.2)')}; background: ${isSelected ? '#3b82f6' : (isLight ? '#ffffff' : 'rgba(15,23,42,0.6)')}; color: ${isSelected ? '#ffffff' : (isLight ? '#334155' : '#cbd5e1')}; font-weight: 800; font-size: 0.88em; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; ${isSelected ? 'box-shadow: 0 0 10px rgba(59,130,246,0.7); transform: scale(1.08);' : ''}">
+              ${choiceLetter}
+            </button>
+          `;
+        });
+        html += `
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function selectExamAnswer(qIdx, choiceLetter) {
+      studentExamAnswers[qIdx] = choiceLetter;
+      renderExamAnswerSheet();
+      updateExamProgress();
+    }
+
+    function updateExamProgress() {
+      if (!activeRunningExam) return;
+      const totalQs = parseInt(activeRunningExam.totalQuestions) || 10;
+      const answeredCount = studentExamAnswers.filter(a => a !== null).length;
+      const percent = Math.round((answeredCount / totalQs) * 100);
+
+      const bar = document.getElementById('exam-progress-bar');
+      const text = document.getElementById('exam-progress-text');
+      if (bar) bar.style.width = `${percent}%`;
+      if (text) text.innerText = `ทำไปแล้ว ${answeredCount} / ${totalQs} ข้อ (${percent}%)`;
+    }
+
+    function exitExamRoom() {
+      Swal.fire({
+        title: 'ต้องการออกจากการสอบ?',
+        text: 'หากออกตอนนี้ คำตอบที่ทำไว้จะไม่ถูกบันทึกนะครับ',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, ออกจากการสอบ',
+        cancelButtonText: 'ทำต่อ',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6366f1'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          if (examTimerInterval) clearInterval(examTimerInterval);
+          activeRunningExam = null;
+          document.getElementById('exam-room-view').style.display = 'none';
+          document.getElementById('exam-main-view').style.display = 'block';
+          document.getElementById('exam-pdf-frame').src = '';
+          initExamPage();
+        }
+      });
+    }
+
+    async function submitExamAnswers(isAutoSubmit = false) {
+      if (!activeRunningExam) return;
+      const totalQs = parseInt(activeRunningExam.totalQuestions) || 10;
+      const answeredCount = studentExamAnswers.filter(a => a !== null).length;
+
+      if (!isAutoSubmit && answeredCount < totalQs) {
+        const res = await Swal.fire({
+          title: 'ยังทำไม่ครบทุกข้อ!',
+          html: `หนูทำไปแล้ว <b>${answeredCount}</b> จากทั้งหมด <b>${totalQs}</b> ข้อ<br>ต้องการส่งคำตอบเลยหรือไม่?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'ยืนยันส่งเลย',
+          cancelButtonText: 'กลับไปทำต่อ',
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#6366f1'
+        });
+        if (!res.isConfirmed) return;
+      }
+
+      if (examTimerInterval) clearInterval(examTimerInterval);
+
+      let score = 0;
+      const answerKey = Array.isArray(activeRunningExam.answerKey) ? activeRunningExam.answerKey : [];
+      for (let i = 0; i < totalQs; i++) {
+        if (studentExamAnswers[i] && studentExamAnswers[i] === answerKey[i]) {
+          score++;
+        }
+      }
+
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      }
+
+      Swal.fire({
+        title: isAutoSubmit ? '⏰ หมดเวลา - ส่งคำตอบสำเร็จ!' : '🎉 ส่งคำตอบสำเร็จ!',
+        html: `
+          <div style="font-size: 1.1em; margin-top: 8px;">วิชา <b>${activeRunningExam.subject}</b></div>
+          <div style="font-size: 2.2em; font-weight: 800; color: #10b981; margin: 15px 0;">
+            ${score} / ${totalQs} คะแนน
+          </div>
+          <div style="font-size: 0.9em; color: #94a3b8;">(${Math.round((score/totalQs)*100)}%)</div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#10b981'
+      });
+
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const gradeVal = isTeacher ? (document.getElementById('exam-filter-class')?.value || 'ป.2') : (currentLoggedInUser?.className || 'ป.1');
+      const nameVal = isTeacher ? (currentLoggedInUser?.name || 'คุณครู') : (currentLoggedInUser?.name || 'นักเรียน');
+
+      try {
+        await gasPost({
+          action: 'saveExamScore',
+          grade: gradeVal,
+          name: nameVal,
+          semester: activeRunningExam.semester,
+          subject: activeRunningExam.subject,
+          score: score,
+          totalQuestions: totalQs
+        });
+      } catch(e) {
+        console.error('Save exam score error:', e);
+      }
+
+      activeRunningExam = null;
+      document.getElementById('exam-room-view').style.display = 'none';
+      document.getElementById('exam-main-view').style.display = 'block';
+      document.getElementById('exam-pdf-frame').src = '';
+      initExamPage();
+    }
+
+    // =========================================================================
+    // ⚙️ แผงจัดการข้อสอบ (โหมดครูผู้สอน)
+    // =========================================================================
+    function loadExistingExamIntoPanel() {
+      const sem = document.getElementById('teacher-exam-semester')?.value || currentExamSemester || '1';
+      const grade = document.getElementById('teacher-exam-grade')?.value || 'ป.2';
+      const subject = document.getElementById('teacher-exam-subject')?.value || EXAM_SUBJECTS[0].name;
+
+      const existing = allExamsList.find(e => 
+        String(e.semester) === String(sem) &&
+        String(e.grade).trim() === String(grade).trim() &&
+        String(e.subject).trim() === String(subject).trim()
+      );
+
+      if (existing) {
+        if (document.getElementById('teacher-exam-total-qs')) document.getElementById('teacher-exam-total-qs').value = existing.totalQuestions || 10;
+        if (document.getElementById('teacher-exam-choices')) document.getElementById('teacher-exam-choices').value = existing.choicesCount || 4;
+        if (document.getElementById('teacher-exam-timelimit')) document.getElementById('teacher-exam-timelimit').value = existing.timeLimit || 60;
+        if (document.getElementById('teacher-exam-pdf-link')) document.getElementById('teacher-exam-pdf-link').value = existing.pdfId || '';
+        swalTeacherAnswerKeys = Array.isArray(existing.answerKey) ? [...existing.answerKey] : [];
+      } else {
+        if (document.getElementById('teacher-exam-pdf-link')) document.getElementById('teacher-exam-pdf-link').value = '';
+        swalTeacherAnswerKeys = [];
+      }
+      renderTeacherAnswerKeyMatrix();
+      renderExamSubjectGrid();
+    }
+
+    function renderTeacherAnswerKeyMatrix() {
+      const container = document.getElementById('teacher-exam-answer-key-grid');
+      if (!container) return;
+
+      const totalQs = parseInt(document.getElementById('teacher-exam-total-qs')?.value) || 10;
+      const numChoices = parseInt(document.getElementById('teacher-exam-choices')?.value) || 4;
+      const choiceOptions = CHOICES_TEXT.slice(0, numChoices);
+
+      const isLight = document.body.classList.contains('light-mode');
+      const rowBg = isLight ? '#ffffff' : 'rgba(255,255,255,0.05)';
+      const rowBorder = isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)';
+      const badgeBg = isLight ? '#eff6ff' : 'rgba(59,130,246,0.15)';
+      const badgeColor = isLight ? '#2563eb' : '#93c5fd';
+
+      let html = '';
+      for (let i = 0; i < totalQs; i++) {
+        const curAns = swalTeacherAnswerKeys[i] || '';
+        html += `
+          <div style="background: ${rowBg}; border: 1px solid ${rowBorder}; border-radius: 10px; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: all 0.2s;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 800; font-size: 0.82em; padding: 3px 8px; border-radius: 6px; min-width: 44px; text-align: center; border: 1px solid rgba(59,130,246,0.25);">
+                ข้อ ${i + 1}
+              </span>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+        `;
+        choiceOptions.forEach((ch) => {
+          const isSel = curAns === ch;
+          html += `
+            <button type="button" onclick="setTeacherAnswerKey(${i}, '${ch}')" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid ${isSel ? '#60a5fa' : (isLight ? '#cbd5e1' : 'rgba(255,255,255,0.2)')}; background: ${isSel ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : (isLight ? '#f8fafc' : 'rgba(15,23,42,0.6)')}; color: ${isSel ? '#ffffff' : (isLight ? '#475569' : '#cbd5e1')}; font-weight: 800; font-size: 0.88em; font-family: 'Prompt', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; ${isSel ? 'box-shadow: 0 0 10px rgba(59,130,246,0.7); transform: scale(1.08);' : ''}" title="ข้อ ${i + 1} ตอบ ${ch}">
+              ${ch}
+            </button>
+          `;
+        });
+        html += `
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function setTeacherAnswerKey(qIdx, choice) {
+      swalTeacherAnswerKeys[qIdx] = choice;
+      renderTeacherAnswerKeyMatrix();
+    }
+
+    function extractDriveFileId(str) {
+      if (!str) return '';
+      str = str.trim();
+      const match1 = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match1) return match1[1];
+      const match2 = str.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match2) return match2[1];
+      const match3 = str.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match3) return match3[1];
+      return str;
+    }
+
+    let pendingExamPdfData = null;
+
+    async function handleTeacherExamFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const statusSpan = document.getElementById('teacher-exam-file-status');
+      const isLight = document.body.classList.contains('light-mode');
+      const bgSwal = isLight ? '#ffffff' : '#16213e';
+      const colorSwal = isLight ? '#0f172a' : '#e2e8f0';
+
+      if (statusSpan) {
+        statusSpan.innerHTML = `<span style="color: #38bdf8; font-weight: 700;">⏳ กำลังอ่านไฟล์ "${file.name}"...</span>`;
+      }
+
+      try {
+        if (file.size > 20 * 1024 * 1024) {
+          throw new Error('ไฟล์ PDF มีขนาดใหญ่เกิน 20MB กรุณาลดขนาดไฟล์หรืออัปโหลดลง Google Drive แล้ววางลิงก์');
+        }
+
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const res = reader.result;
+            const b64 = res.includes(',') ? res.split(',')[1] : res;
+            resolve(b64);
+          };
+          reader.onerror = (err) => reject(err);
+          reader.readAsDataURL(file);
+        });
+
+        pendingExamPdfData = {
+          name: file.name,
+          type: file.type || 'application/pdf',
+          data: base64Data
+        };
+
+        if (statusSpan) {
+          statusSpan.innerHTML = `<span style="color: #34d399; font-weight: 700;">📄 แนบไฟล์ "${file.name}" แล้ว (พร้อมบันทึก)</span>`;
+        }
+        if (!document.getElementById('teacher-exam-pdf-link').value) {
+          document.getElementById('teacher-exam-pdf-link').value = file.name;
+        }
+
+        // แสดงสถานะกำลังส่งไปเก็บที่ Google Drive
+        Swal.fire({
+          title: '⏳ กำลังอัปโหลด PDF ไปยัง Google Drive...',
+          html: `<div style="font-size: 0.95em; color: ${isLight ? '#475569' : '#cbd5e1'};">
+            ไฟล์: <strong>${file.name}</strong> (${(file.size / (1024*1024)).toFixed(2)} MB)<br>
+            ไปยังโฟลเดอร์ Google Drive ของโรงเรียน...
+          </div>`,
+          background: bgSwal,
+          color: colorSwal,
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        const res = await gasPost({
+          action: 'uploadExamPDF',
+          filename: file.name,
+          mimeType: file.type || 'application/pdf',
+          data: base64Data
+        });
+
+        Swal.close();
+
+        if (res && res.fileId) {
+          document.getElementById('teacher-exam-pdf-link').value = res.fileId;
+          if (statusSpan) {
+            statusSpan.innerHTML = `<span style="color: #10b981; font-weight: 700;">✅ อัปโหลดลง Drive สำเร็จ (${file.name})</span>`;
+          }
+          showToast('✅ อัปโหลดไฟล์ PDF ข้อสอบเข้า Google Drive สำเร็จ', 'success');
+        } else {
+          // หากไม่มี fileId (เช่น ยังใช้ GAS เก่า) ให้เก็บไฟล์ไว้ส่งตอน saveExamConfig
+          if (statusSpan) {
+            statusSpan.innerHTML = `<span style="color: #38bdf8; font-weight: 700;">📄 แนบไฟล์ "${file.name}" เรียบร้อยแล้ว (กดปุ่มบันทึกข้อสอบได้เลย)</span>`;
+          }
+          showToast('📄 แนบไฟล์เรียบร้อยแล้ว กดปุ่มบันทึกข้อสอบได้เลย', 'info');
+        }
+      } catch (err) {
+        console.warn('Direct upload notice:', err);
+        Swal.close();
+        if (pendingExamPdfData) {
+          if (statusSpan) {
+            statusSpan.innerHTML = `<span style="color: #38bdf8; font-weight: 700;">📄 แนบไฟล์ "${file.name}" เรียบร้อยแล้ว (กดปุ่มบันทึกข้อสอบได้เลย)</span>`;
+          }
+          showToast('📄 แนบไฟล์เรียบร้อยแล้ว กดปุ่มบันทึกข้อสอบได้เลย', 'info');
+        } else {
+          if (statusSpan) {
+            statusSpan.innerHTML = `<span style="color: #ef4444; font-weight: 700;">❌ ไม่สามารถอ่านไฟล์ได้: ${err.message || ''}</span>`;
+          }
+        }
+      }
+    }
+
+    async function saveTeacherExamFromPanel() {
+      const sem = document.getElementById('teacher-exam-semester')?.value || '1';
+      const grade = document.getElementById('teacher-exam-grade')?.value || 'ป.2';
+      const subject = document.getElementById('teacher-exam-subject')?.value || EXAM_SUBJECTS[0].name;
+      const totalQs = parseInt(document.getElementById('teacher-exam-total-qs')?.value) || 10;
+      const choices = parseInt(document.getElementById('teacher-exam-choices')?.value) || 4;
+      const timeLimit = parseInt(document.getElementById('teacher-exam-timelimit')?.value) || 60;
+      let rawPdf = document.getElementById('teacher-exam-pdf-link')?.value.trim();
+
+      if (!rawPdf && !pendingExamPdfData) {
+        showToast('⚠️ กรุณาระบุลิงก์หรือแนบไฟล์ PDF ข้อสอบ', 'warning');
+        return;
+      }
+
+      let pdfId = extractDriveFileId(rawPdf);
+
+      const ansKey = [];
+      for (let i = 0; i < totalQs; i++) {
+        ansKey.push(swalTeacherAnswerKeys[i] || '');
+      }
+
+      const isLight = document.body.classList.contains('light-mode');
+      Swal.fire({
+        title: '⏳ กำลังบันทึกข้อสอบ...',
+        text: 'กำลังบันทึกลงชีต exams...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        background: isLight ? '#ffffff' : '#16213e',
+        color: isLight ? '#0f172a' : '#e2e8f0',
+        didOpen: () => Swal.showLoading()
+      });
+
+      try {
+        const payload = {
+          action: 'saveExamConfig',
+          semester: sem,
+          grade: grade,
+          subject: subject,
+          totalQuestions: totalQs,
+          choicesCount: choices,
+          timeLimit: timeLimit,
+          pdfId: pdfId,
+          answerKey: ansKey
+        };
+
+        if (pendingExamPdfData) {
+          payload.pdfFile = pendingExamPdfData;
+          payload.filename = pendingExamPdfData.name;
+          payload.pdfData = pendingExamPdfData.data;
+        }
+
+        const res = await gasPost(payload);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'บันทึกสำเร็จ! 🎉',
+          text: `บันทึกข้อมูลข้อสอบวิชา ${subject} (${grade} เทอม ${sem}) ลงชีตเรียบร้อยแล้ว`,
+          timer: 1800,
+          showConfirmButton: false,
+          background: isLight ? '#ffffff' : '#16213e',
+          color: isLight ? '#0f172a' : '#e2e8f0'
+        });
+        pendingExamPdfData = null;
+        allExamsList = await gasGet('getExams');
+        renderExamSubjectGrid();
+      } catch(e) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ผิดพลาด',
+          text: 'ไม่สามารถบันทึกข้อสอบได้: ' + (e.message || ''),
+          background: isLight ? '#ffffff' : '#16213e',
+          color: isLight ? '#0f172a' : '#e2e8f0'
+        });
+      }
+    }
+
+    // =========================================================================
+    // 📊 14. ระบบคะแนนและสถิติ (SCORES & LEADERBOARD SYSTEM)
+    // =========================================================================
+    async function initStatsPage() {
+      const statusDiv = document.getElementById('stats-status');
+      if (statusDiv) statusDiv.style.display = 'flex';
+
+      try {
+        const [statsData, examScores, lessonList, homeworks] = await Promise.all([
+          gasGet('getStats'),
+          gasGet('getExamScores'),
+          gasGet('getLessons'),
+          gasGet('getHomeworks')
+        ]);
+        rawStatsData = statsData;
+        allExamScoresList = Array.isArray(examScores) ? examScores : [];
+        currentLoadedLessonsCache = Array.isArray(lessonList) ? lessonList : [];
+        allHomeworks = Array.isArray(homeworks) ? homeworks : [];
+      } catch(e) {
+        console.error('Fetch stats data error:', e);
+      } finally {
+        if (statusDiv) statusDiv.style.display = 'none';
+      }
+
+      switchScoreDashboardTab(currentScoreDashboardTab || 1);
+    }
+
+    function switchScoreDashboardTab(tabIdx) {
+      currentScoreDashboardTab = tabIdx;
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`score-tab-btn-${i}`);
+        const content = document.getElementById(`score-tab-content-${i}`);
+        if (btn) {
+          if (i === tabIdx) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+        if (content) {
+          content.style.display = (i === tabIdx) ? 'block' : 'none';
+        }
+      }
+
+      if (tabIdx === 1) renderExamScoresTable();
+      if (tabIdx === 2) renderLessonScoresTable();
+      if (tabIdx === 3) {
+        if (!rawStatsData) fetchStats();
+        else renderStatsView();
+      }
+    }
+
+    function renderExamScoresTable() {
+      const semFilter = document.getElementById('score-exam-filter-sem')?.value || '1';
+      const classFilter = document.getElementById('score-exam-filter-class')?.value || 'all';
+      const tbody = document.getElementById('score-exam-tbody');
+      if (!tbody) return;
+
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const studentName = currentLoggedInUser?.name || '';
+
+      const filtered = (allExamScoresList || []).filter(item => {
+        const matchSem = String(item.semester) === String(semFilter);
+        const matchClass = (classFilter === 'all') || (String(item.grade).trim() === String(classFilter).trim());
+        const matchUser = isTeacher ? true : (String(item.name).trim() === String(studentName).trim());
+        return matchSem && matchClass && matchUser;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding: 24px; text-align: center; color: #94a3b8;">ยังไม่มีข้อมูลผลคะแนนสอบในเงื่อนไขนี้</td></tr>`;
+        return;
+      }
+
+      let rowsHtml = '';
+      filtered.forEach((item) => {
+        let dtStr = '-';
+        try {
+          dtStr = new Date(item.date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+        } catch(e) {
+          dtStr = item.date;
+        }
+
+        const scorePercent = Math.round((parseInt(item.score || 0) / parseInt(item.totalQuestions || 10)) * 100);
+        const scoreColor = scorePercent >= 60 ? '#10b981' : '#f59e0b';
+
+        rowsHtml += `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(59,130,246,0.08)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 10px 14px; font-size: 0.85em; color: #94a3b8;">${dtStr}</td>
+            <td style="padding: 10px 14px; font-weight: 800; color: #3b82f6;">${item.grade}</td>
+            <td style="padding: 10px 14px; font-weight: 700;">${item.name}</td>
+            <td style="padding: 10px 14px; font-weight: 800; color: #818cf8;">${item.subject}</td>
+            <td style="padding: 10px 14px; text-align: center; font-weight: 800; font-size: 1.1em; color: ${scoreColor};">
+              ${item.score} / ${item.totalQuestions || 10} <span style="font-size: 0.75em; color: #94a3b8;">(${scorePercent}%)</span>
+            </td>
+            <td style="padding: 10px 14px; text-align: center; font-size: 0.85em; color: #cbd5e1;">ครั้งที่ ${item.attemptCount || 1}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = rowsHtml;
+    }
+
+    function renderLessonScoresTable() {
+      const classFilter = document.getElementById('score-lesson-filter-class')?.value || 'all';
+      const tbody = document.getElementById('score-lesson-tbody');
+      if (!tbody) return;
+
+      const isTeacher = (currentLoggedInUser && currentLoggedInUser.isTeacher);
+      const studentName = currentLoggedInUser?.name || '';
+
+      const filtered = (allHomeworks || []).filter(item => {
+        const matchClass = (classFilter === 'all') || (String(item.className).trim() === String(classFilter).trim());
+        const matchUser = isTeacher ? true : (
+          String(item.name1).trim() === String(studentName).trim() ||
+          String(item.name2).trim() === String(studentName).trim()
+        );
+        return matchClass && matchUser;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding: 24px; text-align: center; color: #94a3b8;">ยังไม่มีข้อมูลผลคะแนนบทเรียนในเงื่อนไขนี้</td></tr>`;
+        return;
+      }
+
+      let rowsHtml = '';
+      filtered.forEach((item) => {
+        let dtStr = item.date || '-';
+        const file2Score = (item.file2 && !item.file2.startsWith('http') && item.file2 !== '-') ? item.file2 : '-';
+        const isGraded = item.status === 'ตรวจแล้ว' || item.status === 'เรียนแล้ว';
+        const statusColor = isGraded ? '#10b981' : '#f59e0b';
+
+        rowsHtml += `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(16,185,129,0.08)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 10px 14px; font-size: 0.85em; color: #94a3b8;">${dtStr}</td>
+            <td style="padding: 10px 14px; font-weight: 800; color: #3b82f6;">${item.className}</td>
+            <td style="padding: 10px 14px; font-weight: 700;">
+              ${item.name1} ${item.name2 && item.name2 !== '-' ? 'คู่กับ ' + item.name2 : ''}
+            </td>
+            <td style="padding: 10px 14px; font-weight: 800; color: #34d399;">${item.taskName || 'บทเรียน'}</td>
+            <td style="padding: 10px 14px; text-align: center; font-weight: 800; font-size: 1.1em; color: #10b981;">
+              ${file2Score !== '-' ? file2Score + ' / 10' : '-'}
+            </td>
+            <td style="padding: 10px 14px; text-align: center;">
+              <span style="font-size: 0.82em; font-weight: 800; color: ${statusColor}; background: ${isGraded ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'}; padding: 3px 9px; border-radius: 8px;">
+                ● ${item.status}
+              </span>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = rowsHtml;
+    }
   </script>
 </body>
 </html>
