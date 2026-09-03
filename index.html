@@ -3128,7 +3128,21 @@ body:not(.dark-mode) textarea,
       } 
     }
     
-    async function loadModels() { if (modelsLoaded) return; try { const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; await Promise.all([ faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL), faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL), faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL) ]); modelsLoaded = true; } catch (e) { showToast('โหลด AI Model ล้มเหลว', 'error'); } }
+    async function loadModels() {
+      if (modelsLoaded) return;
+      try {
+        // ใช้ jsDelivr CDN แทน GitHub Pages เพื่อความเร็วและเสถียรภาพ (Edge Server ในเอเชีย)
+        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+        await Promise.all([
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
+        modelsLoaded = true;
+      } catch (e) {
+        showToast('โหลด AI Model ล้มเหลว กรุณารีเฟรชแล้วลองใหม่', 'error');
+      }
+    }
     function formatThaiDate(dateString) { if (!dateString) return '-'; try { const d = new Date(dateString); return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); } catch(e) { return dateString; } }
     function formatThaiDateFull(dateString) { if (!dateString) return '-'; try { const d = new Date(dateString); return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }); } catch(e) { return dateString; } }
   async function getBase64(file) {

@@ -364,28 +364,60 @@ function getKnownFaces() {
   var faces = [];
   for (var i = 1; i < data.length; i++) {
     // Users: B=ชั้น(1), C=ชื่อ(2), D=FaceData(3)
+    // FaceData รองรับ 2 formats:
+    //   - เก่า: [number, number, ...] (descriptor เดี่ยว)
+    //   - ใหม่: [[...d1...],[...d2...],[...d3...]] (3 มุม)
     var faceStr = data[i][3];
     if (faceStr && faceStr !== '-') {
-      try { faces.push({ label: data[i][2], class: data[i][1], descriptor: JSON.parse(faceStr) }); } catch(e) {}
+      try {
+        var parsed = JSON.parse(faceStr);
+        var label = data[i][2], cls = data[i][1];
+        // ตรวจว่าเป็น array ของ arrays (multi-descriptor) หรือเปล่า
+        if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0])) {
+          // format ใหม่: [[d1], [d2], [d3]] → แตกออกเป็นหลาย entry
+          parsed.forEach(function(desc) {
+            faces.push({ label: label, class: cls, descriptor: desc });
+          });
+        } else {
+          // format เดิม: [number, ...] → ใช้ตามปกติ
+          faces.push({ label: label, class: cls, descriptor: parsed });
+        }
+      } catch(e) {}
     }
   }
   return faces;
 }
 
+
 function registerUser(p) {
   var sheet = getOrCreateSheet('Users');
   var data = sheet.getDataRange().getValues();
-  var faceStr = JSON.stringify(p.faceDescriptor);
+  var newDesc = p.faceDescriptor; // array ของตัวเลข [n1, n2, ...]
   var dtStr = new Date().toISOString();
-  
+
   for (var i = 1; i < data.length; i++) {
     if (data[i][1] === p.className && data[i][2] === p.name) {
-      sheet.getRange(i + 1, 4).setValue(faceStr); return; // Update D
+      // พบแถวนักเรียนแล้ว: อ่าน descriptors เดิม แล้วสะสมเพิ่ม (สูงสุด 3 มุม)
+      var existing = [];
+      try {
+        var parsed = JSON.parse(data[i][3]);
+        if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0])) {
+          existing = parsed; // format ใหม่: [[d1],[d2],[d3]]
+        } else if (Array.isArray(parsed)) {
+          existing = [parsed]; // format เก่า: [n1,n2,...] → ห่อเป็น array
+        }
+      } catch(e) {}
+      // สะสม descriptor ใหม่ต่อท้าย (ไม่เกิน 3 ตัว)
+      existing.push(newDesc);
+      if (existing.length > 3) existing = existing.slice(existing.length - 3);
+      sheet.getRange(i + 1, 4).setValue(JSON.stringify(existing));
+      return;
     }
   }
-  // A=วันที่, B=ชั้น, C=ชื่อ, D=Face
-  sheet.appendRow([dtStr, p.className, p.name, faceStr]);
+  // ไม่พบแถวเดิม: สร้างแถวใหม่ด้วย descriptor มุมแรก
+  sheet.appendRow([dtStr, p.className, p.name, JSON.stringify([newDesc])]);
 }
+
 
 // --- Students (รายชื่อแสดงใน Dropdown) ---
 function getStudents(className) {
